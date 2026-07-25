@@ -85,12 +85,37 @@ cherry-picked file out of 25-70+ per pack under
 `godot/assets/models/ATTRIBUTION.md`'s linked sources) whenever you want
 more variety per hub.
 
-**Interchangeable textures** — drop PBR maps into `godot/assets/textures/`
-named `<slot>_albedo.png` (+ `_normal`, `_rough`, `_metallic`,
-`_emissive`). The city asks for: `facade_glass`, `facade_concrete`,
-`facade_brick`, `facade_metal`, `asphalt`, `sidewalk`, `neon`. Any that
-exist are used; the per-race identity lens still tints on top, so the same
-wall is a different material on every player's client.
+**Textures — now filled.** All nine slots `AssetLibrary.material()` reads
+(`asphalt`, `sidewalk`, `facade_glass`, `facade_concrete`, `facade_brick`,
+`facade_metal`, `streetlight`, `neon`, `city_prop`) ship with real
+photoscanned PBR from [Poly Haven](https://polyhaven.com/textures), CC0 —
+albedo + normal + roughness each, plus metallic where the source had one.
+The per-race identity lens still tints on top, so the same wall is a
+different material on every player's client.
+
+Re-fetch or change resolution with
+`bash scripts/fetch_polyhaven_textures.sh` — 1k by default because the ship
+target is a Web export, `RES=2k` for a desktop-only build. The slot→asset
+mapping lives in that script; swap an entry to change a surface.
+
+Five interior sets (`interior_floor`, `interior_wall`, `interior_carpet`,
+`interior_marble`, `interior_tile`) are also present but **not read by any
+code yet** — venues currently build storefront shells with no interior
+geometry. They are staged for whenever interiors land.
+
+**HDRI skies — now filled.** 12 CC0 panoramas in `assets/environments/`.
+`DayNightSky` cross-fades a day and a night plate through
+`assets/shaders/hdri_day_night_sky.gdshader` and re-applies the frame tint,
+so a photographic sky still differs per viewer; swap which two via
+`DayNightSky.day_hdri` / `night_hdri`. With none installed the procedural
+sky carries the cycle exactly as before.
+
+**Humanoids.** 12 Kenney mini-characters ship as `npc_human_a…l`, picked by
+`AssetLibrary.instance_variant()` for anonymous citizens; 18 blocky
+characters sit unassigned in `models/kenney_characters/`. Note these are
+stylised and read as chibi against the photoscanned props — see
+`docs/OMNIDEX_MAPPING.md` and the `metahuman_<race_id>.glb` slots for the
+realistic path.
 
 **Interchangeable sounds** — drop looped audio into `godot/assets/audio/`
 as `<slot>.ogg`: `city_traffic`, `city_crowd`, `neon_hum`, `machine_hum`.
@@ -102,8 +127,26 @@ Also worth grabbing (bigger lifts, still free):
   controller + IK setup to graft onto `player_cat.glb`.
 - **TokisanGames/Terrain3D** (GDExtension) — heightmap terrain with
   texture splatting to replace `ProceduralTerrain` meshes for hero areas.
-- An HDRI sky pack (polyhaven.com, CC0) — drop into `assets/environments/`
-  and point `DayNightSky` at it for photoreal skies.
+
+### Web export budget (read before adding more)
+
+`godot/assets` is **~200 MB**. That is fine for the repo and for desktop,
+but it is the number to watch for a Web build. Three known reductions, none
+of them done:
+
+- `player_human.glb` is **23 MB**, the largest file here, and it is the
+  TPS-demo *mech* — cylinder head, weapon hardpoints, not a human. Since
+  the resolver now prefers PeriHuman for any known race, it only ever
+  serves as a race-less fallback.
+- The Poly Haven props embed their textures as base64 data URIs, which
+  costs ~33% over the raw bytes. Shipping `.gltf` + an external
+  `textures/` folder would recover roughly 20 MB; Godot imports that fine.
+- Several photoscans carry two full material sets (e.g. `fire_hydrant`
+  ships clean *and* weathered, which is why it is 6.4 MB) where only one
+  is used.
+
+All three are reversible — `scripts/fetch_polyhaven_*.{sh,py}` re-fetch
+everything from scratch.
 
 ## 4. Before the store page
 
