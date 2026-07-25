@@ -78,7 +78,8 @@ static func variant_names(slot: String) -> PackedStringArray:
 		return _variant_cache[slot]
 	var found := PackedStringArray()
 	for i in 26:
-		var name := "%s_%s" % [slot, char(97 + i)]
+		# String.chr, not the global char() — that was removed in Godot 4.
+		var name := "%s_%s" % [slot, String.chr(97 + i)]
 		if has_asset(name):
 			found.append(name)
 	_variant_cache[slot] = found
