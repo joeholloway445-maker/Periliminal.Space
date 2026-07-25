@@ -1,5 +1,7 @@
 shader_type sky;
-render_mode use_debanding;
+// No render_mode: sky shaders only accept use_half_res_pass /
+// use_quarter_res_pass / disable_fog, and this needs full resolution and
+// the scene's fog.
 
 // Photoreal sky for DayNightSky. Two equirectangular HDRI panoramas (a day
 // plate and a night plate) cross-faded by the sun's elevation, then
