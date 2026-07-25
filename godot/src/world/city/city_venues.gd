@@ -48,17 +48,15 @@ static func _venue(kind: String, label: String, icon: String, pos: Vector3,
 	root.position = pos
 	var tint: Color = VENUE_COLORS.get(kind, Color.GRAY)
 
-	# Storefront shell (real asset if installed).
+	# Storefront. A real `venue_<kind>` asset is trusted to carry its own
+	# interior; otherwise we build a walk-in room — floor, walls with a
+	# doorway gap, ceiling, props and lighting. The old fallback was a solid
+	# decorative box with no collision and no inside.
 	var shell := AssetLibrary.instance("venue_%s" % kind)
-	if shell == null:
-		var mi := MeshInstance3D.new()
-		var box := BoxMesh.new()
-		box.size = Vector3(14, 7, 12)
-		mi.mesh = box
-		mi.position.y = 3.5
-		mi.material_override = AssetLibrary.material("facade_concrete", tint.darkened(0.45), 0.3, 0.1, 0.65)
-		shell = mi
-	root.add_child(shell)
+	if shell != null:
+		root.add_child(shell)
+	else:
+		root.add_child(VenueInterior.build(kind, tint))
 
 	# A real opening door on the storefront face.
 	var door := CityDoor.new()
