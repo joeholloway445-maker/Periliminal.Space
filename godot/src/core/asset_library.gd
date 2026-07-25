@@ -99,8 +99,11 @@ static func has(slot: String) -> bool:
 ## Convenience: try the slot; if absent, call `fallback` (a Callable that
 ## returns Node3D). Applies the identity lens material to real assets'
 ## mesh surfaces too, so imported models still obey the race lens.
-static func instance_or(slot: String, fallback: Callable, lens_color: Color = Color.WHITE, lens_strength: float = 0.2) -> Node3D:
-	var node := instance(slot)
+## `variant_seed` picks among installed `<slot>_a`, `<slot>_b`, … so scattered
+## props vary; with no variants installed this is exactly `instance(slot)`.
+static func instance_or(slot: String, fallback: Callable, lens_color: Color = Color.WHITE,
+		lens_strength: float = 0.2, variant_seed: int = 0) -> Node3D:
+	var node := instance_variant(slot, variant_seed)
 	if node == null:
 		return fallback.call()
 	if lens_strength > 0.0:

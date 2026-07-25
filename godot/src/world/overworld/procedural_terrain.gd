@@ -127,9 +127,11 @@ func _scatter_props(root: Node3D, chunk: WorldChunk, size: float) -> void:
 		var px := rng.randf() * size
 		var pz := rng.randf() * size
 		# Real asset if installed (docs/SHIPPING.md), procedural otherwise.
+		# rng-derived seed so a ruins field scatters different statuary rather
+		# than the same pillar twelve times, stable per chunk via prop_seed.
 		var prop: Node3D = AssetLibrary.instance_or(slot,
 			func(): return _make_prop(biome, rng),
-			BIOME_COLORS.get(biome, Color.WHITE), 0.2)
+			BIOME_COLORS.get(biome, Color.WHITE), 0.2, rng.randi())
 		prop.position = Vector3(px, height_at(root.position.x + px, root.position.z + pz), pz)
 		root.add_child(prop)
 

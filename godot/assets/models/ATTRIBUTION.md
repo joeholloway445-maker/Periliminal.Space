@@ -62,3 +62,28 @@ not a stock download).
 - `metahuman_<race_id>.glb` optional per-race variants
 
 See `docs/VISUAL_DIRECTION_ESO.md`.
+
+## Realism pass — stylised models retired from live slots
+
+The Kenney humanoids and blocky props are CC0 and still in the repo under
+`kenney_characters/`, but none of them occupy a live `AssetLibrary` slot any
+more: their chibi/blocky proportions clash badly with the photoscanned
+Poly Haven surfaces, and with the slots empty the resolver falls through to
+`PeriHumanRig` — the parametric human — which is the realistic path and the
+only one that can express a race's substance. Kept, not deleted: a
+deliberately stylised reality layer would want exactly these.
+
+| Was | Now | Why |
+|---|---|---|
+| `npc_human_a…l` (Kenney Mini Characters) | `kenney_characters/mini-a…l.glb` | chibi proportions |
+| `npc_human.glb` (Kenney Blocky) | `kenney_characters/blocky-npc-legacy.glb` | blocky |
+| `player_human.glb` (TPS demo) | `mech_tps.glb` | it is a mech, not a human |
+
+Realistic fills added from [Poly Haven](https://polyhaven.com/models), CC0:
+
+| Slot | Model |
+|---|---|
+| `city_door` | `rollershutter_door` |
+| `landmark_longhorn_gate` | `large_iron_gate` |
+| `city_prop_a…e` | `concrete_cat_statue`, `painted_wooden_bench`, `fire_hydrant`, `planter_box_01`, `wooden_picnic_table` |
+| `ruin_pillar_a…c` | `gothic_statue`, `horse_statue_01`, `bronze_shark_statue` |

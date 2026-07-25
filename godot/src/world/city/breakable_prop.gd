@@ -23,7 +23,11 @@ var _prompt: Label3D
 
 func _ready() -> void:
 	add_to_group("breakable")
-	var real := AssetLibrary.instance("city_prop")
+	# Seeded on placement so a street shows benches, hydrants, planters and
+	# statues rather than the same prop repeated, while any given prop keeps
+	# its identity across streaming.
+	var real := AssetLibrary.instance_variant("city_prop",
+		hash(global_position.snapped(Vector3.ONE)))
 	if real != null:
 		_visual = real
 	else:
