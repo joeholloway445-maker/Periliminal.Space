@@ -1,11 +1,27 @@
 class_name DayNightSky
 extends Node3D
-## Procedural sky + sun with a full day/night cycle — built on Godot's
-## ProceduralSkyMaterial (no HDRI assets). The palette is catsino-flavored:
-## warm neon-violet dusks over Paw Vegas rather than a realistic horizon.
+## Sky + sun with a full day/night cycle. Two backends, picked automatically:
+##
+##   HDRI      when `assets/environments/<day_hdri>.hdr` and `<night_hdri>.hdr`
+##             are installed — photoreal CC0 panoramas cross-faded by sun
+##             elevation through `assets/shaders/hdri_day_night_sky.gdshader`,
+##             which keeps the per-frame identity tint over the photograph.
+##   Procedural otherwise — Godot's ProceduralSkyMaterial in a
+##             catsino-flavored palette: warm neon-violet dusks over Paw
+##             Vegas rather than a realistic horizon.
+##
+## Both are driven by the same `_apply()`, so the cycle, the sun colour, and
+## the frame tint behave identically either way; installing HDRIs is purely a
+## fidelity upgrade with no code change.
+
+const HDRI_DIR := "res://assets/environments/%s.hdr"
+const HDRI_SHADER := "res://assets/shaders/hdri_day_night_sky.gdshader"
 
 @export var day_length_seconds := 300.0
 @export var start_hour := 10.0 # 0-24
+## Swap these for any other panorama dropped into assets/environments/.
+@export var day_hdri := "kloofendal_overcast"
+@export var night_hdri := "dikhololo_night"
 ## Set by IdentityLens: the player's frame(s) tint every light this sky casts.
 var frame_tint := Color(1, 1, 1)
 var frame_energy_mult := 1.0
@@ -13,6 +29,7 @@ var frame_energy_mult := 1.0
 var _sun: DirectionalLight3D
 var _env: WorldEnvironment
 var _sky_mat: ProceduralSkyMaterial
+var _hdri_mat: ShaderMaterial
 var _time := 0.0
 
 const DAY_TOP := Color(0.30, 0.45, 0.80)
@@ -29,9 +46,13 @@ func _ready() -> void:
 	_sun.shadow_enabled = true
 	add_child(_sun)
 
-	_sky_mat = ProceduralSkyMaterial.new()
 	var sky := Sky.new()
-	sky.sky_material = _sky_mat
+	_hdri_mat = _build_hdri_material()
+	if _hdri_mat != null:
+		sky.sky_material = _hdri_mat
+	else:
+		_sky_mat = ProceduralSkyMaterial.new()
+		sky.sky_material = _sky_mat
 
 	var env := Environment.new()
 	env.background_mode = Environment.BG_SKY
@@ -86,12 +107,40 @@ func _apply(t: float) -> void:
 	_sun.light_energy = maxf(daylight * 1.3, 0.05) * frame_energy_mult
 	_sun.light_color = (Color(1.0, 0.95, 0.85).lerp(Color(1.0, 0.55, 0.35), duskness)) * frame_tint
 
+	if _hdri_mat != null:
+		_hdri_mat.set_shader_parameter("daylight", daylight)
+		_hdri_mat.set_shader_parameter("duskness", duskness)
+		_hdri_mat.set_shader_parameter("dusk_tint", Vector3(
+			DUSK_HORIZON.r, DUSK_HORIZON.g, DUSK_HORIZON.b))
+		_hdri_mat.set_shader_parameter("frame_tint", Vector3(
+			frame_tint.r, frame_tint.g, frame_tint.b))
+		_hdri_mat.set_shader_parameter("energy", frame_energy_mult)
+		return
+
 	var top := NIGHT_TOP.lerp(DAY_TOP, daylight).lerp(DUSK_TOP, duskness * 0.7)
 	var horizon := NIGHT_HORIZON.lerp(DAY_HORIZON, daylight).lerp(DUSK_HORIZON, duskness * 0.8)
 	_sky_mat.sky_top_color = top * frame_tint
 	_sky_mat.sky_horizon_color = horizon.lerp(horizon * frame_tint, 0.5)
 	_sky_mat.ground_bottom_color = horizon.darkened(0.6)
 	_sky_mat.ground_horizon_color = horizon
+
+## A ShaderMaterial blending the two installed panoramas, or null when either
+## HDRI (or the shader) is absent — the procedural sky then carries the cycle.
+func _build_hdri_material() -> ShaderMaterial:
+	var day_path := HDRI_DIR % day_hdri
+	var night_path := HDRI_DIR % night_hdri
+	if not (ResourceLoader.exists(day_path) and ResourceLoader.exists(night_path)
+			and ResourceLoader.exists(HDRI_SHADER)):
+		return null
+	var day_tex := load(day_path)
+	var night_tex := load(night_path)
+	if not (day_tex is Texture2D and night_tex is Texture2D):
+		return null
+	var mat := ShaderMaterial.new()
+	mat.shader = load(HDRI_SHADER)
+	mat.set_shader_parameter("day_panorama", day_tex)
+	mat.set_shader_parameter("night_panorama", night_tex)
+	return mat
 
 func current_hour() -> float:
 	return _day_fraction() * 24.0

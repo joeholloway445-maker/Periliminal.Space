@@ -23,6 +23,26 @@ Godot project earn it.
 | `extraction_gate.glb` | [Kenney — Space Kit](https://kenney.nl/assets/space-kit) | `gate_complex` | CC0 |
 | `crystal.glb` | Kenney — Space Kit | `rock_crystalsLargeA` | CC0 |
 | `rock_b.glb` | Terrain3D demo (Tokisan Games) | — | MIT |
+| `npc_human_a.glb` … `npc_human_l.glb` | [Kenney — Mini Characters](https://kenney.nl/assets/mini-characters) | `character-female-a…f`, `character-male-a…f` | CC0 |
+| `kenney_characters/blocky-a.glb` … `blocky-r.glb` | [Kenney — Blocky Characters](https://kenney.nl/assets/blocky-characters) | `character-a…r` | CC0 |
+| `polyhaven/*.glb` (28 props) | [Poly Haven — Models](https://polyhaven.com/models) | see `scripts/fetch_polyhaven_models.py` | CC0 |
+
+## Textures — `godot/assets/textures/`
+
+45 PBR maps (albedo / normal / rough / metallic) covering every slot
+`AssetLibrary.material()` reads, plus five interior sets. All from
+[Poly Haven](https://polyhaven.com/textures), CC0. Re-fetch or change
+resolution with `bash scripts/fetch_polyhaven_textures.sh` (`RES=2k` for a
+desktop-only build); the slot→asset mapping lives in that script.
+
+## HDRI skies — `godot/assets/environments/`
+
+12 panoramas from [Poly Haven — HDRIs](https://polyhaven.com/hdris), CC0,
+1k `.hdr`. `DayNightSky` cross-fades a day and a night plate through
+`assets/shaders/hdri_day_night_sky.gdshader`, which re-applies the per-frame
+identity tint so a photographic sky still differs per viewer. Swap which two
+are used via `DayNightSky.day_hdri` / `night_hdri`; with none installed the
+procedural sky carries the cycle exactly as before.
 
 All Kenney packs above via [kenney.nl/assets](https://kenney.nl/assets) —
 same source AssetLibrary/SHIPPING.md already pointed at. Each is a single

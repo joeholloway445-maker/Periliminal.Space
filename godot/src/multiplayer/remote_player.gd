@@ -33,7 +33,9 @@ func _rebuild_body() -> void:
 	scale = Vector3.ONE * float(seen.view.get("apparent_scale", 1.0))
 
 	var race_id := str(profile.get("race_id", ""))
-	var body := MetahumanCharacter.build_npc(visual_mode, race_id)
+	# peer id seeds the body pick so a race-less peer keeps one appearance
+	# instead of re-rolling every time they stream back into view.
+	var body := MetahumanCharacter.build_npc(visual_mode, race_id, peer_id.hash())
 	# MetahumanCharacter.build_npc's default body is a PeriHumanRig (a whole
 	# skeleton+skin hierarchy, not a bare mesh) — `is MeshInstance3D` never
 	# matched it, so the perceived material/view-scale style silently never

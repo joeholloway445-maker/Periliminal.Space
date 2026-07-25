@@ -43,6 +43,7 @@ const TEXTURE_EXTENSIONS := ["png", "jpg", "webp"]
 static var _cache: Dictionary = {}
 static var _audio_cache: Dictionary = {}
 static var _texture_cache: Dictionary = {}
+static var _variant_cache: Dictionary = {}
 
 ## Returns an instantiated Node3D for the slot, or null if no real asset
 ## is installed (caller then builds its procedural fallback).
@@ -59,6 +60,29 @@ static func instance(slot: String) -> Node3D:
 				return res.instantiate()
 	_cache[slot] = null
 	return null
+
+## Variant-aware slot pick. When a pack of interchangeable bodies/props is
+## installed as `<slot>_a`, `<slot>_b`, … one is chosen by `variant_seed`;
+## otherwise this is just `instance(slot)`. The pick is deterministic so a
+## given NPC keeps the same body every time it streams back in — a crowd is
+## varied, but nobody changes face when you turn around.
+static func instance_variant(slot: String, variant_seed: int) -> Node3D:
+	var names := variant_names(slot)
+	if names.is_empty():
+		return instance(slot)
+	return instance(names[absi(variant_seed) % names.size()])
+
+## Installed `<slot>_<letter>` variants, in a stable order ("" if none).
+static func variant_names(slot: String) -> PackedStringArray:
+	if _variant_cache.has(slot):
+		return _variant_cache[slot]
+	var found := PackedStringArray()
+	for i in 26:
+		var name := "%s_%s" % [slot, char(97 + i)]
+		if has_asset(name):
+			found.append(name)
+	_variant_cache[slot] = found
+	return found
 
 ## True if a real (non-procedural) asset file exists for the slot (no instantiate).
 static func has_asset(slot: String) -> bool:

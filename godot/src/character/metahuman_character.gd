@@ -51,22 +51,40 @@ static func build_player(visual_mode: String = "identity") -> Node3D:
 		return native
 	return _rig_from_profile(false)
 
-## Build a remote / NPC body.
-static func build_npc(visual_mode: String = "identity", race_id: String = "") -> Node3D:
+## Build a remote / NPC body. `body_seed` (a peer id / citizen id hash) picks
+## which stock humanoid an anonymous crowd member wears, and seeds the genome
+## of a race-less PeriHuman, so a street is not one face repeated.
+static func build_npc(visual_mode: String = "identity", race_id: String = "",
+		body_seed: int = 0) -> Node3D:
 	if visual_mode == "cat":
 		var cat := AssetLibrary.instance(CAT_NPC)
 		if cat != null:
 			return _as_root(cat)
+	# Authored MetaHuman exports are deliberate high-fidelity art, so they
+	# still outrank everything below.
 	var meta := _try_slots([
 		"metahuman_%s" % race_id if not race_id.is_empty() else "",
 		META_NPC,
-		HUMAN_NPC,
-		HUMAN_PLAYER,
 	])
 	if meta != null:
 		_try_apply_metahuman_materials(meta)
 		return meta
-	var native := _native_npc(race_id)
+	# A known race outranks the stock humanoids: PeriHuman carries that race's
+	# genome and substance, while a stock body renders all 20 races
+	# identically. HUMAN_NPC/HUMAN_PLAYER were placeholders from before a
+	# native human existed — keeping them above this made every remote player
+	# the same imported mesh and quietly disabled the race lens on bodies.
+	if not race_id.is_empty():
+		return _native_npc(race_id)
+	# No race to honour: an anonymous citizen. Stock humanoid packs give real
+	# silhouette variety here, which is exactly what a crowd wants.
+	var stock := AssetLibrary.instance_variant(HUMAN_NPC, body_seed)
+	if stock == null:
+		stock = AssetLibrary.instance_variant(HUMAN_PLAYER, body_seed)
+	if stock != null:
+		_try_apply_metahuman_materials(stock)
+		return _as_root(stock)
+	var native := _native_npc(race_id, "", "", body_seed)
 	if native != null:
 		return native
 	return _rig_from_profile(true)
@@ -108,12 +126,15 @@ static func _native_player() -> Node3D:
 ## Native PeriHuman for an NPC: race (+ frame/mod if the NPC has them) is
 ## composed via HumanIdentity so their species reads correctly, seeded off
 ## the race id so the same citizen always wears the same face everywhere.
-static func _native_npc(race_id: String, frame_id: String = "", mod_id: String = "") -> Node3D:
+static func _native_npc(race_id: String, frame_id: String = "", mod_id: String = "",
+		body_seed: int = 0) -> Node3D:
 	var rig := PeriHumanRig.new()
 	if not race_id.is_empty():
 		rig.dna = HumanIdentity.build(race_id, frame_id, mod_id, race_id.hash())
 	else:
-		rig.dna = HumanDNA.random(1337)
+		# A fixed seed here made every race-less citizen the same person; the
+		# caller's body_seed (peer/citizen id) keeps each one stable but distinct.
+		rig.dna = HumanDNA.random(body_seed if body_seed != 0 else 1337)
 	rig.auto_lod = true
 	return rig
 
