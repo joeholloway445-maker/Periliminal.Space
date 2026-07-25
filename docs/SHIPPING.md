@@ -40,38 +40,50 @@ The engine-side pipeline is done: `AssetLibrary` checks
 game automatically, keeping the identity-lens shading. The environment
 already runs ACES tonemapping, SSAO, SSIL, volumetric fog, and glow.
 
-Because this sandbox's proxy can't fetch external repos, download these
-yourself (all free/CC0, no attribution required) and drop the models in:
+**Done** — these slots are filled in the repo today (see
+`godot/assets/models/ATTRIBUTION.md` for exact source file per model, all
+CC0 from kenney.nl, no attribution legally required):
+
+| Slot | Filled with |
+|---|---|
+| `creature.glb` | Kenney Mini Dungeon `character-orc` |
+| `tree.glb`, `rock.glb` | Kenney Nature Kit |
+| `crystal.glb` | Kenney Space Kit `rock_crystalsLargeA` |
+| `ruin_pillar.glb` | Kenney Graveyard Kit `column-large` |
+| `extraction_gate.glb` | Kenney Space Kit `gate_complex` |
+| `harvest_node.glb` | Kenney Mini Dungeon `chest` |
+| `apartment_prop.glb` | Kenney Furniture Kit `loungeSofa` |
+| `npc_human.glb` | Kenney Blocky Characters `character-a` |
+
+**Still open** — no free model was found that clearly fit (the
+procedural fallback carries these until you have one):
 
 | Get this | From | Rename into `godot/assets/models/` as |
 |---|---|---|
-| A rigged cat/creature character | **Quaternius "Animated Animals"** (quaternius.com) or Kenney "Animal Pack" | `player_cat.glb`, `npc_cat.glb` |
-| Monsters/creatures | **Quaternius "Ultimate Monsters"** | `creature.glb` |
-| Trees, rocks | **Kenney "Nature Kit"** (kenney.nl) or Quaternius "Ultimate Nature" | `tree.glb`, `rock.glb` |
-| Crystals | Quaternius "Cave Kit" / KayKit Dungeon | `crystal.glb` |
-| Ruins/pillars | **KayKit "Dungeon Remastered"** (kaylousberg.itch.io) | `ruin_pillar.glb` |
-| Sci-fi gate/portal | Quaternius "Ultimate Space Kit" | `extraction_gate.glb` |
-| Loot containers | KayKit Dungeon (chests) | `harvest_node.glb` |
-| Furniture (apartment) | Kenney "Furniture Kit" | `apartment_prop.glb` |
+| A rigged cat/creature character | **Quaternius "Animated Animals"** (quaternius.com, itch.io claim required) or Kenney "Animal Pack" | `player_cat.glb`, `npc_cat.glb` |
 
 ### Mega-city assets (DFW Metroplex hubs)
 
 The mega-city is **fully functional procedurally today** — every hub
 (Dallas, Fort Worth, Denton, Arlington) builds a real city on entry:
 road grid, per-block buildings, streetlights + neon wired to the
-day/night rig, and a per-district sound bed. Drop these in to replace the
-procedural shells with real art — zero code changes (`MegaCityBuilder`
-asks `AssetLibrary` for each slot first):
+day/night rig, and a per-district sound bed. All of the slots below are
+now **filled** with real art from Kenney's City Kit family (Commercial /
+Suburban / Industrial / Roads) — zero code changes needed, `MegaCityBuilder`
+already asked `AssetLibrary` for each slot first and now finds them:
 
-| Get this | From | Rename into `godot/assets/models/` as |
-|---|---|---|
-| Skyscrapers | **Kenney "City Kit (Commercial)"** / Quaternius "Ultimate Modular Buildings" | `city_tower.glb`, `city_lowrise.glb` |
-| Houses | Kenney "City Kit (Suburban)" | `city_house.glb` |
-| Warehouses | Kenney "City Kit" industrial pieces | `city_industrial.glb` |
-| Roads/sidewalks | Kenney "City Kit (Roads)" | `road_segment.glb`, `sidewalk.glb` |
-| Street lamps | Kenney "City Kit" props | `streetlight.glb` |
-| Signage | any neon/billboard prop | `neon_sign.glb` |
-| Benches/hydrants/bins | Kenney "City Kit" props | `city_prop.glb` |
+| Slot | Filled with |
+|---|---|
+| `city_tower.glb`, `city_lowrise.glb` | Kenney City Kit (Commercial) |
+| `city_house.glb` | Kenney City Kit (Suburban) |
+| `city_industrial.glb` | Kenney City Kit (Industrial) |
+| `road_segment.glb`, `sidewalk.glb`, `streetlight.glb`, `neon_sign.glb` | Kenney City Kit (Roads) |
+| `city_prop.glb` | Kenney City Kit (Suburban) `planter` |
+
+Swap any of these for a different pick from the same packs (each is one
+cherry-picked file out of 25-70+ per pack under
+`godot/assets/models/ATTRIBUTION.md`'s linked sources) whenever you want
+more variety per hub.
 
 **Interchangeable textures** — drop PBR maps into `godot/assets/textures/`
 named `<slot>_albedo.png` (+ `_normal`, `_rough`, `_metallic`,

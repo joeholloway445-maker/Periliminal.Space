@@ -17,11 +17,18 @@ Details, pins, and enable steps: [`docs/ADDONS.md`](ADDONS.md).
 
 ## 1. Zero-code visual wins (CC0 model packs)
 
-[`docs/SHIPPING.md`](SHIPPING.md) §3 already maps Kenney / Quaternius /
-KayKit packs onto `AssetLibrary` slots under `godot/assets/models/`. Drop
-files in — no code changes. Same pattern for city textures
-(`godot/assets/textures/`) and city ambience loops
-(`godot/assets/audio/`).
+[`docs/SHIPPING.md`](SHIPPING.md) §3 maps Kenney / Quaternius / KayKit
+packs onto `AssetLibrary` slots under `godot/assets/models/`. Most of the
+hard-mesh slots (city buildings/roads/props, tree, rock, crystal,
+ruin_pillar, extraction_gate, harvest_node, apartment_prop, npc_human) are
+now **filled** with real CC0 Kenney models — see
+[`godot/assets/models/ATTRIBUTION.md`](../godot/assets/models/ATTRIBUTION.md)
+for exactly which file came from which pack. Remaining slots (still
+procedural fallback): `player_cat`/`npc_cat` (no free cat-creature model
+found) and the `metahuman_*` slots (meant to be your own MetaHuman
+exports, not a stock download). Drop replacements in any time — no code
+changes. Same pattern for city textures (`godot/assets/textures/`) and
+city ambience loops (`godot/assets/audio/`).
 
 ---
 
