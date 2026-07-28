@@ -176,12 +176,14 @@ func attempt_entry() -> void:
 	if PeriliminalRuns:
 		PeriliminalRuns.begin_run(_party_ids(party))
 
-## Party membership. There is no party system yet, so this defaults to solo
-## and a party-finder can fill `party_members` before calling attempt_entry()
-## — the gate then decides whether that group is enough.
+## Party membership: PartyManager when one is formed, an explicit override
+## for a party-finder UI, solo otherwise. The gate decides whether the group
+## that turns up is enough.
 func _party() -> Array:
 	if not party_members.is_empty():
 		return party_members
+	if PartyManager:
+		return PartyManager.members()
 	return [_self_id()]
 
 func _party_ids(party: Array) -> Array[String]:
