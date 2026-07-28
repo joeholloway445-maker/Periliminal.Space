@@ -69,6 +69,55 @@ var _completed: Dictionary = {}
 func _ready() -> void:
 	_load()
 	_expire_stale()
+	_subscribe()
+
+## Missions listen to the signals the game already emits rather than asking
+## four working systems to call us. Keeping the wiring here means a mission
+## can change what it tracks without touching combat, territory or PVXC.
+func _subscribe() -> void:
+	if CombatRealtime:
+		CombatRealtime.entity_defeated.connect(_on_entity_defeated)
+	if TerritoryControl:
+		TerritoryControl.chunk_claimed.connect(_on_chunk_claimed)
+	if HideoutRegistry:
+		HideoutRegistry.site_changed.connect(_on_site_changed)
+	if PvxcManager:
+		PvxcManager.run_ended.connect(_on_pvxc_run_ended)
+
+## Only defeats we caused count, and only against another player — killing
+## wildlife is not a bounty. A crown holder counts double, per Crown
+## Challenge's blurb.
+func _on_entity_defeated(entity_id: String, conqueror_id: String, _loot: Array) -> void:
+	if conqueror_id != _self_id():
+		return
+	if not _is_player(entity_id):
+		return
+	var worth := 1
+	if CrownManager and not CrownManager.crowns_of(entity_id).is_empty():
+		worth = 2
+	report_event("player_defeated", worth)
+
+func _on_chunk_claimed(_coord: Vector2i, alliance: String) -> void:
+	if alliance == _guild_id() or alliance == _self_id():
+		report_event("territory_held")
+
+func _on_site_changed(site_id: String) -> void:
+	if HideoutRegistry == null:
+		return
+	# site_changed fires for defender changes too; only a site our guild now
+	# owns counts as a claim.
+	var holder := str(HideoutRegistry.owner_of(site_id))
+	if not holder.is_empty() and holder == _guild_id():
+		report_event("hideout_claimed")
+
+func _on_pvxc_run_ended(extracted: bool, _loot: int) -> void:
+	if extracted:
+		report_event("extracted_contested")
+
+## A defeated id belongs to a player rather than an entity when it is not a
+## dex id — those are shaped like "SC-P5" / "FL-MT9".
+func _is_player(entity_id: String) -> bool:
+	return not RegEx.create_from_string("^[A-Z]{2}-[A-Z]{1,2}\\d+$").search(entity_id)
 
 # ------------------------------------------------------------------ offers
 
