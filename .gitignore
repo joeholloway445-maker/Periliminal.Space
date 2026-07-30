@@ -49,3 +49,6 @@ build/
 # Python bytecode from the fetch/export scripts
 __pycache__/
 *.pyc
+
+# Generated viewer output — rebuild with scripts/build_omnidex_viewer.py
+build/

@@ -241,14 +241,32 @@ def load_subjects():
 
 # --- composition -----------------------------------------------------------
 
-def compose(subject, action=None, location=None, mode="sprite"):
-    """<subject> doing <action> at <location>, in style-bible order."""
+def compose(subject, action=None, location=None, mode="sprite",
+            frame=None, morph=None):
+    """<subject> doing <action> at <location>, in style-bible order.
+
+    Frames and morph rigs STACK onto a race rather than standing alone: a
+    frame is powered armour worn by a body, and a morph rig reshapes the body
+    already wearing it. So a frame view is race+frame and a mod view is
+    race+frame+mod — the same layering HumanIdentity does in engine, which is
+    where the 20x20x20 identity space comes from.
+    """
     parts = [LOCKED_PREAMBLE]
 
     if mode == "sprite":
         # Style bible rule 3: background stays neutral regardless of lore.
         parts.append(SPRITE_FRAMING)
     parts.append("%s — %s" % (subject["name"], subject["description"]))
+
+    # Worn over the body, described after it so the base reads first.
+    if frame:
+        parts.append("Wearing the %s: %s" % (frame["name"], frame["description"]))
+    if morph:
+        parts.append("Body reshaped by the %s: %s" % (morph["name"], morph["description"]))
+    if frame or morph:
+        parts.append("The underlying species must stay recognisable through "
+                     "the armour and the reshaping — this is the same being, "
+                     "equipped and altered, not a different creature.")
 
     if action:
         parts.append("Pose: %s." % ACTIONS.get(action, action))
@@ -268,6 +286,10 @@ def main():
     ap.add_argument("--action")
     ap.add_argument("--location")
     ap.add_argument("--mode", choices=["sprite", "scene"], default="sprite")
+    ap.add_argument("--frame", help="stack a frame onto the subject race")
+    ap.add_argument("--morph", help="stack a morph rig onto the subject race")
+    ap.add_argument("--frames", help="comma-separated, or 'all', for --matrix")
+    ap.add_argument("--morphs", help="comma-separated, or 'all', for --matrix")
     ap.add_argument("--matrix", action="store_true", help="every combination")
     ap.add_argument("--kind",
                     choices=["race", "entity", "frame", "morph_rig", "all"],
@@ -297,7 +319,9 @@ def main():
         if not s:
             print("no such subject: %s (try --list)" % args.subject)
             return 1
-        print(compose(s, args.action, args.location, args.mode))
+        fr = subjects.get("frame_" + args.frame) if args.frame else None
+        mo = subjects.get("morph_" + args.morph) if args.morph else None
+        print(compose(s, args.action, args.location, args.mode, fr, mo))
         return 0
 
     if not args.matrix:
@@ -309,18 +333,36 @@ def main():
     picked = {k: v for k, v in subjects.items()
               if args.kind == "all" or v["kind"] == args.kind}
 
+    def _pick(prefix, arg):
+        if not arg:
+            return [None]
+        keys = [k for k in subjects if k.startswith(prefix)]
+        if arg == "all":
+            return sorted(keys)
+        return [prefix + x.strip() for x in arg.split(",")
+                if prefix + x.strip() in subjects]
+
+    frames = _pick("frame_", args.frames)
+    morphs = _pick("morph_", args.morphs)
+
     rows = []
     for sid, s in sorted(picked.items()):
+      for fk in frames:
+       for mk in morphs:
+        fr = subjects.get(fk) if fk else None
+        mo = subjects.get(mk) if mk else None
+        suffix = ("_" + fk[6:] if fk else "") + ("_" + mk[6:] if mk else "")
         for a in actions:
             for loc in locations:
                 rows.append({
                     "subject": sid, "kind": s["kind"], "name": s["name"],
                     "action": a, "location": loc, "mode": args.mode,
-                    "sprite_target": "godot/assets/entities/%s%s%s.png" % (
-                        sid.lower(), "_" + a if a != "idle" else "",
+                    "frame": fk[6:] if fk else "", "morph": mk[6:] if mk else "",
+                    "sprite_target": "godot/assets/entities/%s%s%s%s.png" % (
+                        sid.lower(), suffix, "_" + a if a != "idle" else "",
                         "_" + loc if loc else ""),
-                    "prompt": compose(s, a, loc, args.mode),
-                    "sprite_prompt": compose(s, a, loc, args.mode),
+                    "prompt": compose(s, a, loc, args.mode, fr, mo),
+                    "sprite_prompt": compose(s, a, loc, args.mode, fr, mo),
                     "negative_prompt": NEGATIVE,
                     "seed": int(s["seed"]) if str(s.get("seed") or "").isdigit() else None,
                     "target": "",
