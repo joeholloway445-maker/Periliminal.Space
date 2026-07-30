@@ -19,6 +19,7 @@ Providers are thin adapters — `submit` returns a task id, `poll` returns
 """
 
 import argparse
+import concurrent.futures
 import json
 import os
 import subprocess
@@ -301,6 +302,11 @@ def main():
     ap.add_argument("--limit", type=int, default=None)
     ap.add_argument("--jobs", help="job file (default build/asset_jobs.jsonl, "
                     "or a matrix from scripts/prompt_templates.py)")
+    ap.add_argument("--workers", type=int, default=1,
+                    help="parallel requests. The bottleneck is the image "
+                         "service's per-image time, not this script, so N "
+                         "workers is roughly an N-times speedup until the "
+                         "service starts throttling. 8 is a sane start.")
     ap.add_argument("--dry-run", action="store_true",
                     help="list the batch without submitting anything")
     args = ap.parse_args()
@@ -329,18 +335,32 @@ def main():
     provider = cls(key)
 
     ok = failed = 0
-    for i, job in enumerate(jobs, 1):
-        print("[%d/%d] %s" % (i, len(jobs),
-              job["sprite_target"] if image_targets else job["target"]), flush=True)
+    done = [0]
+
+    def _one(job):
+        target = job["sprite_target"] if image_targets else job["target"]
         good, err = run_job(provider, job)
+        done[0] += 1
         if good:
-            size = os.path.getsize(os.path.join(REPO,
-                job["sprite_target"] if image_targets else job["target"])) / 1e6
-            print("        ok, %.2f MB" % size)
-            ok += 1
+            size = os.path.getsize(os.path.join(REPO, target)) / 1e6
+            print("[%d/%d] %s  ok, %.2f MB" % (done[0], len(jobs), target, size),
+                  flush=True)
         else:
-            print("        !! %s" % err)
-            failed += 1
+            print("[%d/%d] %s  !! %s" % (done[0], len(jobs), target, err), flush=True)
+        return good
+
+    if args.workers > 1:
+        # Each worker is an independent request; the provider objects hold no
+        # per-request state, so they are safe to share.
+        with concurrent.futures.ThreadPoolExecutor(max_workers=args.workers) as pool:
+            for good in pool.map(_one, jobs):
+                ok += 1 if good else 0
+                failed += 0 if good else 1
+    else:
+        for job in jobs:
+            good = _one(job)
+            ok += 1 if good else 0
+            failed += 0 if good else 1
 
     print("\n%d generated, %d failed" % (ok, failed))
     if ok:
