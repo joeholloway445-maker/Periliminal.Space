@@ -7,6 +7,12 @@ class_name CharacterStats
 @export var base_spd: int = 50
 @export var base_lck: int = 50
 @export var base_sty: int = 50
+## Merged in from the Omni Dex axes. Resonance governs how strongly a build
+## couples to the layer it stands in (Focus economy, perception reach);
+## Frequency governs how fast that coupling cycles (proc rate, tick speed).
+## Both start at 50 like the originals so no existing build shifts.
+@export var base_rsn: int = 50
+@export var base_frq: int = 50
 
 var _frame_bonus: Dictionary = {}
 var _mod_bonus: Dictionary = {}
@@ -15,7 +21,10 @@ var _companion_bonus: Dictionary = {}
 var _consumable_bonus: Dictionary = {}
 var _faction_mult: float = 1.0
 
-const BASE_STATS = ["pow", "res", "spd", "lck", "sty"]
+## The unified axis set: the five original stats plus the two the Omni Dex
+## roster is authored against. Power/Agility from that roster map onto
+## pow/spd rather than duplicating them — see OmniDex.stat_bonus_merged().
+const BASE_STATS = ["pow", "res", "spd", "lck", "sty", "rsn", "frq"]
 
 func get_stat(stat: String) -> int:
 	var base = _get_base(stat)
@@ -39,6 +48,8 @@ func _get_base(stat: String) -> int:
 		"spd": return base_spd
 		"lck": return base_lck
 		"sty": return base_sty
+		"rsn": return base_rsn
+		"frq": return base_frq
 	return 0
 
 func apply_frame(frame_id: String) -> void:

@@ -422,6 +422,28 @@ const MORPH_RIGS: Dictionary = {
 	},
 }
 
+## Omni Dex axes onto the unified stat set. Power and Agility are the same
+## axes the engine already called pow and spd, so they merge rather than
+## duplicate; Resonance and Frequency are genuinely new and keep their own
+## keys. Returns engine-shaped {pow, spd, rsn, frq, ...} deltas.
+const AXIS_MAP := {
+	"power": "pow", "agility": "spd",
+	"resonance": "rsn", "frequency": "frq",
+	"vitality": "res", "focus": "rsn",
+}
+
+## A race's stat_bonus translated into the engine's keys, scaled so an Omni
+## Dex point (1-2) reads like the engine's bonuses rather than vanishing
+## against a base of 50.
+static func stat_bonus_merged(race_id: String, per_point: int = 4) -> Dictionary:
+	var out: Dictionary = {}
+	for axis in race(race_id).get("stat_bonus", {}):
+		var key := str(AXIS_MAP.get(str(axis), ""))
+		if key.is_empty():
+			continue
+		out[key] = int(out.get(key, 0)) + int(race(race_id).stat_bonus[axis]) * per_point
+	return out
+
 static func race(id: String) -> Dictionary:
 	return RACES.get(id, {})
 

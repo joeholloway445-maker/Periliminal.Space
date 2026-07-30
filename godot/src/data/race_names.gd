@@ -4,11 +4,10 @@ class_name RaceNames
 ##
 ## This is the answer to the two-roster split (docs/OMNIDEX.md): the Omni Dex
 ## roster and the canon roster were never two sets of races, they are two
-## registers of naming for the same twenty substances. The Metroplex files
-## you as a Terran on a work visa. The Liminal knows you as Keth. The
-## Periliminal does not use either word — down there you are Gutterkin,
-## because that is what you demonstrably ARE once the paperwork stops
-## applying.
+## registers of naming for the same twenty substances. You are Crownless —
+## that is what you are, and what almost everyone calls you. The Metroplex
+## files you as a Terran on a work visa because its forms have no box for
+## Crownless. The Liminal, older and set in its ways, still says Keth.
 ##
 ## It fits what the lens already does. A being's appearance is a function of
 ## who is looking; this makes its NAME a function of where you are looking
@@ -18,24 +17,31 @@ class_name RaceNames
 ## Registers:
 ##   civil       Hyperliminal / Supraliminal — casino floor and Metroplex
 ##               paperwork. Mundane, administrative, deliberately boring.
-##   canon       Liminal / Subliminal / Extraliminal — the working name, what
-##               players call each other. The existing roster.
-##   true        Periliminal — the Omni Dex register. Ability-led and
-##               unflattering, because it names what a thing does, not what
-##               it would like to be called.
+##   true        THE PRIMARY NAME. The Omni Dex register — ability-led, what
+##               a thing demonstrably is. This is what players call each
+##               other and what the UI shows by default.
+##   canon       The old working roster (Keth, Lumari, ...), kept because it
+##               is the id every body, gene and material keys on, and because
+##               it still reads as the Liminal's own older vocabulary.
 ##
 ## `canon` is the id everything else keys on (bodies, genes, materials). The
 ## other two are display strings only, so renaming is free and no gameplay
 ## data moves.
 
+## Omni Dex names are the default everywhere; the civil register is the
+## paperwork name the mundane layers use, and the canon register survives as
+## the Liminal's older vocabulary.
 const LAYER_REGISTER := {
 	"hyperliminal": "civil",
 	"supraliminal": "civil",
 	"liminal": "canon",
-	"subliminal": "canon",
-	"extraliminal": "canon",
+	"subliminal": "true",
+	"extraliminal": "true",
 	"periliminal": "true",
 }
+
+## With no layer context, show the Omni Dex name.
+const DEFAULT_REGISTER := "true"
 
 ## canon id -> {civil, true}. `true` names come from the Omni Dex roster;
 ## pairings marked PROVISIONAL below are the ones docs/OMNIDEX_MAPPING.md
@@ -43,7 +49,7 @@ const LAYER_REGISTER := {
 ## names, not stat merges, so swapping one costs nothing.
 const NAMES := {
 	# --- settled: the concept is the same thing named twice ---
-	"Keth":    {"civil": "Terran",    "true": "gutterkin"},
+	"Keth":    {"civil": "Terran",    "true": "crownless"},
 	"Lumari":  {"civil": "Solaran",   "true": "lumenari"},
 	"Vex":     {"civil": "Transient", "true": "veilstriders"},
 	"Kryos":   {"civil": "Borean",    "true": "coldmarrow"},
@@ -56,7 +62,7 @@ const NAMES := {
 	# --- PROVISIONAL: defensible, not settled ---
 	"Geara":   {"civil": "Technician", "true": "echoes"},
 	"Azhul":   {"civil": "Augur",      "true": "chronarchs"},
-	"Ferox":   {"civil": "Rangeborn",  "true": "crownless"},
+	"Ferox":   {"civil": "Rangeborn",  "true": "gutterkin"},
 	"Petra":   {"civil": "Quarryman",  "true": "glassborn"},
 	"Sanguis": {"civil": "Hemate",     "true": "rotweavers"},
 	"Igni":    {"civil": "Calderan",   "true": "ashen_choir"},
@@ -72,7 +78,7 @@ static func display(canon_id: String, layer_id: String = "") -> String:
 	var entry: Dictionary = NAMES.get(canon_id, {})
 	if entry.is_empty():
 		return canon_id
-	var register := str(LAYER_REGISTER.get(layer_id, "canon"))
+	var register := str(LAYER_REGISTER.get(layer_id, DEFAULT_REGISTER))
 	if register == "canon":
 		return canon_id
 	var name := str(entry.get(register, ""))

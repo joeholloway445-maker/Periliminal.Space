@@ -160,7 +160,8 @@ static func material(slot: String, base_color: Color, lens_strength: float = 0.2
 	var mat := IdentityLens.world_material(base_color, lens_strength) if IdentityLens else StandardMaterial3D.new()
 	mat.metallic = metallic
 	mat.roughness = roughness
-	var maps := _texture_maps(slot)
+	# Per-race surfaces when installed; the lens tints on top either way.
+	var maps := _texture_maps(slot, _viewer_race())
 	if maps.has("albedo"):
 		mat.albedo_texture = maps["albedo"]
 	if maps.has("normal"):
@@ -176,20 +177,52 @@ static func material(slot: String, base_color: Color, lens_strength: float = 0.2
 		mat.emission_energy_multiplier = 1.0
 	return mat
 
-static func _texture_maps(slot: String) -> Dictionary:
-	if _texture_cache.has(slot):
-		return _texture_cache[slot]
-	var maps: Dictionary = {}
+## Texture maps for a slot, preferring a per-race set when one is installed.
+##
+## The identity lens tints a shared texture, which makes the same wall a
+## different COLOUR per race. Dropping `<slot>__<race>_albedo.png` into
+## assets/textures/ goes further and makes it a different SURFACE — a
+## crystalline race can be given faceted glass where a biotech race gets
+## grown chitin, on the same geometry. Any race without its own set falls
+## back to the shared one, so a partial set is fine: fill in the races you
+## have art for and the rest keep the lens tint.
+##
+## Double underscore separates slot from race so slot names containing "_"
+## (facade_glass, city_prop) stay unambiguous.
+static func _texture_maps(slot: String, race_id: String = "") -> Dictionary:
+	var key_id := "%s__%s" % [slot, race_id] if not race_id.is_empty() else slot
+	if _texture_cache.has(key_id):
+		return _texture_cache[key_id]
+
 	var suffixes := {"albedo": "_albedo", "normal": "_normal", "rough": "_rough",
 		"metal": "_metallic", "emis": "_emissive"}
+	var maps: Dictionary = {}
 	for key in suffixes:
 		for ext in TEXTURE_EXTENSIONS:
-			var path := "res://assets/textures/%s%s.%s" % [slot, suffixes[key], ext]
+			var path := "res://assets/textures/%s%s.%s" % [key_id, suffixes[key], ext]
 			if ResourceLoader.exists(path):
 				maps[key] = load(path)
 				break
-	_texture_cache[slot] = maps
+
+	# A race set that exists but is incomplete inherits the missing maps from
+	# the shared slot rather than rendering half-textured.
+	if not race_id.is_empty():
+		if maps.is_empty():
+			maps = _texture_maps(slot)
+		else:
+			var shared := _texture_maps(slot)
+			for k in shared:
+				if not maps.has(k):
+					maps[k] = shared[k]
+
+	_texture_cache[key_id] = maps
 	return maps
 
+## The race whose surfaces the local player sees everything through.
+static func _viewer_race() -> String:
+	if PlayerProfile:
+		return str(PlayerProfile.selected_race_id)
+	return ""
+
 static func has_texture(slot: String) -> bool:
-	return not _texture_maps(slot).is_empty()
+	return not _texture_maps(slot, _viewer_race()).is_empty()
