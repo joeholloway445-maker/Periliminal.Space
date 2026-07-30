@@ -138,9 +138,47 @@ SCENE_FRAMING = (
 )
 NEGATIVE = (
     "anime, cartoon, cel shading, illustration, flat colors, chibi, low poly, "
-    "text, watermark, multiple subjects, blurry, deformed anatomy, extra "
-    "limbs beyond described"
+    "text, watermark, multiple subjects, blurry, "
+    # Anatomy failures are the usual way a generated character is unusable,
+    # and they need naming individually — "deformed anatomy" alone does not
+    # stop six fingers or a backwards knee.
+    "deformed anatomy, extra limbs beyond described, extra fingers, missing "
+    "fingers, fused fingers, malformed hands, mangled hands, extra arms, "
+    "extra legs, backwards joints, broken knees, twisted spine, asymmetric "
+    "eyes, misaligned eyes, extra eyes beyond described, floating limbs, "
+    "disconnected body parts, melted face, duplicate head, cropped limbs"
 )
+
+ANATOMY = (
+    "Anatomically correct: five fingers per hand unless the description says "
+    "otherwise, joints bending the way real joints bend, limbs attached and "
+    "proportioned, eyes level and matched, hands fully rendered and "
+    "unobscured."
+)
+
+# 2. Appeal axis. A roster where everything is a horror is as monotonous as
+#    one where everything is beautiful — the lore has both, so this is
+#    explicit rather than left to the model's mood.
+ASPECTS = {
+    "noble": "Striking and dignified — a being you would want to look at. "
+             "Clean silhouette, deliberate ornament, composed posture, "
+             "features that read as beautiful rather than threatening.",
+    "fearsome": "Genuinely frightening — wrong in a way that reads at a "
+                "glance. Predatory proportions, unsettling stillness, "
+                "features that suggest it does not think like you do.",
+    "grotesque": "Body horror — asymmetric growth, things where things should "
+                 "not be, visible strain in the flesh holding itself together.",
+    "neutral": "",
+}
+
+# 3. Sex. Both, because the roster is populated by people.
+SEXES = {
+    "male": "Male build — broader shoulders, heavier jaw and brow, flatter "
+            "chest, denser musculature.",
+    "female": "Female build — narrower shoulders and wider hips, softer jaw, "
+              "breast and waist definition, lighter musculature.",
+    "": "",
+}
 
 
 # --- subjects, from the game's own data ------------------------------------
@@ -242,7 +280,7 @@ def load_subjects():
 # --- composition -----------------------------------------------------------
 
 def compose(subject, action=None, location=None, mode="sprite",
-            frame=None, morph=None):
+            frame=None, morph=None, sex="", aspect=""):
     """<subject> doing <action> at <location>, in style-bible order.
 
     Frames and morph rigs STACK onto a race rather than standing alone: a
@@ -257,6 +295,10 @@ def compose(subject, action=None, location=None, mode="sprite",
         # Style bible rule 3: background stays neutral regardless of lore.
         parts.append(SPRITE_FRAMING)
     parts.append("%s — %s" % (subject["name"], subject["description"]))
+    if SEXES.get(sex):
+        parts.append(SEXES[sex])
+    if ASPECTS.get(aspect):
+        parts.append(ASPECTS[aspect])
 
     # Worn over the body, described after it so the base reads first.
     if frame:
@@ -274,6 +316,7 @@ def compose(subject, action=None, location=None, mode="sprite",
         parts.append("Setting: %s." % LOCATIONS.get(location, location))
         parts.append(SCENE_FRAMING)
 
+    parts.append(ANATOMY)
     parts.append(FACTION_PALETTE.get(subject.get("faction", ""), FACTION_PALETTE["Factionless"]))
     parts.append(STAGE_SCALE[min(int(subject.get("stage", 0)), 2)])
     return " ".join(p.strip() for p in parts if p and p.strip())
@@ -290,6 +333,11 @@ def main():
     ap.add_argument("--morph", help="stack a morph rig onto the subject race")
     ap.add_argument("--frames", help="comma-separated, or 'all', for --matrix")
     ap.add_argument("--morphs", help="comma-separated, or 'all', for --matrix")
+    ap.add_argument("--sex", choices=sorted(k for k in SEXES if k), help="single subject")
+    ap.add_argument("--aspect", choices=sorted(ASPECTS), help="single subject")
+    ap.add_argument("--sexes", help="comma-separated for --matrix, e.g. male,female")
+    ap.add_argument("--aspects", help="comma-separated for --matrix, "
+                    "e.g. noble,fearsome. Omit for an automatic mix.")
     ap.add_argument("--matrix", action="store_true", help="every combination")
     ap.add_argument("--kind",
                     choices=["race", "entity", "frame", "morph_rig", "all"],
@@ -321,7 +369,8 @@ def main():
             return 1
         fr = subjects.get("frame_" + args.frame) if args.frame else None
         mo = subjects.get("morph_" + args.morph) if args.morph else None
-        print(compose(s, args.action, args.location, args.mode, fr, mo))
+        print(compose(s, args.action, args.location, args.mode, fr, mo,
+                      args.sex or "", args.aspect or ""))
         return 0
 
     if not args.matrix:
@@ -344,25 +393,36 @@ def main():
 
     frames = _pick("frame_", args.frames)
     morphs = _pick("morph_", args.morphs)
+    sexes = [x.strip() for x in args.sexes.split(",")] if args.sexes else [""]
+    # With no explicit list, spread the roster across the appeal axis by a
+    # stable hash of the subject id — so the set has beauties and horrors
+    # without anyone choosing per entry, and the same id always lands the
+    # same way.
+    aspects = [x.strip() for x in args.aspects.split(",")] if args.aspects else None
 
     rows = []
     for sid, s in sorted(picked.items()):
-      for fk in frames:
-       for mk in morphs:
-        fr = subjects.get(fk) if fk else None
-        mo = subjects.get(mk) if mk else None
-        suffix = ("_" + fk[6:] if fk else "") + ("_" + mk[6:] if mk else "")
-        for a in actions:
+      for sex in sexes:
+       for fk in frames:
+        for mk in morphs:
+         fr = subjects.get(fk) if fk else None
+         mo = subjects.get(mk) if mk else None
+         asp = (aspects[hash(sid) % len(aspects)] if aspects
+                else ["noble", "fearsome", "grotesque"][abs(hash(sid)) % 3])
+         suffix = (("_" + sex[0]) if sex else "") + \
+                  ("_" + fk[6:] if fk else "") + ("_" + mk[6:] if mk else "")
+         for a in actions:
             for loc in locations:
                 rows.append({
                     "subject": sid, "kind": s["kind"], "name": s["name"],
                     "action": a, "location": loc, "mode": args.mode,
                     "frame": fk[6:] if fk else "", "morph": mk[6:] if mk else "",
+                    "sex": sex, "aspect": asp,
                     "sprite_target": "godot/assets/entities/%s%s%s%s.png" % (
                         sid.lower(), suffix, "_" + a if a != "idle" else "",
                         "_" + loc if loc else ""),
-                    "prompt": compose(s, a, loc, args.mode, fr, mo),
-                    "sprite_prompt": compose(s, a, loc, args.mode, fr, mo),
+                    "prompt": compose(s, a, loc, args.mode, fr, mo, sex, asp),
+                    "sprite_prompt": compose(s, a, loc, args.mode, fr, mo, sex, asp),
                     "negative_prompt": NEGATIVE,
                     "seed": int(s["seed"]) if str(s.get("seed") or "").isdigit() else None,
                     "target": "",
