@@ -30,6 +30,10 @@ var _title: Label
 var _roster_row: HBoxContainer
 var _roster_scroll: ScrollContainer
 var _portrait: ColorRect
+## Generated illustration layered over the colour block. The ColorRect stays
+## as the backing plate, so a race with no art yet still reads as its colour
+## instead of leaving a hole.
+var _portrait_art: TextureRect
 var _portrait_label: Label
 var _detail: RichTextLabel
 var _name_edit: LineEdit
@@ -71,6 +75,12 @@ func _build_ui() -> void:
 	_portrait = ColorRect.new()
 	_portrait.custom_minimum_size = Vector2(340, 340)
 	left.add_child(_portrait)
+	_portrait_art = TextureRect.new()
+	_portrait_art.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_portrait_art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_portrait_art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	_portrait_art.visible = false
+	_portrait.add_child(_portrait_art)
 	_portrait_label = Label.new()
 	_portrait_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_portrait_label.add_theme_font_size_override("font_size", 26)
@@ -214,6 +224,7 @@ func _update_portrait() -> void:
 		return
 	var e: Dictionary = _entries[_cursor]
 	_portrait.color = e.color
+	_show_art(str(e.get("id", "")))
 	_portrait_label.text = str(e.name).to_upper()
 	_detail.text = "%s\n\n[color=#ffd88a]%s[/color]" % [e.get("blurb", ""), e.get("stats", "")]
 
@@ -221,6 +232,8 @@ func _render_final_preview() -> void:
 	var stats := CharacterCreatorLogic.build_starting_stats(_picked.race, _picked.faction, _picked.frame)
 	var sensorium := FrameSensorium.of(_picked.frame)
 	_portrait.color = RaceDataCharacter.get_race(_picked.race).get("primary_color", Color.WHITE)
+	# Final preview knows the whole build, so it can ask for the exact stack.
+	_show_art(str(_picked.race), str(_picked.get("frame", "")), str(_picked.get("mod", "")))
 	_portrait_label.text = str(_picked.get("race_name", "?")).to_upper()
 	_detail.text = "%s | %s | %s\n\nPOW %d  RES %d  SPD %d  LCK %d  STY %d\n\n%s" % [
 		_picked.get("race_name", "?"), _picked.faction, _picked.get("frame_name", "?"),
@@ -264,3 +277,16 @@ func _go_back() -> void:
 		return
 	_step -= 1
 	_render_step()
+
+## Layers generated art over the colour plate when any exists for this
+## build. Anything without art (frames and mods chosen before a race, say)
+## simply keeps the colour block.
+func _show_art(race_id: String, frame_id: String = "", mod_id: String = "") -> void:
+	if _portrait_art == null:
+		return
+	var tex := IdentityArt.portrait(race_id, frame_id, mod_id)
+	_portrait_art.texture = tex
+	_portrait_art.visible = tex != null
+	# Label is hard to read over a busy illustration; dim the plate instead
+	# of hiding the name.
+	_portrait_label.modulate = Color(1, 1, 1, 0.85) if tex != null else Color.WHITE

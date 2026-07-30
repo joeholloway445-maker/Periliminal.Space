@@ -25,6 +25,11 @@ signal character_confirmed(data: CharacterData)
 @onready var synergy_label: Label = $Layout/RightPanel/StatsPanel/SynergyLabel
 @onready var lore_label: RichTextLabel = $Layout/RightPanel/LorePanel/LoreText
 
+## Built lazily and inserted above the preview labels, so the scene file
+## needs no new node and the screen degrades to text-only when no art for
+## the selected build has been generated yet.
+var _portrait: TextureRect = null
+
 var _current_data: CharacterData = null
 var _race_ids: Array[String] = []
 var _frame_ids: Array[String] = []
@@ -69,6 +74,8 @@ func _refresh_preview() -> void:
 	# Map OmniDex frame index onto sensorium enum when possible; otherwise VEIL.
 	_current_data.frame = (frame_list.selected % CharacterData.Frame.size()) as CharacterData.Frame
 	_current_data.mod = (mod_list.selected % CharacterData.Mod.size()) as CharacterData.Mod
+
+	_refresh_portrait(race_id, frame_id, mod_id)
 
 	preview_name.text = char_name
 	preview_race.text = "Race: %s" % race_name
@@ -116,3 +123,24 @@ func _on_confirm_pressed() -> void:
 	AccountManager.save_character_data(_current_data)
 	character_confirmed.emit(_current_data)
 	GameManager.transition_to(GameManager.State.WORLD)
+
+## Shows the generated illustration for the current build. Falls back through
+## race+frame to the plain race, so the preview fills in as generation
+## progresses instead of staying blank until every combination exists.
+func _refresh_portrait(race_id: String, frame_id: String, mod_id: String) -> void:
+	var tex := IdentityArt.portrait(race_id, frame_id, mod_id)
+	if tex == null:
+		if _portrait != null:
+			_portrait.visible = false
+		return
+	if _portrait == null:
+		_portrait = TextureRect.new()
+		_portrait.name = "BuildPortrait"
+		_portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		_portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		_portrait.custom_minimum_size = Vector2(260, 260)
+		var panel := preview_name.get_parent()
+		panel.add_child(_portrait)
+		panel.move_child(_portrait, 0)
+	_portrait.texture = tex
+	_portrait.visible = true
