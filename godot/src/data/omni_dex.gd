@@ -12,6 +12,11 @@ class_name OmniDex
 ##
 ## Faction ids here already match the PerceptionSystem RPS wheel
 ## (sovereign_crown > wildlands_ascendants > veiled_current > ...).
+##
+## Scope, after checking what the project already had: RACES is the only
+## table that carries data found nowhere else (faction, stat bonus, passive,
+## drawback, lore). Frames merge on top of OmniDexRegistry, which owns frame
+## identity, and morph rigs delegate wholesale to MorphRigData.
 
 const RACES: Dictionary = {
 	"lumenari": {
@@ -319,108 +324,11 @@ const FRAMES: Dictionary = {
 	},
 }
 
-const MORPH_RIGS: Dictionary = {
-	"heavy_siege": {
-		"name": "Heavy Siege", "boon": "+Stability", "cost": "-Momentum",
-		"description": "Reinforced plating across a slow, towering industrial silhouette",
-		"visual": "Massive skeletal frame, reinforced plating, slow but stable, industrial fantasy aesthetic.",
-	},
-	"swiftburner": {
-		"name": "Swiftburner", "boon": "+Acceleration", "cost": "-Control",
-		"description": "Elongated legs trailing kinetic energy at speed",
-		"visual": "Light skeletal frame, elongated legs, agile posture, kinetic energy trails, fast-motion effect.",
-	},
-	"multi_limbed": {
-		"name": "Multi-Limbed", "boon": "+Aux Action Slot", "cost": "-Energy Stability",
-		"description": "Extra functional limbs folded into a complex action-ready pose",
-		"visual": "Humanoid with multiple functional limbs, balanced mechanics, complex action-ready pose.",
-	},
-	"towering": {
-		"name": "Towering", "boon": "+Intimidation Radius", "cost": "-Evasion",
-		"description": "Vertically exaggerated proportions with an intimidating presence",
-		"visual": "Extremely tall skeletal frame, intimidating proportions, vertical emphasis, epic fantasy setting.",
-	},
-	"compact": {
-		"name": "Compact", "boon": "+Evasion", "cost": "-AoE Reach",
-		"description": "Short, dense build held in a low crouched stance",
-		"visual": "Short, dense skeletal frame, high agility, crouched action stance, futuristic environment.",
-	},
-	"elastic": {
-		"name": "Elastic", "boon": "+Melee Range", "cost": "None",
-		"description": "Stretching, elongated limbs caught mid exaggerated motion",
-		"visual": "Flexible elongated skeletal frame, stretching limbs, exaggerated motion pose, dynamic style.",
-	},
-	"floating_core": {
-		"name": "Floating Core", "boon": "+Vertical Mastery", "cost": "-Traction",
-		"description": "A suspended central core held aloft in a floating posture",
-		"visual": "Levitation-based frame, suspended central core, floating posture, mystical sci-fi lighting.",
-	},
-	"split_form": {
-		"name": "Split Form", "boon": "+Decoy", "cost": "-Focus Regen",
-		"description": "A dual-body silhouette mirrored by an energy separation effect",
-		"visual": "Skeletal frame divided into dual-body segments, mirrored action pose, energy separation effects.",
-	},
-	"inverted_spine": {
-		"name": "Inverted Spine", "boon": "+Backstab Damage", "cost": "-Front Defense",
-		"description": "An inverted spine giving a back-heavy, off-kilter stance",
-		"visual": "Unusual upside-down spine skeletal structure, back-heavy action stance, dark fantasy setting.",
-	},
-	"modular": {
-		"name": "Modular", "boon": "+Item Slot", "cost": "-Vitality Regen",
-		"description": "Interchangeable mechanical parts in a tool-equipped posture",
-		"visual": "Interchangeable skeletal parts, mechanical modular design, tool-equipped posture, workshop background.",
-	},
-	"armored": {
-		"name": "Armored", "boon": "+Mitigation", "cost": "-Momentum",
-		"description": "Tank-like heavy plating across a battle-ready stance",
-		"visual": "Heavily plated skeletal frame, tank-like proportions, battle-ready stance, dark industrial environment.",
-	},
-	"lithe": {
-		"name": "Lithe", "boon": "+Dodge Window", "cost": "-Stability",
-		"description": "A slim silhouette blurred by constant evasive motion",
-		"visual": "Slim skeletal frame, high dodge emphasis, dynamic motion blur, agile pose.",
-	},
-	"tendril": {
-		"name": "Tendril", "boon": "+CC Duration", "cost": "-Burst Damage",
-		"description": "Organic tendrils extending outward from the frame",
-		"visual": "Skeletal frame with organic tendrils extending from body, CC-focused stance, shadowy environment.",
-	},
-	"rooted": {
-		"name": "Rooted", "boon": "+Control Strength", "cost": "No Dash",
-		"description": "Skeletal roots anchoring the lower body to the ground",
-		"visual": "Lower body anchored, strong grounded posture, skeletal roots extending, earthy setting.",
-	},
-	"hover_strider": {
-		"name": "Hover Strider", "boon": "No Fall Damage", "cost": "-Stamina Regen",
-		"description": "An aerodynamic frame held in a constant hovering pose",
-		"visual": "Floating skeletal frame, aerodynamic form, hovering pose, sci-fi sky background.",
-	},
-	"centroid": {
-		"name": "Centroid", "boon": "+5% All Stats", "cost": "None",
-		"description": "Perfectly symmetric, neutral proportions in a balanced stance",
-		"visual": "Balanced skeletal frame, neutral proportions, symmetric action pose, bright neutral environment.",
-	},
-	"shardform": {
-		"name": "Shardform", "boon": "+Reflect", "cost": "Shatter Risk",
-		"description": "Reflective angular shards protruding from the frame",
-		"visual": "Crystalline skeletal frame, reflective shards protruding, angular pose, high fantasy lighting.",
-	},
-	"quadruped": {
-		"name": "Quadruped", "boon": "+Sprint Speed", "cost": "No Dual-Wield",
-		"description": "A low, four-legged stance built for sprinting",
-		"visual": "Four-legged skeletal frame, low center of gravity, sprinting pose, rugged terrain environment.",
-	},
-	"serpentine": {
-		"name": "Serpentine", "boon": "+Immobilize Resist", "cost": "-Jump Height",
-		"description": "A long, coiled frame moving with snake-like flexibility",
-		"visual": "Long, flexible skeletal frame, snake-like movement, coiled action stance, mystical background.",
-	},
-	"colossus": {
-		"name": "Colossus", "boon": "+Control", "cost": "-Momentum",
-		"description": "Gigantic towering proportions in a slow, imposing pose",
-		"visual": "Gigantic skeletal frame, towering proportions, slow imposing pose, epic battle environment.",
-	},
-}
+## Morph rigs are NOT duplicated here. MorphRigData.RIGS is the engine's
+## table and already carries the same twenty ids with bonus/drawback/desc and
+## an ai_prompt; transcribing the workbook's copy alongside it just created a
+## second source of truth to drift.
+
 
 ## Omni Dex axes onto the unified stat set. Power and Agility are the same
 ## axes the engine already called pow and spd, so they merge rather than
@@ -447,11 +355,22 @@ static func stat_bonus_merged(race_id: String, per_point: int = 4) -> Dictionary
 static func race(id: String) -> Dictionary:
 	return RACES.get(id, {})
 
+## OmniDexRegistry owns frame identity (id/name/type/role) and is the
+## documented place UI reads names from. This adds only what the workbook
+## carries beyond that — the stat profile, the blurb, the role hint and the
+## passive — merged so callers never have to consult both.
 static func frame(id: String) -> Dictionary:
-	return FRAMES.get(id, {})
+	var merged := OmniDexRegistry.frame_by_id(id)
+	var extra: Dictionary = FRAMES.get(id, {})
+	for key in extra:
+		# Registry identity wins on any field it already defines.
+		if not merged.has(key) or str(merged.get(key, "")).is_empty():
+			merged[key] = extra[key]
+	return merged
 
+## Delegates to the engine's table so there is exactly one answer.
 static func morph_rig(id: String) -> Dictionary:
-	return MORPH_RIGS.get(id, {})
+	return MorphRigData.by_id(id)
 
 ## Every race sharing a faction, for the RPS perception wheel.
 static func races_in_faction(faction_id: String) -> Array[String]:

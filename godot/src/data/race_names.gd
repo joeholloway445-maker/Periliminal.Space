@@ -72,6 +72,19 @@ const NAMES := {
 	"Glyphe":  {"civil": "Scrivener",  "true": "sunspun"},
 }
 
+## Layer-aware display for a GAMEPLAY race id (a breed id like "tabby").
+##
+## OmniDexRegistry.race_display_name() is the project's documented entry
+## point for naming and resolves a breed id to its canon name; this extends
+## that with the layer register rather than sitting beside it, so UI can keep
+## calling one function and get the right name for where the player is.
+static func display_for_id(race_id: String, layer_id: String = "") -> String:
+	var canon := CanonRaces.canon_for_id(race_id)
+	if canon.is_empty():
+		# Not a canon-mapped race (casino breed with no Periliminal name).
+		return OmniDexRegistry.race_display_name(race_id)
+	return display(canon, layer_id)
+
 ## The name this race wears in `layer_id`. Falls back to the canon name, so
 ## an unmapped race or an unknown layer degrades to something correct.
 static func display(canon_id: String, layer_id: String = "") -> String:
@@ -87,12 +100,15 @@ static func display(canon_id: String, layer_id: String = "") -> String:
 	# Omni Dex ids are snake_case; present them as words.
 	return name.replace("_", " ").capitalize() if register == "true" else name
 
-## The name for whatever layer the player is standing in right now.
-static func current(canon_id: String) -> String:
+## The name for whatever layer the player is standing in right now. Accepts
+## either a canon name or a gameplay race id.
+static func current(race_or_canon: String) -> String:
 	var layer := ""
 	if LayerManager:
 		layer = str(LayerManager.current_layer_id)
-	return display(canon_id, layer)
+	if NAMES.has(race_or_canon):
+		return display(race_or_canon, layer)
+	return display_for_id(race_or_canon, layer)
 
 ## Every name a race answers to, for the dex and the profile screen.
 static func all_names(canon_id: String) -> Dictionary:
