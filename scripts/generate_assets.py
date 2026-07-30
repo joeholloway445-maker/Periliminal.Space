@@ -58,7 +58,7 @@ class Tripo:
     def __init__(self, key):
         self.h = {"Authorization": "Bearer %s" % key}
 
-    def submit(self, prompt):
+    def submit(self, prompt, job=None):
         r = curl("%s/task" % self.base, "POST", self.h,
                  {"type": "text_to_model", "prompt": prompt[:1024]})
         if not r:
@@ -97,7 +97,7 @@ class Meshy:
     def __init__(self, key):
         self.h = {"Authorization": "Bearer %s" % key}
 
-    def submit(self, prompt):
+    def submit(self, prompt, job=None):
         r = curl(self.base, "POST", self.h,
                  {"mode": "preview", "prompt": prompt[:600], "art_style": "realistic"})
         if not r:
@@ -144,16 +144,21 @@ class Replicate:
         self.h = {"Authorization": "Bearer %s" % key}
         self.version = os.environ.get("REPLICATE_MODEL", self.default_version)
 
-    def submit(self, prompt):
-        r = curl(self.base, "POST", self.h, {
-            "version": self.version,
-            "input": {
-                "prompt": prompt[:1500],
-                "negative_prompt": "text, watermark, signature, multiple subjects, "
-                                   "cropped, frame, border, photograph of a screen",
-                "width": 768, "height": 768,
-            },
-        })
+    def submit(self, prompt, job=None):
+        job = job or {}
+        # The authored CSV ships its own negative prompt and seed; using our
+        # own would discard half the brief and make reruns unreproducible.
+        negative = job.get("negative_prompt") or (
+            "text, watermark, signature, multiple subjects, cropped, frame, "
+            "border, photograph of a screen")
+        payload = {
+            "prompt": prompt[:2000],
+            "negative_prompt": negative,
+            "width": 768, "height": 768,
+        }
+        if job.get("seed") is not None:
+            payload["seed"] = int(job["seed"])
+        r = curl(self.base, "POST", self.h, {"version": self.version, "input": payload})
         if not r:
             return None, "request failed"
         try:
@@ -204,8 +209,8 @@ def load_jobs(kind, limit, skip_existing=True, image_targets=False):
 
 def run_job(provider, job):
     wants_image = getattr(provider, "output_kind", "model") == "image"
-    task_id, err = provider.submit(job["sprite_prompt"] if wants_image
-                                   else job["prompt"])
+    task_id, err = provider.submit(
+        job["sprite_prompt"] if wants_image else job["prompt"], job)
     if not task_id:
         return False, err or "submit failed"
 

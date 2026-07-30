@@ -20,6 +20,7 @@ Writes:
 """
 
 import argparse
+import csv
 import json
 import os
 import re
@@ -66,45 +67,63 @@ def existing_slots():
 # ---------------------------------------------------------------- entities
 
 def entity_jobs(limit=None):
-    """One job per entity stage — the dex descriptions are already art briefs."""
-    src = read("godot/src/data/entity_dex_data.gd")
-    jobs = []
-    # Entries look like: {id="SC-P5", faction="...", category="...",
-    #                     role="...", stages=[{name="X", desc="..."}, ...]}
-    for block in re.split(r"\n\s*\{id=", src)[1:]:
-        eid = re.match(r'"([A-Z0-9\-]+)"', block)
-        if not eid:
-            continue
-        eid = eid.group(1)
-        faction = (re.search(r'faction="(\w+)"', block) or [None, ""])[1]
-        category = (re.search(r'category="(\w+)"', block) or [None, ""])[1]
-        role = (re.search(r'role="(\w+)"', block) or [None, ""])[1]
+    """One job per entity stage, from the authored prompt set.
 
-        for stage, (name, desc) in enumerate(
-                re.findall(r'\{name="([^"]*)",\s*desc="((?:[^"\\]|\\.)*)"', block)):
-            if not desc.strip():
-                continue
-            desc = desc.replace('\\"', '"').strip()
-            # The dex truncates some entries with an ellipsis; that is still a
-            # usable brief, just note it so a human can extend it.
-            truncated = desc.endswith("…") or desc.endswith("...")
+    godot/data/entity_image_prompts/all_600_entities.csv is the real brief:
+    600 prompts written against STYLE_BIBLE.md, each already carrying the
+    locked preamble, the faction palette line, the stage scale line, a
+    negative prompt, and a fixed seed. It covers all 270 entities with no
+    truncation.
+
+    The copies in entity_dex_data.gd are hard-cut at ~200 characters, so
+    reconstructing briefs from those was throwing away the good version.
+    Nothing here is generated — the prompts pass through verbatim so the
+    style bible stays authoritative and reruns stay reproducible.
+    """
+    path = os.path.join(REPO, "godot", "data", "entity_image_prompts",
+                        "all_600_entities.csv")
+    if not os.path.exists(path):
+        return []
+
+    # Faction/category/role live in the dex, not the prompt CSV.
+    dex = {}
+    src = read("godot/src/data/entity_dex_data.gd")
+    for block in re.split(r"\n\s*\{id=", src)[1:]:
+        m = re.match(r'"([A-Z0-9\-]+)"', block)
+        if m:
+            dex[m.group(1)] = {
+                "faction": (re.search(r'faction="(\w+)"', block) or [None, ""])[1],
+                "category": (re.search(r'category="(\w+)"', block) or [None, ""])[1],
+                "role": (re.search(r'role="(\w+)"', block) or [None, ""])[1],
+            }
+
+    jobs = []
+    with open(path, newline="", encoding="utf-8") as fh:
+        for row in csv.DictReader(fh):
+            eid = row["entity_id"]
+            # The CSV numbers stages 1-3; the engine indexes them 0-2.
+            stage = max(int(row.get("stage", 1)) - 1, 0)
+            meta = dex.get(eid, {})
+            slug = eid.lower()
             jobs.append({
                 "kind": "entity",
                 "id": eid,
                 "stage": stage,
-                "name": name,
-                "target": "godot/assets/models/entity_%s.glb" % eid.lower()
-                          if stage == 0 else
-                          "godot/assets/models/entity_%s_s%d.glb" % (eid.lower(), stage),
-                # Billboarded in-world sprite — the primary medium for these.
-                "sprite_target": "godot/assets/entities/%s_s%d.png" % (eid.lower(), stage),
-                "prompt": "%s. %s Faction %s, %s category%s. %s" % (
-                    name, desc, faction or "unaligned", category or "unknown",
-                    ", %s-tier" % role.lower() if role else "", STYLE_3D),
-                "sprite_prompt": "%s — %s A %s-category creature of the %s. %s" % (
-                    name, desc, category or "unknown", faction or "unaligned",
-                    STYLE_2D),
-                "truncated_source": truncated,
+                "name": row.get("stage_name", eid),
+                "target": "godot/assets/models/entity_%s.glb" % slug if stage == 0
+                          else "godot/assets/models/entity_%s_s%d.glb" % (slug, stage),
+                "sprite_target": "godot/assets/entities/%s_s%d.png" % (slug, stage),
+                # Verbatim. The style bible forbids paraphrasing these.
+                "prompt": row["prompt"],
+                "sprite_prompt": row["prompt"],
+                "negative_prompt": row.get("negative_prompt", ""),
+                # Fixed seed keeps a re-run reproducible and lets a single
+                # entity be re-rolled without disturbing the rest.
+                "seed": int(row["seed"]) if str(row.get("seed", "")).isdigit() else None,
+                "faction": meta.get("faction", ""),
+                "category": meta.get("category", ""),
+                "role": meta.get("role", ""),
+                "truncated_source": False,
             })
     return jobs[:limit] if limit else jobs
 
