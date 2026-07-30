@@ -37,9 +37,14 @@ STYLE_3D = (
     "centred on a plain background, no ground plane, no props, no text, "
     "no base or pedestal."
 )
+# Entities ship as billboarded sprites, so this is a full creature
+# illustration rather than a UI glyph — it is what the player sees in the
+# world, not a list icon.
 STYLE_2D = (
-    "Game UI icon, centred single subject on transparent background, "
-    "readable at 64x64, no text, no border."
+    "Full body creature illustration, single subject centred, facing the "
+    "viewer, standing on nothing, plain flat background for easy cutout, "
+    "dramatic rim lighting, painterly realistic detail, no text, no "
+    "watermark, no border, no ground shadow."
 )
 
 
@@ -91,11 +96,14 @@ def entity_jobs(limit=None):
                 "target": "godot/assets/models/entity_%s.glb" % eid.lower()
                           if stage == 0 else
                           "godot/assets/models/entity_%s_s%d.glb" % (eid.lower(), stage),
-                "icon_target": "godot/assets/ui/entities/%s_s%d.png" % (eid.lower(), stage),
+                # Billboarded in-world sprite — the primary medium for these.
+                "sprite_target": "godot/assets/entities/%s_s%d.png" % (eid.lower(), stage),
                 "prompt": "%s. %s Faction %s, %s category%s. %s" % (
                     name, desc, faction or "unaligned", category or "unknown",
                     ", %s-tier" % role.lower() if role else "", STYLE_3D),
-                "icon_prompt": "%s. %s %s" % (name, desc[:280], STYLE_2D),
+                "sprite_prompt": "%s — %s A %s-category creature of the %s. %s" % (
+                    name, desc, category or "unknown", faction or "unaligned",
+                    STYLE_2D),
                 "truncated_source": truncated,
             })
     return jobs[:limit] if limit else jobs
@@ -138,13 +146,13 @@ def omnidex_jobs(limit=None):
                 "stage": 0,
                 "name": name,
                 "target": target % eid,
-                "icon_target": "godot/assets/ui/%s/%s.png" % (kind, eid),
+                "sprite_target": "godot/assets/ui/%s/%s.png" % (kind, eid),
                 "prompt": "%s — %s%s%s %s" % (
                     name, desc,
                     (" " + lore) if lore and lore != desc else "",
                     (" Character traits: %s." % ", ".join(extra)) if extra else "",
                     STYLE_3D),
-                "icon_prompt": "%s. %s %s" % (name, desc, STYLE_2D),
+                "sprite_prompt": "%s — %s %s" % (name, desc, STYLE_2D),
                 "truncated_source": False,
             })
     return jobs[:limit] if limit else jobs
@@ -177,9 +185,9 @@ def slot_jobs():
             "stage": 0,
             "name": slot.replace("_", " ").title(),
             "target": "godot/assets/models/%s.glb" % slot,
-            "icon_target": "",
+            "sprite_target": "",
             "prompt": "%s %s" % (desc, STYLE_3D),
-            "icon_prompt": "",
+            "sprite_prompt": "",
             "truncated_source": False,
         })
     return jobs

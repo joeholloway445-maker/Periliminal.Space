@@ -125,10 +125,68 @@ class Meshy:
         return "running", None
 
 
-PROVIDERS = {"tripo": Tripo, "meshy": Meshy}
+
+class Replicate:
+    """https://replicate.com — any text-to-image model, billed per prediction.
+
+    This is the entity path. Sprites are pennies where 3D is dollars, and a
+    painted creature at billboard distance beats a generated mesh anyway.
+    Default model is SDXL; override with REPLICATE_MODEL (a version hash).
+    """
+    name = "replicate"
+    env = "REPLICATE_API_TOKEN"
+    base = "https://api.replicate.com/v1/predictions"
+    # SDXL base. Any text-to-image version hash works.
+    default_version = ("7762fd07cf82c948538e41f63f77d685e02b063e37e496e96eefd46c929f9bdc")
+    output_kind = "image"
+
+    def __init__(self, key):
+        self.h = {"Authorization": "Bearer %s" % key}
+        self.version = os.environ.get("REPLICATE_MODEL", self.default_version)
+
+    def submit(self, prompt):
+        r = curl(self.base, "POST", self.h, {
+            "version": self.version,
+            "input": {
+                "prompt": prompt[:1500],
+                "negative_prompt": "text, watermark, signature, multiple subjects, "
+                                   "cropped, frame, border, photograph of a screen",
+                "width": 768, "height": 768,
+            },
+        })
+        if not r:
+            return None, "request failed"
+        try:
+            d = json.loads(r)
+        except json.JSONDecodeError:
+            return None, "bad response: %s" % r[:160]
+        if d.get("id"):
+            return d["id"], None
+        return None, str(d.get("detail", d))[:160]
+
+    def poll(self, task_id):
+        r = curl("%s/%s" % (self.base, task_id), "GET", self.h)
+        if not r:
+            return "error", None
+        try:
+            d = json.loads(r)
+        except json.JSONDecodeError:
+            return "error", None
+        status = d.get("status", "")
+        if status == "succeeded":
+            out = d.get("output")
+            if isinstance(out, list) and out:
+                return "done", out[0]
+            return "done", out if isinstance(out, str) else None
+        if status in ("failed", "canceled"):
+            return "failed", None
+        return "running", None
 
 
-def load_jobs(kind, limit, skip_existing=True):
+PROVIDERS = {"tripo": Tripo, "meshy": Meshy, "replicate": Replicate}
+
+
+def load_jobs(kind, limit, skip_existing=True, image_targets=False):
     if not os.path.exists(JOBS):
         sys.exit("no %s — run scripts/export_asset_prompts.py first" % JOBS)
     jobs = []
@@ -137,14 +195,17 @@ def load_jobs(kind, limit, skip_existing=True):
             j = json.loads(line)
             if kind != "all" and j["kind"] != kind:
                 continue
-            if skip_existing and os.path.exists(os.path.join(REPO, j["target"])):
+            target = j["sprite_target"] if image_targets else j["target"]
+            if skip_existing and target and os.path.exists(os.path.join(REPO, target)):
                 continue
             jobs.append(j)
     return jobs[:limit] if limit else jobs
 
 
 def run_job(provider, job):
-    task_id, err = provider.submit(job["prompt"])
+    wants_image = getattr(provider, "output_kind", "model") == "image"
+    task_id, err = provider.submit(job["sprite_prompt"] if wants_image
+                                   else job["prompt"])
     if not task_id:
         return False, err or "submit failed"
 
@@ -156,14 +217,19 @@ def run_job(provider, job):
         if state == "done":
             if not url:
                 return False, "finished with no model url"
-            dest = os.path.join(REPO, job["target"])
+            wants_image = getattr(provider, "output_kind", "model") == "image"
+            dest = os.path.join(REPO, job["sprite_target"] if wants_image
+                                else job["target"])
             os.makedirs(os.path.dirname(dest), exist_ok=True)
             if not curl(url, out=dest):
                 return False, "download failed"
             with open(dest, "rb") as fh:
-                if fh.read(4) != b"glTF":
-                    os.remove(dest)
-                    return False, "not a GLB"
+                head = fh.read(8)
+            ok = head.startswith(b"\x89PNG") or head.startswith(b"\xff\xd8") \
+                if wants_image else head.startswith(b"glTF")
+            if not ok:
+                os.remove(dest)
+                return False, "unexpected file type"
             return True, None
         if state == "failed":
             return False, "generation failed"
@@ -180,7 +246,8 @@ def main():
                     help="list the batch without submitting anything")
     args = ap.parse_args()
 
-    jobs = load_jobs(args.kind, args.limit)
+    image_targets = getattr(PROVIDERS[args.provider], "output_kind", "model") == "image"
+    jobs = load_jobs(args.kind, args.limit, image_targets=image_targets)
     if not jobs:
         print("nothing to do — every target for kind=%s already exists" % args.kind)
         return 0
@@ -188,7 +255,9 @@ def main():
     print("%s · %d jobs · kind=%s" % (args.provider, len(jobs), args.kind))
     if args.dry_run:
         for j in jobs:
-            print("   %-46s %s" % (j["target"], j["prompt"][:90]))
+            t = j["sprite_target"] if image_targets else j["target"]
+            pr = j["sprite_prompt"] if image_targets else j["prompt"]
+            print("   %-46s %s" % (t, pr[:90]))
         print("\ndry run — nothing submitted")
         return 0
 
@@ -200,10 +269,12 @@ def main():
 
     ok = failed = 0
     for i, job in enumerate(jobs, 1):
-        print("[%d/%d] %s" % (i, len(jobs), job["target"]), flush=True)
+        print("[%d/%d] %s" % (i, len(jobs),
+              job["sprite_target"] if image_targets else job["target"]), flush=True)
         good, err = run_job(provider, job)
         if good:
-            size = os.path.getsize(os.path.join(REPO, job["target"])) / 1e6
+            size = os.path.getsize(os.path.join(REPO,
+                job["sprite_target"] if image_targets else job["target"])) / 1e6
             print("        ok, %.2f MB" % size)
             ok += 1
         else:

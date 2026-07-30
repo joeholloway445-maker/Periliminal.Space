@@ -38,15 +38,28 @@ const CATEGORY_SURFACE := {
 	"Quantum": [0.22, 0.40, 1.1],
 }
 
-## Builds the 3D body for `entity_id` at `stage` (0-2).
+## Where generated entity art lands. A sprite is the intended medium for the
+## ~810 collectible forms: they are viewed at creature distance in a
+## collection game, generating 2D costs a fraction of generating 3D, and a
+## painted sprite beats a procedural mesh at every budget worth spending.
+const SPRITE_PATH := "res://assets/entities/%s.png"
+
+## Builds the visual for `entity_id` at `stage`, best medium first:
+##   1. `entity_<id>` GLB          — authored 3D, if anyone ever makes it
+##   2. `entity_<category>` GLB    — a shared 3D body for the family
+##   3. `assets/entities/<id>_s<n>.png` — the generated sprite, billboarded
+##   4. procedural mesh            — the floor, so nothing is ever invisible
 static func build(entity_id: String, entity: Dictionary, stage: int = 0) -> Node3D:
-	# Authored art first, by exact entity, then by category family.
 	var real := AssetLibrary.instance("entity_%s" % entity_id.to_lower())
 	if real == null:
 		real = AssetLibrary.instance("entity_%s" % str(entity.get("category", "")).to_lower())
 	if real != null:
 		real.scale = Vector3.ONE * _stage_scale(stage)
 		return real
+
+	var sprite := build_sprite(entity_id, entity, stage)
+	if sprite != null:
+		return sprite
 
 	var rng := RandomNumberGenerator.new()
 	rng.seed = hash(entity_id) ^ (stage * 7919)
@@ -91,6 +104,51 @@ static func material_for(entity: Dictionary, stage: int = 0) -> StandardMaterial
 		mat.albedo_color.a = 0.74
 	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
 	return mat
+
+## A billboarded sprite for the entity, or null if none is installed.
+##
+## Billboards rather than flat quads so a creature always faces the player —
+## the standard trick for 2D collectibles in a 3D world, and it means one
+## generated image covers every viewing angle. Alpha-scissor rather than
+## alpha blending so sprites sort correctly against each other and the world
+## instead of ghosting through one another in a crowd.
+static func build_sprite(entity_id: String, entity: Dictionary, stage: int = 0) -> Node3D:
+	var path := SPRITE_PATH % ("%s_s%d" % [entity_id.to_lower(), stage])
+	if not ResourceLoader.exists(path):
+		# Stage art is optional; fall back to the base form's sprite.
+		path = SPRITE_PATH % entity_id.to_lower()
+		if not ResourceLoader.exists(path):
+			return null
+	var tex := load(path)
+	if not (tex is Texture2D):
+		return null
+
+	var sprite := Sprite3D.new()
+	sprite.name = "EntitySprite_%s" % entity_id
+	sprite.texture = tex
+	sprite.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	sprite.shaded = true
+	sprite.alpha_cut = SpriteBase3D.ALPHA_CUT_DISCARD
+	sprite.double_sided = false
+	sprite.pixel_size = 0.01 * _stage_scale(stage)
+	# Sit on the ground rather than centred on it.
+	sprite.offset = Vector2(0, tex.get_height() * 0.5)
+
+	# Later stages carry the same emission the meshes do, so an evolved form
+	# still reads as charged rather than just larger.
+	var surf: Array = CATEGORY_SURFACE.get(str(entity.get("category", "")),
+		CATEGORY_SURFACE["Matter"])
+	if float(surf[2]) > 0.0 and stage > 0:
+		var pal: Array = FACTION_PALETTE.get(str(entity.get("faction", "")),
+			FACTION_PALETTE["Factionless"])
+		sprite.modulate = (pal[0] as Color).lerp(Color.WHITE, 0.55)
+	return sprite
+
+## True if generated art exists for this entity — lets the dex show which of
+## the roster still needs a pass.
+static func has_sprite(entity_id: String, stage: int = 0) -> bool:
+	return ResourceLoader.exists(SPRITE_PATH % ("%s_s%d" % [entity_id.to_lower(), stage])) \
+		or ResourceLoader.exists(SPRITE_PATH % entity_id.to_lower())
 
 static func _stage_scale(stage: int) -> float:
 	return [1.0, 1.45, 2.1][clampi(stage, 0, 2)]
