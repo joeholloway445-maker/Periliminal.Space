@@ -44,7 +44,11 @@ static func _apply_race(dna: HumanDNA, canon_name: String, seed_value: int) -> v
 	if arch.get("chaotic", false):
 		_apply_chaos(dna, seed_value)
 		return
-	_apply_layer(dna, arch)
+	# Fold in the body implied by this race's affinity stats before applying
+	# it. Several races authored only one or two gene nudges, which left them
+	# reading as a default human in a different colour — the derivation gives
+	# every race a distinct frame without overriding anything an artist set.
+	_apply_layer(dna, RaceBodyDerivation.archetype_with_body(canon_name))
 
 ## Chimera: "no two Chimera are alike" — instead of a fixed body, jitter a
 ## wide spread of genes and pick from a deliberately unusual palette, both
