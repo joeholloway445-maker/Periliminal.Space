@@ -31,9 +31,11 @@ OUT_DIR = os.path.join(REPO, "build")
 # House style appended to every 3D prompt, so a batch comes back coherent
 # rather than as twenty unrelated art directions.
 STYLE_3D = (
-    "Realistic game-ready 3D asset, physically based materials, clean "
-    "topology, neutral A-pose where humanoid, no ground plane, no text, "
-    "single subject centred."
+    "Realistic game-ready 3D character, full body head to feet, symmetrical "
+    "T-pose with arms straight out and legs apart, physically based "
+    "materials, clean quad topology suitable for rigging, single subject "
+    "centred on a plain background, no ground plane, no props, no text, "
+    "no base or pedestal."
 )
 STYLE_2D = (
     "Game UI icon, centred single subject on transparent background, "
@@ -118,11 +120,16 @@ def omnidex_jobs(limit=None):
             eid = entry.split('"', 1)[0]
             name = (re.search(r'"name": "([^"]*)"', entry) or [None, eid])[1]
             desc = (re.search(r'"description": "([^"]*)"', entry) or [None, ""])[1]
+            # The workbook's lore paragraph is the richest part of the brief;
+            # the one-line description alone is too thin for a character.
+            lore = (re.search(r'"lore": "([^"]*)"', entry) or [None, ""])[1]
+            # Human-readable traits only. Raw snake_case ids (faction
+            # wildlands_ascendants) are noise a generator will try to draw.
             extra = []
-            for field in ("role", "frame_type", "boon", "cost", "faction"):
+            for field in ("role", "frame_type", "boon", "cost"):
                 v = re.search(r'"%s": "([^"]*)"' % field, entry)
-                if v and v.group(1):
-                    extra.append("%s %s" % (field.replace("_", " "), v.group(1)))
+                if v and v.group(1) and "_" not in v.group(1):
+                    extra.append(v.group(1))
             if not desc:
                 continue
             jobs.append({
@@ -132,8 +139,11 @@ def omnidex_jobs(limit=None):
                 "name": name,
                 "target": target % eid,
                 "icon_target": "godot/assets/ui/%s/%s.png" % (kind, eid),
-                "prompt": "%s. %s%s. %s" % (
-                    name, desc, (" " + ", ".join(extra)) if extra else "", STYLE_3D),
+                "prompt": "%s — %s%s%s %s" % (
+                    name, desc,
+                    (" " + lore) if lore and lore != desc else "",
+                    (" Character traits: %s." % ", ".join(extra)) if extra else "",
+                    STYLE_3D),
                 "icon_prompt": "%s. %s %s" % (name, desc, STYLE_2D),
                 "truncated_source": False,
             })
