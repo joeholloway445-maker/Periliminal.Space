@@ -24,28 +24,30 @@ class_name RaceBodyDerivation
 ## Nothing here overrides an artist. It only fills the silence.
 
 ## Per affinity stat: the gene deltas one point of that affinity implies.
-## Values are deliberately modest — two affinities stack, and the authored
-## layer still has to be able to push against them.
+## Values are large on purpose. A subtle proportion shift does not read at
+## silhouette distance, and "tell them apart across a street" is the whole
+## requirement — two affinities stack and the authored layer still lands on
+## top, so an artist keeps the final say.
 const AFFINITY_BODY := {
 	"pow": {
-		"build": 0.14, "muscle": 0.18, "shoulder_width": 0.13,
-		"jaw_width": 0.08, "brow_depth": 0.06, "neck_thickness": 0.10,
+		"build": 0.364, "muscle": 0.468, "shoulder_width": 0.338,
+		"jaw_width": 0.208, "brow_depth": 0.156, "neck_thickness": 0.260,
 	},
 	"spd": {
-		"build": -0.12, "muscle": -0.04, "leg_length": 0.13,
-		"waist": -0.09, "cheek_fullness": -0.07, "height": 0.05,
+		"build": -0.312, "muscle": -0.104, "leg_length": 0.338,
+		"waist": -0.234, "cheek_fullness": -0.182, "height": 0.130,
 	},
 	"res": {
-		"build": 0.16, "muscle": 0.09, "height": -0.08,
-		"neck_thickness": 0.12, "jaw_width": 0.06, "waist": 0.07,
+		"build": 0.416, "muscle": 0.234, "height": -0.208,
+		"neck_thickness": 0.312, "jaw_width": 0.156, "waist": 0.182,
 	},
 	"sty": {
-		"height": 0.09, "leg_length": 0.08, "cheekbone_height": 0.12,
-		"cheekbone_width": -0.06, "waist": -0.07, "nose_width": -0.05,
+		"height": 0.234, "leg_length": 0.208, "cheekbone_height": 0.312,
+		"cheekbone_width": -0.156, "waist": -0.182, "nose_width": -0.130,
 	},
 	"lck": {
-		"build": -0.06, "eye_size": 0.09, "eye_spacing": 0.05,
-		"ear_size": 0.07, "chin_protrusion": -0.05,
+		"build": -0.156, "eye_size": 0.234, "eye_spacing": 0.130,
+		"ear_size": 0.182, "chin_protrusion": -0.130,
 	},
 }
 
