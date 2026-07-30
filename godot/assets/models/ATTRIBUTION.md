@@ -87,3 +87,22 @@ Realistic fills added from [Poly Haven](https://polyhaven.com/models), CC0:
 | `landmark_longhorn_gate` | `large_iron_gate` |
 | `city_prop_a…e` | `concrete_cat_statue`, `painted_wooden_bench`, `fire_hydrant`, `planter_box_01`, `wooden_picnic_table` |
 | `ruin_pillar_a…c` | `gothic_statue`, `horse_statue_01`, `bronze_shark_statue` |
+
+## Generated art — `godot/assets/entities/`
+
+Generated with [Pollinations](https://pollinations.ai) (keyless, free) from
+the prompts in `godot/data/entity_image_prompts/` and
+`scripts/prompt_templates.py`, composed per `STYLE_BIBLE.md`. Reproduce or
+extend with:
+
+```bash
+python3 scripts/prompt_templates.py --matrix --kind race --actions idle \
+    --out build/race_batch.jsonl
+python3 scripts/generate_assets.py --provider pollinations \
+    --jobs build/race_batch.jsonl
+```
+
+Seeds are carried from the authored set where one exists, so a re-run
+reproduces the same image and a single subject can be re-rolled alone.
+Review the licence terms of whichever model Pollinations routes to before a
+commercial release.

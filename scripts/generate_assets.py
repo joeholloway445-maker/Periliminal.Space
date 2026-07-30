@@ -190,7 +190,42 @@ class Replicate:
         return "running", None
 
 
-PROVIDERS = {"tripo": Tripo, "meshy": Meshy, "replicate": Replicate}
+
+class Pollinations:
+    """https://pollinations.ai — keyless text-to-image, free.
+
+    No account, no token, no billing: the prompt goes in the URL and a JPEG
+    comes back. That makes it the one provider that can run right now, so it
+    is the default. Quality is good enough for creature sprites; swap to
+    Replicate later for the same job files if a specific model is wanted.
+
+    Synchronous — the image IS the response — so submit downloads directly
+    and poll never runs.
+    """
+    name = "pollinations"
+    env = None                  # no key
+    base = "https://image.pollinations.ai/prompt/"
+    output_kind = "image"
+    synchronous = True
+
+    def __init__(self, key=None):
+        self.model = os.environ.get("POLLINATIONS_MODEL", "flux")
+
+    def fetch(self, prompt, job, dest):
+        from urllib.parse import quote
+        params = "width=768&height=768&nologo=true&model=%s" % self.model
+        if job.get("seed") is not None:
+            params += "&seed=%d" % (int(job["seed"]) % 2_000_000_000)
+        # Negative prompts ride in the prompt text; the endpoint takes no
+        # separate field.
+        neg = job.get("negative_prompt")
+        text = prompt + ((" Avoid: " + neg) if neg else "")
+        url = "%s%s?%s" % (self.base, quote(text[:1800], safe=""), params)
+        return curl(url, out=dest)
+
+
+PROVIDERS = {"tripo": Tripo, "meshy": Meshy, "replicate": Replicate,
+             "pollinations": Pollinations}
 
 
 def load_jobs(kind, limit, skip_existing=True, image_targets=False):
@@ -211,6 +246,20 @@ def load_jobs(kind, limit, skip_existing=True, image_targets=False):
 
 def run_job(provider, job):
     wants_image = getattr(provider, "output_kind", "model") == "image"
+
+    if getattr(provider, "synchronous", False):
+        dest = os.path.join(REPO, job["sprite_target"])
+        os.makedirs(os.path.dirname(dest), exist_ok=True)
+        prompt = job["sprite_prompt"] if wants_image else job["prompt"]
+        if not provider.fetch(prompt, job, dest):
+            return False, "request failed"
+        with open(dest, "rb") as fh:
+            head = fh.read(4)
+        if not (head.startswith(b"\x89PNG") or head.startswith(b"\xff\xd8")):
+            os.remove(dest)
+            return False, "not an image"
+        return True, None
+
     task_id, err = provider.submit(
         job["sprite_prompt"] if wants_image else job["prompt"], job)
     if not task_id:
@@ -245,7 +294,8 @@ def run_job(provider, job):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--provider", choices=sorted(PROVIDERS), default="tripo")
+    ap.add_argument("--provider", choices=sorted(PROVIDERS), default="pollinations",
+                    help="pollinations needs no key and is the default")
     ap.add_argument("--kind", default="race",
                     help="race / frame / morph_rig / entity / slot / all")
     ap.add_argument("--limit", type=int, default=None)
@@ -273,8 +323,8 @@ def main():
         return 0
 
     cls = PROVIDERS[args.provider]
-    key = os.environ.get(cls.env)
-    if not key:
+    key = os.environ.get(cls.env) if cls.env else None
+    if cls.env and not key:
         sys.exit("set %s to run against %s" % (cls.env, cls.name))
     provider = cls(key)
 

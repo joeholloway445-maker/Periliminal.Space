@@ -182,6 +182,38 @@ def load_subjects():
                     "seed": row.get("seed"),
                 }
 
+    # Frames and morph rigs are subjects too — a frame is worn armour and a
+    # morph rig is a body plan, both of which are drawable.
+    reg = os.path.join(REPO, "godot", "src", "data", "omni_dex_registry.gd")
+    if os.path.exists(reg):
+        rsrc = open(reg, encoding="utf-8").read()
+        blk = re.search(r"const FRAMES: Array\[Dictionary\] = \[(.*?)\n\]", rsrc, re.S)
+        if blk:
+            for fid, fname, ftype, frole in re.findall(
+                    r'\{id="(\w+)", name="([^"]*)", type="(\w+)", role="([^"]*)"\}',
+                    blk.group(1)):
+                subjects["frame_" + fid] = {
+                    "name": "%s frame" % fname, "kind": "frame",
+                    "description": ("A %s-class %s combat frame — worn powered "
+                                    "armour built for the %s role, fitted to a "
+                                    "humanoid wearer." % (ftype, fname, frole)),
+                    "faction": "Factionless", "stage": 0, "seed": None,
+                }
+
+    rigs = os.path.join(REPO, "godot", "src", "data", "morph_rig_data.gd")
+    if os.path.exists(rigs):
+        msrc = open(rigs, encoding="utf-8").read()
+        for mid, mname in re.findall(r'\{id="(\w+)", name="([^"]*)"', msrc):
+            desc = re.search(r'id="%s".*?desc="([^"]*)"' % mid, msrc, re.S)
+            bonus = re.search(r'id="%s".*?bonus="([^"]*)"' % mid, msrc, re.S)
+            subjects["morph_" + mid] = {
+                "name": "%s rig" % mname, "kind": "morph_rig",
+                "description": ("A %s morphological rig — %s%s" % (
+                    mname, desc.group(1) if desc else "an altered body plan.",
+                    (" Grants %s." % bonus.group(1)) if bonus else "")),
+                "faction": "Factionless", "stage": 0, "seed": None,
+            }
+
     omni = os.path.join(REPO, "godot", "src", "data", "omni_dex.gd")
     if os.path.exists(omni):
         src = open(omni, encoding="utf-8").read()
@@ -237,7 +269,9 @@ def main():
     ap.add_argument("--location")
     ap.add_argument("--mode", choices=["sprite", "scene"], default="sprite")
     ap.add_argument("--matrix", action="store_true", help="every combination")
-    ap.add_argument("--kind", choices=["race", "entity", "all"], default="all")
+    ap.add_argument("--kind",
+                    choices=["race", "entity", "frame", "morph_rig", "all"],
+                    default="all")
     ap.add_argument("--actions", help="comma-separated, for --matrix")
     ap.add_argument("--locations", help="comma-separated, for --matrix")
     ap.add_argument("--limit", type=int)
@@ -247,9 +281,11 @@ def main():
     subjects = load_subjects()
 
     if args.list:
+        from collections import Counter
+        counts = Counter(v["kind"] for v in subjects.values())
         races = [k for k, v in subjects.items() if v["kind"] == "race"]
         ents = [k for k, v in subjects.items() if v["kind"] == "entity"]
-        print("subjects: %d races, %d entity stages" % (len(races), len(ents)))
+        print("subjects: " + ", ".join("%d %s" % (n, k) for k, n in sorted(counts.items())))
         print("  races  :", ", ".join(sorted(races)))
         print("  entities: %s ..." % ", ".join(sorted(ents)[:8]))
         print("\nactions  :", ", ".join(ACTIONS))
