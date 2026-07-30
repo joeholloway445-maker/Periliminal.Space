@@ -26,7 +26,9 @@ import sys
 import time
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-JOBS = os.path.join(REPO, "build", "asset_jobs.jsonl")
+# Overridable so a composed matrix from scripts/prompt_templates.py can be
+# fed straight in without regenerating the canonical job list.
+JOBS = os.environ.get("ASSET_JOBS") or os.path.join(REPO, "build", "asset_jobs.jsonl")
 
 POLL_SECONDS = 10
 POLL_TIMEOUT = 900
@@ -247,9 +249,13 @@ def main():
     ap.add_argument("--kind", default="race",
                     help="race / frame / morph_rig / entity / slot / all")
     ap.add_argument("--limit", type=int, default=None)
+    ap.add_argument("--jobs", help="job file (default build/asset_jobs.jsonl, "
+                    "or a matrix from scripts/prompt_templates.py)")
     ap.add_argument("--dry-run", action="store_true",
                     help="list the batch without submitting anything")
     args = ap.parse_args()
+    if args.jobs:
+        globals()["JOBS"] = os.path.abspath(args.jobs)
 
     image_targets = getattr(PROVIDERS[args.provider], "output_kind", "model") == "image"
     jobs = load_jobs(args.kind, args.limit, image_targets=image_targets)
