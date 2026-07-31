@@ -49,3 +49,21 @@ static func combat_for(mod_id: String) -> Dictionary:
 		"defense_mult": 1.0 - res_bonus / 150.0,
 		"crit_chance_bonus": lck_bonus / 100.0 * 0.25,
 	}
+
+## body_scale/hitbox_mult: how big the mod makes you, in world and in
+## collision. A mod that bulks you up (res, or a "towering"-style rig) reads
+## visibly larger AND is easier to hit; a lean speed mod reads smaller and is
+## a harder target. Kept modest — a hitbox that swings too far makes fights
+## feel unfair rather than characterful. Consumers scale the rig's visual
+## and its CollisionShape together so what you see is what you get hit on.
+static func body_for(mod_id: String) -> Dictionary:
+	var s := _stat_bonus(mod_id)
+	var res_bonus := clampf(float(s.get("res", 0)), -RES_CAP, RES_CAP)
+	var spd_bonus := clampf(float(s.get("spd", 0)), -SPD_CAP, SPD_CAP)
+	# Bulk from res pushes size up; agility from spd pulls it down.
+	var scale := 1.0 + res_bonus / 250.0 - spd_bonus / 300.0
+	scale = clampf(scale, 0.85, 1.18)
+	return {
+		"body_scale": scale,
+		"hitbox_mult": scale,
+	}

@@ -58,6 +58,18 @@ func _refresh_mobility() -> void:
 	_accel = BASE_ACCEL * float(mob.accel_mult)
 	_deaccel = BASE_DEACCEL * float(mob.accel_mult)
 	_jump_velocity = BASE_JUMP_VELOCITY * float(mob.jump_mult)
+	_apply_body_scale(mod_id)
+
+## Scales the visible body and its collision shape together, so a bulky mod
+## is both bigger on screen and bigger to hit, and a lean one is smaller on
+## both — what you see is what you get hit on.
+func _apply_body_scale(mod_id: String) -> void:
+	var body := ModMechanics.body_for(mod_id)
+	var s := float(body.get("body_scale", 1.0))
+	if _visual_root != null and is_instance_valid(_visual_root):
+		_visual_root.scale = Vector3.ONE * s
+	if _collision != null and is_instance_valid(_collision):
+		_collision.scale = Vector3.ONE * float(body.get("hitbox_mult", s))
 
 ## Swap between house-cat presentation and the player's true identity form.
 ## Used by the PVXC 15-minute PvE ↔ PvP rotation.
