@@ -38,7 +38,12 @@ POLL_TIMEOUT = 900
 def curl(url, method="GET", headers=None, body=None, out=None):
     """curl rather than requests: this environment's HTTPS egress goes through
     a proxy that urllib does not pick up."""
-    cmd = ["curl", "-sS", "--retry", "3", "--retry-delay", "2", "-X", method]
+    # --max-time is essential, not optional: without it a hung connection
+    # blocks its worker forever and the whole run silently stalls at a
+    # partial count with the process still alive. --connect-timeout catches
+    # a dead peer faster than the default two-minute TCP wait.
+    cmd = ["curl", "-sS", "--retry", "3", "--retry-delay", "2",
+           "--connect-timeout", "20", "--max-time", "120", "-X", method]
     for k, v in (headers or {}).items():
         cmd += ["-H", "%s: %s" % (k, v)]
     if body is not None:
