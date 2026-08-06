@@ -10,6 +10,12 @@ var profile: Dictionary = {}
 var visual_mode := "identity"
 var _body_root: Node3D
 var _plate: Label3D
+## PeriHuman body + last position, so this remote player's legs walk/run at
+## the speed it's actually travelling on screen (measured from position deltas,
+## since remote motion arrives as position updates, not a velocity).
+var _peri_rig: PeriHumanRig
+var _last_pos: Vector3
+var _has_last := false
 
 func setup(id: String, p: Dictionary, mode: String = "identity") -> void:
 	peer_id = id
@@ -45,6 +51,8 @@ func _rebuild_body() -> void:
 	elif body is MeshInstance3D:
 		body.material_override = seen.material
 	_body_root = body
+	_peri_rig = body if body is PeriHumanRig else null
+	_has_last = false
 	add_child(body)
 
 	_plate = Label3D.new()
@@ -59,6 +67,21 @@ func _rebuild_body() -> void:
 		_plate.text = "???" # outclassed: you don't get their name either
 		_plate.modulate = Color(0.4, 0.4, 0.45)
 	add_child(_plate)
+
+## Drive the gait from how far the body actually moved on screen this frame,
+## normalised against the sprint speed a local player tops out at — so a
+## remote player walking looks like walking and sprinting looks like sprinting.
+func _process(delta: float) -> void:
+	if _peri_rig == null or not is_instance_valid(_peri_rig):
+		return
+	if not _has_last:
+		_last_pos = global_position
+		_has_last = true
+		return
+	var moved := Vector2(global_position.x - _last_pos.x, global_position.z - _last_pos.z).length()
+	_last_pos = global_position
+	var speed := moved / maxf(delta, 0.0001)
+	_peri_rig.set_locomotion(speed / ThirdPersonController.BASE_SPRINT_SPEED)
 
 func move_to(pos: Vector3, terrain = null) -> void:
 	var target := pos

@@ -10,6 +10,8 @@ extends Node3D
 ##                                    brow_raise) via set_expression()
 ##   - Idle life                   -> procedural breathing, blinking,
 ##                                    eye saccades, head micro-motion
+##   - Locomotion                  -> procedural walk/run gait driven by
+##                                    set_locomotion(0..1); no clips needed
 ##   - LODs                        -> set_lod(0..2), optional auto_lod
 ##   - Animation retargeting       -> standard humanoid bone names
 ##
@@ -35,6 +37,24 @@ var _expression: Dictionary = {}   # user-set persistent morph targets
 var _chest_idx := -1
 var _head_idx := -1
 var _chest_rest := Vector3.ZERO
+## Locomotion bones + the neutral hip height, cached so the procedural gait
+## (see _walk_pose) doesn't look them up every frame.
+var _hips_idx := -1
+var _spine_idx := -1
+var _l_leg := -1
+var _r_leg := -1
+var _l_calf := -1
+var _r_calf := -1
+var _l_arm := -1
+var _r_arm := -1
+var _hips_rest := Vector3.ZERO
+## 0 = standing, 1 = full run. The controller sets the target each frame via
+## set_locomotion(); _loco eases toward it so starts/stops aren't a snap, and
+## _gait is the walk-cycle phase advanced at a cadence that scales with speed.
+var locomotion_target := 0.0
+var _loco := 0.0
+var _gait := 0.0
+var _loco_active := false
 var _time := 0.0
 var _blink_phase := -1.0
 var _next_blink := 2.0
@@ -67,6 +87,15 @@ func apply_dna(new_dna: HumanDNA, lod: int = 0) -> void:
 	_chest_idx = rig.bones["Chest"]
 	_head_idx = rig.bones["Head"]
 	_chest_rest = _skeleton.get_bone_rest(_chest_idx).origin
+	_hips_idx = rig.bones.get("Hips", -1)
+	_spine_idx = rig.bones.get("Spine", -1)
+	_l_leg = rig.bones.get("LeftUpperLeg", -1)
+	_r_leg = rig.bones.get("RightUpperLeg", -1)
+	_l_calf = rig.bones.get("LeftLowerLeg", -1)
+	_r_calf = rig.bones.get("RightLowerLeg", -1)
+	_l_arm = rig.bones.get("LeftUpperArm", -1)
+	_r_arm = rig.bones.get("RightUpperArm", -1)
+	_hips_rest = _skeleton.get_bone_rest(_hips_idx).origin if _hips_idx >= 0 else Vector3.ZERO
 
 	_body = MeshInstance3D.new()
 	_body.name = "Body"
@@ -209,6 +238,79 @@ func _blink_amount() -> float:
 	var t := _blink_phase / 0.14
 	return 1.0 - absf(t * 2.0 - 1.0)
 
+# ----------------------------------------------------------------- locomotion
+
+## Drive the walk/run cycle. `amount` is 0 (standing) .. 1 (full sprint) —
+## the overworld controller passes horizontal speed normalised by its sprint
+## speed. The rig eases toward it, so there's no need to smooth on the caller
+## side. Values above 1 just cap out at the run pose.
+func set_locomotion(amount: float) -> void:
+	locomotion_target = clampf(amount, 0.0, 1.0)
+
+## Procedural gait: contralateral leg/arm swing with knee flex, a little
+## pelvis twist and forward lean, and a twice-per-stride vertical bob. All
+## amplitudes scale from a walk to a run with _loco, and the whole thing
+## fades to the rest pose as the character stops, so it blends seamlessly
+## with the idle breathing that runs on the spine/head above it.
+func _walk_pose(delta: float) -> void:
+	if _l_leg < 0:
+		return
+	_loco = move_toward(_loco, locomotion_target, delta * 4.5)
+	if _loco <= 0.001:
+		if _loco_active:
+			_reset_walk_bones()
+			_loco_active = false
+		return
+	_loco_active = true
+
+	# Cadence rises with speed; a full cycle is two steps.
+	_gait = fmod(_gait + delta * TAU * lerpf(1.15, 2.7, _loco), TAU)
+	var s := sin(_gait)
+
+	var leg_amp := lerpf(0.16, 0.62, _loco)
+	var arm_amp := lerpf(0.06, 0.34, _loco)
+	var knee_amp := lerpf(0.26, 0.98, _loco)
+	var droop := lerpf(0.0, 0.55, _loco)  # T-pose arms fall to the sides at speed
+
+	# Thighs swing opposite each other about the sideways (X) axis.
+	_pose_x(_l_leg, s * leg_amp)
+	_pose_x(_r_leg, -s * leg_amp)
+	# Knees flex on the forward-swing half of each leg's cycle (they only bend
+	# one way), so the foot lifts as it comes through.
+	_pose_x(_l_calf, -knee_amp * maxf(0.0, sin(_gait)))
+	_pose_x(_r_calf, -knee_amp * maxf(0.0, sin(_gait + PI)))
+	# Arms: droop from the T-pose down to the sides, then counter-swing about
+	# the vertical (Y) — the arm opposite each leg goes forward.
+	_skeleton.set_bone_pose_rotation(_l_arm,
+		Quaternion(Basis.from_euler(Vector3(0.0, -s * arm_amp, -droop))))
+	_skeleton.set_bone_pose_rotation(_r_arm,
+		Quaternion(Basis.from_euler(Vector3(0.0, s * arm_amp, droop))))
+
+	# Pelvis: yaw twist with the stride, plus a slight forward lean into a run
+	# on the spine that counter-rotates the twist so the chest stays square-ish.
+	if _spine_idx >= 0:
+		_skeleton.set_bone_pose_rotation(_spine_idx,
+			Quaternion(Basis.from_euler(Vector3(lerpf(0.0, 0.13, _loco), -s * 0.05 * _loco, 0.0))))
+	_skeleton.set_bone_pose_rotation(_hips_idx,
+		Quaternion(Vector3(0, 1, 0), s * 0.06 * _loco))
+	# Vertical bob: the body lifts twice per stride, at each foot plant.
+	var bob := -0.012 * _loco * (0.5 - 0.5 * cos(2.0 * _gait))
+	_skeleton.set_bone_pose_position(_hips_idx, _hips_rest + Vector3(0, bob, 0))
+
+func _pose_x(bone_idx: int, angle: float) -> void:
+	if bone_idx >= 0:
+		_skeleton.set_bone_pose_rotation(bone_idx, Quaternion(Vector3(1, 0, 0), angle))
+
+## Settle every locomotion-driven bone back to its rest pose in one pass, so a
+## character that stops mid-stride doesn't freeze holding a step.
+func _reset_walk_bones() -> void:
+	for b in [_l_leg, _r_leg, _l_calf, _r_calf, _l_arm, _r_arm, _spine_idx]:
+		if b >= 0:
+			_skeleton.set_bone_pose_rotation(b, Quaternion.IDENTITY)
+	if _hips_idx >= 0:
+		_skeleton.set_bone_pose_rotation(_hips_idx, Quaternion.IDENTITY)
+		_skeleton.set_bone_pose_position(_hips_idx, _hips_rest)
+
 # ------------------------------------------------------------------ idle life
 
 func _process(delta: float) -> void:
@@ -229,9 +331,17 @@ func _process(delta: float) -> void:
 			* sin(Time.get_ticks_msec() * 0.011)
 		_glitch_mat.emission_enabled = true
 		_glitch_mat.emission_energy_multiplier = maxf(0.0, _glitch_base_energy + jitter * 0.8)
-	if not auto_idle or _skeleton == null:
+	if _skeleton == null:
 		return
 	_time += delta
+
+	# Walking/running is a separate layer from idle life — it drives the
+	# legs/arms/pelvis and runs whether or not idle breathing is on, so a
+	# rig with auto_idle off still animates when it moves.
+	_walk_pose(delta)
+
+	if not auto_idle:
+		return
 
 	# Breathing: the chest rises ~4mm on a slow sine.
 	var breath := sin(_time * 1.7) * 0.004

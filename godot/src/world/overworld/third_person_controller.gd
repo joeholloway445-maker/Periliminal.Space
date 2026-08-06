@@ -29,6 +29,9 @@ var _body_mesh: MeshInstance3D
 ## Catsino house skin when player_cat.glb is present.
 var visual_mode := "identity"
 var _visual_root: Node3D
+## The PeriHuman body inside _visual_root, if this build produced one — cached
+## so _physics_process can feed it walk/run speed without searching each frame.
+var _peri_rig: PeriHumanRig
 var _collision: CollisionShape3D
 
 ## The mod actually worn shapes how it feels to move — a turbo_injector
@@ -87,6 +90,7 @@ func _clear_visual() -> void:
 	if _visual_root != null and is_instance_valid(_visual_root):
 		_visual_root.queue_free()
 	_visual_root = null
+	_peri_rig = null
 	_body_mesh = null
 	# Drop leftover ear/mesh children from older builds (keep camera + collider).
 	for c in get_children():
@@ -113,9 +117,22 @@ func _build_body() -> void:
 		return
 	_build_cat_body()
 
+## The PeriHumanRig somewhere in a freshly built visual (it may be wrapped in
+## a plain Node3D root by MetahumanCharacter), or null if this build is a
+## capsule/CharacterRig/GLB with no procedural gait to drive.
+func _find_peri_rig(node: Node) -> PeriHumanRig:
+	if node is PeriHumanRig:
+		return node
+	for child in node.get_children():
+		var found := _find_peri_rig(child)
+		if found != null:
+			return found
+	return null
+
 func _build_identity_body() -> void:
 	var body := MetahumanCharacter.build_player("identity")
 	_visual_root = body
+	_peri_rig = _find_peri_rig(body)
 	add_child(body)
 	# Humanoid collider
 	if _collision != null and _collision.shape is CapsuleShape3D:
@@ -127,6 +144,7 @@ func _build_identity_body() -> void:
 func _build_cat_body() -> void:
 	var body := MetahumanCharacter.build_player("cat")
 	_visual_root = body
+	_peri_rig = _find_peri_rig(body)
 	add_child(body)
 	var humanoid := body is CharacterRig or AssetLibrary.has_asset("player_human") \
 		or AssetLibrary.has_asset("metahuman_player")
@@ -220,6 +238,13 @@ func _physics_process(delta: float) -> void:
 		_spring.rotation = Vector3(_cam_pitch, _cam_yaw - rotation.y, 0.0)
 
 	move_and_slide()
+
+	# Feed horizontal speed to the PeriHuman gait: 0 standing, ~0.45 at a
+	# walk, 1 at a sprint. The rig eases between poses, so the raw ratio is
+	# fine to hand over every frame.
+	if _peri_rig != null and is_instance_valid(_peri_rig):
+		var planar := Vector2(velocity.x, velocity.z).length()
+		_peri_rig.set_locomotion(planar / _sprint_speed if _sprint_speed > 0.0 else 0.0)
 
 	var coord := DiscoveryManager.world_pos_to_chunk(global_position)
 	if coord != _last_chunk:
