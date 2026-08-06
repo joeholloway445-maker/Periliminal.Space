@@ -180,6 +180,30 @@ SEXES = {
     "": "",
 }
 
+# Distinct individuals WITHIN a race. The race's substance, faction palette
+# and material stay fixed; these vary the person — physique, age, face,
+# distinguishing marks — so a starting-race gallery reads as many different
+# beings, not one body recoloured. Each carries its own seed so it is
+# reproducible and stable across runs.
+VARIANTS = {
+    "v1": ("lean and youthful, wiry build, sharp unlined features, "
+           "close-cropped hair, quick alert eyes", 101),
+    "v2": ("powerfully built and broad, heavy muscle and thick neck, a wide "
+           "scarred jaw, close beard, weathered older skin", 202),
+    "v3": ("tall and gaunt, long-limbed and narrow, hollow cheeks, deep-set "
+           "eyes, long lank hair, an ascetic severity", 303),
+    "v4": ("compact and dense, low centre of gravity, rounded heavy features, "
+           "a shaved head, calm and immovable", 404),
+    "v5": ("middle-aged and hard-worn, sinewy, grey at the temples, a broken "
+           "nose, tired knowing eyes", 505),
+    "v6": ("striking and unusually beautiful for the race, fine symmetrical "
+           "features, elaborate hair, composed authority", 606),
+    "v7": ("young and unproven, softer unfinished features, restless posture, "
+           "not yet settled into the race's full form", 707),
+    "v8": ("ancient and formidable, deeply lined and marked by a long life, "
+           "ritual scars and ornament, a presence that stills a room", 808),
+}
+
 
 # --- subjects, from the game's own data ------------------------------------
 
@@ -280,7 +304,7 @@ def load_subjects():
 # --- composition -----------------------------------------------------------
 
 def compose(subject, action=None, location=None, mode="sprite",
-            frame=None, morph=None, sex="", aspect=""):
+            frame=None, morph=None, sex="", aspect="", variant=""):
     """<subject> doing <action> at <location>, in style-bible order.
 
     Frames and morph rigs STACK onto a race rather than standing alone: a
@@ -288,6 +312,10 @@ def compose(subject, action=None, location=None, mode="sprite",
     already wearing it. So a frame view is race+frame and a mod view is
     race+frame+mod — the same layering HumanIdentity does in engine, which is
     where the 20x20x20 identity space comes from.
+
+    `variant` picks an individual within the race (VARIANTS), so a starting
+    gallery shows many different people of the same species rather than one
+    repeated body.
     """
     parts = [LOCKED_PREAMBLE]
 
@@ -297,6 +325,8 @@ def compose(subject, action=None, location=None, mode="sprite",
     parts.append("%s — %s" % (subject["name"], subject["description"]))
     if SEXES.get(sex):
         parts.append(SEXES[sex])
+    if variant and variant in VARIANTS:
+        parts.append("This individual: %s." % VARIANTS[variant][0])
     if ASPECTS.get(aspect):
         parts.append(ASPECTS[aspect])
 
@@ -344,6 +374,9 @@ def main():
                     default="all")
     ap.add_argument("--actions", help="comma-separated, for --matrix")
     ap.add_argument("--locations", help="comma-separated, for --matrix")
+    ap.add_argument("--variants",
+                    help="comma-separated variant ids, or 'all', to generate "
+                         "multiple distinct individuals per race (see VARIANTS)")
     ap.add_argument("--limit", type=int)
     ap.add_argument("--out", default=os.path.join(REPO, "build", "composed_prompts.jsonl"))
     args = ap.parse_args()
@@ -399,32 +432,43 @@ def main():
     # without anyone choosing per entry, and the same id always lands the
     # same way.
     aspects = [x.strip() for x in args.aspects.split(",")] if args.aspects else None
+    if args.variants == "all":
+        variants = list(VARIANTS.keys())
+    elif args.variants:
+        variants = [v.strip() for v in args.variants.split(",") if v.strip() in VARIANTS]
+    else:
+        variants = [""]
 
     rows = []
     for sid, s in sorted(picked.items()):
-      for sex in sexes:
-       for fk in frames:
-        for mk in morphs:
-         fr = subjects.get(fk) if fk else None
-         mo = subjects.get(mk) if mk else None
-         asp = (aspects[hash(sid) % len(aspects)] if aspects
-                else ["noble", "fearsome", "grotesque"][abs(hash(sid)) % 3])
-         suffix = (("_" + sex[0]) if sex else "") + \
-                  ("_" + fk[6:] if fk else "") + ("_" + mk[6:] if mk else "")
-         for a in actions:
+      for var in variants:
+       for sex in sexes:
+        for fk in frames:
+         for mk in morphs:
+          fr = subjects.get(fk) if fk else None
+          mo = subjects.get(mk) if mk else None
+          asp = (aspects[hash(sid) % len(aspects)] if aspects
+                 else ["noble", "fearsome", "grotesque"][abs(hash(sid)) % 3])
+          suffix = (("_" + var) if var else "") + \
+                   (("_" + sex[0]) if sex else "") + \
+                   ("_" + fk[6:] if fk else "") + ("_" + mk[6:] if mk else "")
+          # A per-variant seed makes each individual distinct and reproducible.
+          seed = VARIANTS[var][1] if var else (
+              int(s["seed"]) if str(s.get("seed") or "").isdigit() else None)
+          for a in actions:
             for loc in locations:
                 rows.append({
                     "subject": sid, "kind": s["kind"], "name": s["name"],
                     "action": a, "location": loc, "mode": args.mode,
                     "frame": fk[6:] if fk else "", "morph": mk[6:] if mk else "",
-                    "sex": sex, "aspect": asp,
+                    "sex": sex, "aspect": asp, "variant": var,
                     "sprite_target": "godot/assets/entities/%s%s%s%s.png" % (
                         sid.lower(), suffix, "_" + a if a != "idle" else "",
                         "_" + loc if loc else ""),
-                    "prompt": compose(s, a, loc, args.mode, fr, mo, sex, asp),
-                    "sprite_prompt": compose(s, a, loc, args.mode, fr, mo, sex, asp),
+                    "prompt": compose(s, a, loc, args.mode, fr, mo, sex, asp, var),
+                    "sprite_prompt": compose(s, a, loc, args.mode, fr, mo, sex, asp, var),
                     "negative_prompt": NEGATIVE,
-                    "seed": int(s["seed"]) if str(s.get("seed") or "").isdigit() else None,
+                    "seed": seed,
                     "target": "",
                     "truncated_source": False,
                 })
@@ -432,8 +476,6 @@ def main():
                     break
             if args.limit and len(rows) >= args.limit:
                 break
-        if args.limit and len(rows) >= args.limit:
-            break
 
     os.makedirs(os.path.dirname(args.out), exist_ok=True)
     with open(args.out, "w", encoding="utf-8") as fh:
