@@ -292,6 +292,37 @@ static func movement_for_id(race_id: String) -> Dictionary:
 		return DEFAULT_MOVEMENT.duplicate()
 	return movement(CanonRaces.canon_for_id(race_id))
 
+## The canon race for a world NPC. Honors an explicit canon/race/species field
+## if the NPC data carries one; otherwise assigns a stable race from the NPC's
+## id so the same NPC always speaks and acts as the same race, world to world.
+static func canon_for_npc(npc: Dictionary) -> String:
+	for key in ["canon", "race", "race_id", "species", "breed"]:
+		var v := str(npc.get(key, ""))
+		if v.is_empty():
+			continue
+		if PERSONAS.has(v):
+			return v
+		var c := CanonRaces.canon_for_id(v)
+		if PERSONAS.has(c):
+			return c
+	var id := str(npc.get("id", npc.get("npc_id", npc.get("name", ""))))
+	if id.is_empty():
+		return ""
+	var races: Array = CanonRaces.RACES
+	return str(races[abs(id.hash()) % races.size()])
+
+## A single mannerism as a stage-direction cue ("scans for exits"), chosen
+## deterministically from `seed_value` so a given NPC+line always shows the
+## same one but different lines vary. Empty when the race has no mannerisms.
+static func mannerism_cue(canon_name: String, seed_value: int) -> String:
+	var p: Dictionary = PERSONAS.get(canon_name, {})
+	var m: Array = p.get("mannerisms", [])
+	if m.is_empty():
+		return ""
+	var rng := RandomNumberGenerator.new()
+	rng.seed = seed_value
+	return str(m[rng.randi() % m.size()])
+
 static func voice(canon_name: String) -> Dictionary:
 	var p: Dictionary = PERSONAS.get(canon_name, {})
 	var v: Dictionary = DEFAULT_VOICE.duplicate()
