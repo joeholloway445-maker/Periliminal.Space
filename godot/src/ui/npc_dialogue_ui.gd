@@ -27,6 +27,9 @@ var _typewriter_tween: Tween = null
 ## race mannerisms and spoken in a race-pitched blip as they type out.
 var _canon: String = ""
 var _voice: PersonaVoice = null
+## The player's own voice, so social moves (be kind/mean/flirt) sound like the
+## player's race, distinct from the NPC they're speaking to.
+var _player_voice: PersonaVoice = null
 
 func open_for_npc(npc_id: String) -> void:
 	_npc = WorldLoader.get_npc(npc_id)
@@ -46,7 +49,11 @@ func open_for_npc(npc_id: String) -> void:
 		_voice.configure(RacePersona.voice(_canon))
 	# Word of mouth, not a hive mind: this NPC's opening is based on
 	# firsthand memory first, then rumors that have plausibly reached them.
+	# When there's no rumor, fall back to a greeting in their race's voice, so
+	# the first line still reads as this particular kind of person.
 	_opening_line = WordOfMouth.greeting_line(npc_id)
+	if _opening_line == "" and not _canon.is_empty():
+		_opening_line = RacePersona.greeting_line(_canon, npc_id.hash())
 	_update_disposition_row()
 	_show_node(_start_node)
 	show()
@@ -122,6 +129,10 @@ func _social_btn(label: String, tone: String, reaction: String) -> void:
 	btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	btn.modulate = Color(1, 1, 1, 0.75)
 	btn.pressed.connect(func():
+		# The player "speaks" their move in their own race voice, then the NPC
+		# reacts (that line is voiced by the NPC via _set_dialogue_text).
+		if _player_voice != null:
+			_player_voice.blip()
 		WordOfMouth.record_interaction(_npc_id, tone)
 		_update_disposition_row()
 		_set_dialogue_text("[i]%s[/i]" % reaction)
@@ -157,6 +168,10 @@ func _ready() -> void:
 	hide()
 	_voice = PersonaVoice.new()
 	add_child(_voice)
+	_player_voice = PersonaVoice.new()
+	add_child(_player_voice)
+	if PlayerProfile:
+		_player_voice.configure(RacePersona.voice(RacePersona.canon_for_id(str(PlayerProfile.selected_race_id))))
 	if dialogue_text:
 		dialogue_text.bbcode_enabled = true # word-of-mouth lines use [i]…[/i]
 		dialogue_text.visible_characters = -1
@@ -244,6 +259,10 @@ func _current_disposition() -> int:
 			"mean":
 				score -= 25
 	score += _faction_disposition_modifier()
+	# A race's temperament colours first impressions — warm ones start a little
+	# open, haughty/cold ones make you earn it.
+	if not _canon.is_empty():
+		score += RacePersona.disposition_bias(_canon)
 	return clampi(score, -100, 100)
 
 func _faction_disposition_modifier() -> int:

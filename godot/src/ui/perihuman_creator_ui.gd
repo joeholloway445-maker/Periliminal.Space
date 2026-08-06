@@ -35,6 +35,7 @@ var _race_option: OptionButton
 var _frame_option: OptionButton
 var _mod_option: OptionButton
 var _persona_label: RichTextLabel
+var _persona_voice: PersonaVoice
 
 var _cam_yaw := 0.0
 var _cam_pitch := 0.05
@@ -242,6 +243,9 @@ func _build_identity_tab(tabs: TabContainer) -> void:
 	_persona_label.custom_minimum_size = Vector2(0, 150)
 	_persona_label.modulate = Color(0.85, 0.9, 1.0)
 	vbox.add_child(_persona_label)
+	_persona_voice = PersonaVoice.new()
+	add_child(_persona_voice)
+	_add_button(vbox, "🔊 Hear Voice", func(): _persona_voice.start_speaking(26, 0.7))
 	_race_option.item_selected.connect(func(_i: int): _refresh_persona())
 	_refresh_persona()
 
@@ -255,6 +259,8 @@ func _refresh_persona() -> void:
 	_persona_label.text = RacePersona.describe(race_id)
 	if _rig != null:
 		_rig.apply_persona(RacePersona.movement_for_id(race_id))
+	if _persona_voice != null:
+		_persona_voice.configure(RacePersona.voice(RacePersona.canon_for_id(race_id)))
 
 func _select_by_id(option: OptionButton, table: Array, id: String, index_offset: int = 0) -> void:
 	for i in table.size():

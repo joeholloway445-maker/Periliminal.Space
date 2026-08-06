@@ -41,10 +41,15 @@ var _confirm_btn: Button
 var _back_btn: Button
 var _tiles: Array[Button] = []
 var _entries: Array = []
+## Hear the race you're browsing — a short greeting blip in its voice as you
+## move the cursor over the roster, and the new fighter's first words on FIGHT.
+var _voice: PersonaVoice
 
 func _ready() -> void:
 	MusicManager.play_context("theme")
 	_build_ui()
+	_voice = PersonaVoice.new()
+	add_child(_voice)
 	_render_step()
 
 func _build_ui() -> void:
@@ -251,6 +256,10 @@ func _update_portrait() -> void:
 		_show_art(str(e.get("id", "")))
 	_portrait_label.text = str(e.name).to_upper()
 	_detail.text = "%s\n\n[color=#ffd88a]%s[/color]" % [e.get("blurb", ""), e.get("stats", "")]
+	# Hear the race as you browse it.
+	if STEPS[_step] == "race" and _voice != null:
+		_voice.configure(RacePersona.voice(RacePersona.canon_for_id(str(e.get("id", "")))))
+		_voice.start_speaking(8, 0.32)
 
 func _render_final_preview() -> void:
 	var stats := CharacterCreatorLogic.build_starting_stats(_picked.race, _picked.faction, _picked.frame)
@@ -276,6 +285,12 @@ func _confirm_step() -> void:
 		CharacterCreatorLogic.apply_creation(_picked.race, _picked.faction, _picked.frame, cat_name)
 		PlayerProfile.set_mod(_picked.mod)
 		PlayerProfile.set_variant(str(_picked.get("variant", "")))
+		# The new fighter's first words, in their race's voice.
+		if _voice != null:
+			var canon := RacePersona.canon_for_id(str(_picked.race))
+			_voice.configure(RacePersona.voice(canon))
+			var hello := RacePersona.greeting_line(canon, cat_name.hash())
+			_voice.start_speaking(maxi(hello.length(), 8), 0.6)
 		venture_started.emit()
 		# A new venture starts in the wilds, not the safety of the
 		# Subliminal — thrown straight into the Liminal.

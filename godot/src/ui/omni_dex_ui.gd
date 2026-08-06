@@ -120,10 +120,19 @@ func _on_select(idx: int) -> void:
 	var data: Dictionary = meta.get("data", {})
 	match kind:
 		"race":
-			_detail.text = "[b]%s[/b]\nCasino skin: %s\n\n%s" % [
+			var persona := RacePersona.describe(str(data.get("id", "")))
+			var voice := RacePersona.voice(RacePersona.canon_for_id(str(data.get("id", ""))))
+			var persona_block := ""
+			if persona != "":
+				persona_block = "\n\n[color=#9fd0ff][b]Persona[/b]\n%s\nVoice: %s, %s[/color]" % [
+					persona, str(voice.get("cadence", "even")),
+					("low" if float(voice.get("pitch", 1.0)) < 0.95 else ("high" if float(voice.get("pitch", 1.0)) > 1.05 else "mid")),
+				]
+			_detail.text = "[b]%s[/b]\nCasino skin: %s\n\n%s%s" % [
 				meta.get("canon", data.get("name", "?")),
 				data.get("name", "?"),
 				data.get("lore", ""),
+				persona_block,
 			]
 		"frame":
 			_detail.text = "[b]%s[/b]  —  %s %s\nRole: %s\n\nCanonical OmniDex identity frame (%d total)." % [
