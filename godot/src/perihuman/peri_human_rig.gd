@@ -55,6 +55,17 @@ var locomotion_target := 0.0
 var _loco := 0.0
 var _gait := 0.0
 var _loco_active := false
+## Persona movement modifiers (RacePersona.movement()). Neutral by default so
+## a rig with no persona moves like an average person; a race stamps these to
+## read as jittery/ponderous/haughty/etc. through motion alone.
+##   idle_energy  — fidget/sway/saccade rate when standing (0.5 calm .. 1.6 hyper)
+##   gait_cadence — walk-cycle speed multiplier (0.8 lumbering .. 1.2 quick)
+##   posture_lean — constant spine lean; + hunches forward, − stands back/proud
+##   swagger      — hip roll + shoulder sway amplitude while walking
+var idle_energy := 1.0
+var gait_cadence := 1.0
+var posture_lean := 0.0
+var swagger := 0.2
 var _time := 0.0
 var _blink_phase := -1.0
 var _next_blink := 2.0
@@ -247,6 +258,15 @@ func _blink_amount() -> float:
 func set_locomotion(amount: float) -> void:
 	locomotion_target = clampf(amount, 0.0, 1.0)
 
+## Stamp a race's movement personality (RacePersona.movement()) onto this rig
+## so it stands, fidgets, and walks in character. Safe to call any time; only
+## the keys present are overridden.
+func apply_persona(move: Dictionary) -> void:
+	idle_energy = float(move.get("idle_energy", idle_energy))
+	gait_cadence = float(move.get("gait_cadence", gait_cadence))
+	posture_lean = float(move.get("posture_lean", posture_lean))
+	swagger = float(move.get("swagger", swagger))
+
 ## Procedural gait: contralateral leg/arm swing with knee flex, a little
 ## pelvis twist and forward lean, and a twice-per-stride vertical bob. All
 ## amplitudes scale from a walk to a run with _loco, and the whole thing
@@ -258,19 +278,23 @@ func _walk_pose(delta: float) -> void:
 	_loco = move_toward(_loco, locomotion_target, delta * 4.5)
 	if _loco <= 0.001:
 		if _loco_active:
-			_reset_walk_bones()
+			_reset_walk_limbs()
 			_loco_active = false
+		# Even standing still, hold the race's resting posture on the spine.
+		_apply_spine(0.0, 0.0)
 		return
 	_loco_active = true
 
-	# Cadence rises with speed; a full cycle is two steps.
-	_gait = fmod(_gait + delta * TAU * lerpf(1.15, 2.7, _loco), TAU)
+	# Cadence rises with speed; a full cycle is two steps. gait_cadence lets a
+	# race step quicker (Volt) or lumber (Petra).
+	_gait = fmod(_gait + delta * TAU * lerpf(1.15, 2.7, _loco) * gait_cadence, TAU)
 	var s := sin(_gait)
 
 	var leg_amp := lerpf(0.16, 0.62, _loco)
 	var arm_amp := lerpf(0.06, 0.34, _loco)
 	var knee_amp := lerpf(0.26, 0.98, _loco)
 	var droop := lerpf(0.0, 0.55, _loco)  # T-pose arms fall to the sides at speed
+	var arm_roll := swagger * 0.12 * _loco  # a wide, rolling gait carries the arms out
 
 	# Thighs swing opposite each other about the sideways (X) axis.
 	_pose_x(_l_leg, s * leg_amp)
@@ -282,29 +306,39 @@ func _walk_pose(delta: float) -> void:
 	# Arms: droop from the T-pose down to the sides, then counter-swing about
 	# the vertical (Y) — the arm opposite each leg goes forward.
 	_skeleton.set_bone_pose_rotation(_l_arm,
-		Quaternion(Basis.from_euler(Vector3(0.0, -s * arm_amp, -droop))))
+		Quaternion(Basis.from_euler(Vector3(0.0, -s * arm_amp, -droop - arm_roll))))
 	_skeleton.set_bone_pose_rotation(_r_arm,
-		Quaternion(Basis.from_euler(Vector3(0.0, s * arm_amp, droop))))
+		Quaternion(Basis.from_euler(Vector3(0.0, s * arm_amp, droop + arm_roll))))
 
-	# Pelvis: yaw twist with the stride, plus a slight forward lean into a run
-	# on the spine that counter-rotates the twist so the chest stays square-ish.
-	if _spine_idx >= 0:
-		_skeleton.set_bone_pose_rotation(_spine_idx,
-			Quaternion(Basis.from_euler(Vector3(lerpf(0.0, 0.13, _loco), -s * 0.05 * _loco, 0.0))))
+	# Spine: the race's resting lean, plus a forward lean into a run and a
+	# stride counter-twist so the chest stays square-ish over a twisting pelvis.
+	_apply_spine(lerpf(0.0, 0.13, _loco), -s * 0.05 * _loco)
+	# Pelvis: yaw twist with the stride + a swagger side-roll (Z).
 	_skeleton.set_bone_pose_rotation(_hips_idx,
-		Quaternion(Vector3(0, 1, 0), s * 0.06 * _loco))
-	# Vertical bob: the body lifts twice per stride, at each foot plant.
+		Quaternion(Basis.from_euler(Vector3(0.0, s * 0.06 * _loco, -s * swagger * 0.14 * _loco))))
+	# Vertical bob (twice per stride, each foot plant) + a swagger lateral sway.
 	var bob := -0.012 * _loco * (0.5 - 0.5 * cos(2.0 * _gait))
-	_skeleton.set_bone_pose_position(_hips_idx, _hips_rest + Vector3(0, bob, 0))
+	var sway := s * swagger * 0.02 * _loco
+	_skeleton.set_bone_pose_position(_hips_idx, _hips_rest + Vector3(sway, bob, 0.0))
 
 func _pose_x(bone_idx: int, angle: float) -> void:
 	if bone_idx >= 0:
 		_skeleton.set_bone_pose_rotation(bone_idx, Quaternion(Vector3(1, 0, 0), angle))
 
-## Settle every locomotion-driven bone back to its rest pose in one pass, so a
-## character that stops mid-stride doesn't freeze holding a step.
-func _reset_walk_bones() -> void:
-	for b in [_l_leg, _r_leg, _l_calf, _r_calf, _l_arm, _r_arm, _spine_idx]:
+## Spine pose = the race's persistent posture lean plus any transient walk
+## lean/twist. Kept in one place so a standing character still carries its
+## posture (a proud Ferros leans back, a furtive Keth hunches forward).
+func _apply_spine(extra_lean: float, twist: float) -> void:
+	if _spine_idx < 0:
+		return
+	_skeleton.set_bone_pose_rotation(_spine_idx,
+		Quaternion(Basis.from_euler(Vector3(posture_lean + extra_lean, twist, 0.0))))
+
+## Settle the swinging limbs (legs/arms/hips) back to rest in one pass when the
+## character stops, so it doesn't freeze holding a step. Spine is handled by
+## _apply_spine so the resting posture survives.
+func _reset_walk_limbs() -> void:
+	for b in [_l_leg, _r_leg, _l_calf, _r_calf, _l_arm, _r_arm]:
 		if b >= 0:
 			_skeleton.set_bone_pose_rotation(b, Quaternion.IDENTITY)
 	if _hips_idx >= 0:
@@ -348,8 +382,13 @@ func _process(delta: float) -> void:
 	_skeleton.set_bone_pose_position(_chest_idx, _chest_rest + Vector3(0, breath, breath * 0.5))
 
 	# Head micro-motion: barely-there drift sells "alive" more than anything.
+	# idle_energy scales both how wide and how fast it stirs, so a calm Kryos
+	# is nearly still while a live-wire Volt fidgets and twitches.
+	var e := idle_energy
 	var sway := Basis.from_euler(Vector3(
-		sin(_time * 0.43) * 0.015, sin(_time * 0.31) * 0.03, sin(_time * 0.57) * 0.008))
+		sin(_time * 0.43 * e) * 0.015 * e,
+		sin(_time * 0.31 * e) * 0.03 * e,
+		sin(_time * 0.57 * e) * 0.008 * e))
 	_skeleton.set_bone_pose_rotation(_head_idx, Quaternion(sway))
 
 	# Blinking.
@@ -362,12 +401,14 @@ func _process(delta: float) -> void:
 		_next_blink -= delta
 		if _next_blink <= 0.0:
 			_blink_phase = 0.0
-			_next_blink = randf_range(1.8, 5.5)
+			# Nervier (higher-energy) races blink more often.
+			_next_blink = randf_range(1.8, 5.5) / maxf(0.5, idle_energy)
 
-	# Eye saccades: quick small refixations, both eyes together.
+	# Eye saccades: quick small refixations, both eyes together. Higher-energy
+	# races refixate more often, so their gaze darts around.
 	_next_saccade -= delta
 	if _next_saccade <= 0.0:
-		_next_saccade = randf_range(0.6, 2.4)
+		_next_saccade = randf_range(0.6, 2.4) / maxf(0.4, idle_energy)
 		var yaw := randf_range(-0.07, 0.07)
 		var pitch := randf_range(-0.04, 0.04)
 		for eye in _eyes:

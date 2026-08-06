@@ -34,6 +34,7 @@ var _saved_list: ItemList
 var _race_option: OptionButton
 var _frame_option: OptionButton
 var _mod_option: OptionButton
+var _persona_label: RichTextLabel
 
 var _cam_yaw := 0.0
 var _cam_pitch := 0.05
@@ -234,6 +235,27 @@ func _build_identity_tab(tabs: TabContainer) -> void:
 
 	_add_button(vbox, "🧬 Generate", _on_generate_identity)
 
+	_section(vbox, "PERSONA  (how this race carries itself)")
+	_persona_label = RichTextLabel.new()
+	_persona_label.bbcode_enabled = true
+	_persona_label.fit_content = true
+	_persona_label.custom_minimum_size = Vector2(0, 150)
+	_persona_label.modulate = Color(0.85, 0.9, 1.0)
+	vbox.add_child(_persona_label)
+	_race_option.item_selected.connect(func(_i: int): _refresh_persona())
+	_refresh_persona()
+
+## Show the selected race's temperament/mannerisms and push its movement
+## personality onto the live preview so you can see how it stands and (with the
+## gait slider) walks — not just what it looks like.
+func _refresh_persona() -> void:
+	if _persona_label == null or _race_option.selected < 0:
+		return
+	var race_id := str(RaceDataCharacter.RACES[_race_option.selected].id)
+	_persona_label.text = RacePersona.describe(race_id)
+	if _rig != null:
+		_rig.apply_persona(RacePersona.movement_for_id(race_id))
+
 func _select_by_id(option: OptionButton, table: Array, id: String, index_offset: int = 0) -> void:
 	for i in table.size():
 		if table[i].id == id:
@@ -252,6 +274,9 @@ func _on_generate_identity() -> void:
 		mod_id = str(FrameModData.MODS[_mod_option.selected - 1].id)
 	var seed_value := (PlayerProfile.username.hash() if PlayerProfile else 0) ^ race_id.hash()
 	_load_dna(HumanIdentity.build(race_id, frame_id, mod_id, seed_value))
+	if _rig != null:
+		_rig.apply_persona(RacePersona.movement_for_id(race_id))
+	_refresh_persona()
 
 func _build_presets_tab(tabs: TabContainer) -> void:
 	var vbox := _scroll_vbox(tabs, "Presets")
@@ -308,6 +333,27 @@ func _build_presets_tab(tabs: TabContainer) -> void:
 		var morph_id := morph
 		slider.value_changed.connect(func(v: float): _rig.set_expression(morph_id, v))
 		row.add_child(slider)
+
+	_section(vbox, "MOVEMENT TEST (preview only)")
+	var move_note := Label.new()
+	move_note.text = "Scrub the gait from a standstill (0) to a full\nrun (1) to preview this human walking. The\nrace's Persona sets its tempo, posture, swagger."
+	move_note.modulate = Color(1, 1, 1, 0.6)
+	vbox.add_child(move_note)
+	var gait_row := HBoxContainer.new()
+	vbox.add_child(gait_row)
+	var gait_lbl := Label.new()
+	gait_lbl.text = "Gait"
+	gait_lbl.custom_minimum_size = Vector2(120, 0)
+	gait_row.add_child(gait_lbl)
+	var gait_slider := HSlider.new()
+	gait_slider.min_value = 0.0
+	gait_slider.max_value = 1.0
+	gait_slider.step = 0.01
+	gait_slider.custom_minimum_size = Vector2(200, 0)
+	gait_slider.value_changed.connect(func(v: float):
+		if _rig != null:
+			_rig.set_locomotion(v))
+	gait_row.add_child(gait_slider)
 
 func _build_gene_tab(tabs: TabContainer, tab_name: String, groups: Array) -> void:
 	_build_gene_tab_into(_scroll_vbox(tabs, tab_name), groups)

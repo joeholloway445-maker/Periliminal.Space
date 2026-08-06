@@ -160,7 +160,7 @@ func _render_step() -> void:
 			_title.text = "CHOOSE YOUR RACE"
 			_entries = RaceDataCharacter.RACES.map(func(r): return {
 				"id": r.id, "name": OmniDexRegistry.race_display_name(str(r.id)), "color": r.primary_color,
-				"blurb": r.lore, "stats": "POW %d  RES %d  SPD %d  LCK %d  STY %d" % [r.pow, r.res, r.spd, r.lck, r.sty],
+				"blurb": _race_blurb(r), "stats": "POW %d  RES %d  SPD %d  LCK %d  STY %d" % [r.pow, r.res, r.spd, r.lck, r.sty],
 			})
 		"look":
 			_title.text = "CHOOSE YOUR STARTING LOOK"
@@ -201,6 +201,14 @@ func _render_step() -> void:
 	_cursor = 0
 	_build_roster()
 	_update_portrait()
+
+## Race lore plus its persona tag, so the pick reads as a kind of person —
+## how they carry themselves, not just their stats.
+func _race_blurb(r) -> String:
+	var persona := RacePersona.short(str(r.id))
+	if persona.is_empty():
+		return str(r.lore)
+	return "%s\n\n[color=#9fd0ff]%s[/color]" % [str(r.lore), persona]
 
 func _hash_color(seed_str: String) -> Color:
 	var h := hash(seed_str)

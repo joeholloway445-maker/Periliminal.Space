@@ -121,6 +121,11 @@ static func _native_player() -> Node3D:
 			str(PlayerProfile.selected_variant))
 	else:
 		rig.dna = HumanPresets.get_preset(0)
+	# Move in character: the race's persona sets how this body stands, fidgets,
+	# and walks (idle energy, gait tempo, posture, swagger), even when the DNA
+	# came from a hand-sculpted genome.
+	if PlayerProfile and not str(PlayerProfile.selected_race_id).is_empty():
+		rig.apply_persona(RacePersona.movement_for_id(PlayerProfile.selected_race_id))
 	rig.auto_lod = true
 	return rig
 
@@ -132,6 +137,7 @@ static func _native_npc(race_id: String, frame_id: String = "", mod_id: String =
 	var rig := PeriHumanRig.new()
 	if not race_id.is_empty():
 		rig.dna = HumanIdentity.build(race_id, frame_id, mod_id, race_id.hash(), variant_id)
+		rig.apply_persona(RacePersona.movement_for_id(race_id))
 	else:
 		# A fixed seed here made every race-less citizen the same person; the
 		# caller's body_seed (peer/citizen id) keeps each one stable but distinct.
