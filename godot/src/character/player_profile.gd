@@ -12,6 +12,11 @@ var level: int = 1
 var xp: int = 0
 var faction: String = "Factionless"
 var selected_race_id: String = "tabby"
+## The starting-look variant picked from the gallery ("v1".."v8", or ""
+## for none). It shapes the PeriHuman rig's build/age/features on top of the
+## race, so the pick a player makes at creation is the body they actually
+## walk around in — not just the portrait shown beside it. See VariantPresets.
+var selected_variant: String = ""
 var selected_frame: String = "veil"
 ## Second frame, chosen at Champion ascension (level 50+). Empty until then.
 var ascended_frame: String = ""
@@ -56,6 +61,7 @@ func _load() -> void:
 	xp = data.get("xp", 0)
 	faction = data.get("faction", "Factionless")
 	selected_race_id = data.get("selected_race_id", "tabby")
+	selected_variant = str(data.get("selected_variant", ""))
 	selected_frame = data.get("selected_frame", "veil")
 	ascended_frame = data.get("ascended_frame", "")
 	selected_mod = data.get("selected_mod", "")
@@ -81,6 +87,7 @@ func _save() -> void:
 		"xp": xp,
 		"faction": faction,
 		"selected_race_id": selected_race_id,
+		"selected_variant": selected_variant,
 		"selected_frame": selected_frame,
 		"ascended_frame": ascended_frame,
 		"selected_mod": selected_mod,
@@ -127,6 +134,17 @@ func set_race(race_id: String) -> void:
 
 func set_frame(frame_id: String) -> void:
 	selected_frame = frame_id
+	_save()
+	profile_updated.emit()
+
+## The gallery starting-look pick ("v1".."v8"). Clearing it ("") drops back
+## to the race's default body. Also clears any authored PeriHuman genome so
+## the new pick actually takes effect — a stored custom DNA would otherwise
+## win in MetahumanCharacter's fallback chain.
+func set_variant(variant_id: String) -> void:
+	selected_variant = variant_id
+	if not perihuman_dna.is_empty():
+		perihuman_dna = {}
 	_save()
 	profile_updated.emit()
 

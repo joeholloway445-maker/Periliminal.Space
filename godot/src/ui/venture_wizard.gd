@@ -9,7 +9,7 @@ extends Control
 
 signal venture_started()
 
-const STEPS := ["race", "faction", "frame", "mod", "name"]
+const STEPS := ["race", "look", "faction", "frame", "mod", "name"]
 const FACTIONS := ["Factionless", "SovereignCrown", "WildlandsAscendant", "VeiledCurrent"]
 const FACTION_COLORS := {
 	"Factionless": Color(0.6, 0.6, 0.65), "SovereignCrown": Color(0.85, 0.7, 0.25),
@@ -162,6 +162,17 @@ func _render_step() -> void:
 				"id": r.id, "name": OmniDexRegistry.race_display_name(str(r.id)), "color": r.primary_color,
 				"blurb": r.lore, "stats": "POW %d  RES %d  SPD %d  LCK %d  STY %d" % [r.pow, r.res, r.spd, r.lck, r.sty],
 			})
+		"look":
+			_title.text = "CHOOSE YOUR STARTING LOOK"
+			# Eight distinct individuals of the chosen race. The pick reshapes
+			# the PeriHuman rig (build/age/features via VariantPresets), and its
+			# portrait — when generated — previews that body. Every race offers
+			# all eight even before its full gallery is generated, because the
+			# variant drives the actual skeleton, not just the picture.
+			_entries = VariantPresets.IDS.map(func(v): return {
+				"id": v, "name": VariantPresets.label(v), "color": _hash_color(v),
+				"blurb": VariantPresets.blurb(v), "stats": "",
+			})
 		"faction":
 			_title.text = "PLEDGE YOUR BANNER"
 			_entries = FACTIONS.map(func(f): return {
@@ -224,7 +235,12 @@ func _update_portrait() -> void:
 		return
 	var e: Dictionary = _entries[_cursor]
 	_portrait.color = e.color
-	_show_art(str(e.get("id", "")))
+	if STEPS[_step] == "look":
+		# Preview this variant on the race already chosen, so the panel shows
+		# the individual the pick produces (or the plain race art as fallback).
+		_show_variant_art(str(_picked.get("race", "")), str(e.get("id", "")))
+	else:
+		_show_art(str(e.get("id", "")))
 	_portrait_label.text = str(e.name).to_upper()
 	_detail.text = "%s\n\n[color=#ffd88a]%s[/color]" % [e.get("blurb", ""), e.get("stats", "")]
 
@@ -235,8 +251,10 @@ func _render_final_preview() -> void:
 	# Final preview knows the whole build, so it can ask for the exact stack.
 	_show_art(str(_picked.race), str(_picked.get("frame", "")), str(_picked.get("mod", "")))
 	_portrait_label.text = str(_picked.get("race_name", "?")).to_upper()
-	_detail.text = "%s | %s | %s\n\nPOW %d  RES %d  SPD %d  LCK %d  STY %d\n\n%s" % [
-		_picked.get("race_name", "?"), _picked.faction, _picked.get("frame_name", "?"),
+	var look := str(_picked.get("variant", ""))
+	var look_line := " (%s)" % VariantPresets.label(look) if not look.is_empty() else ""
+	_detail.text = "%s%s | %s | %s\n\nPOW %d  RES %d  SPD %d  LCK %d  STY %d\n\n%s" % [
+		_picked.get("race_name", "?"), look_line, _picked.faction, _picked.get("frame_name", "?"),
 		stats.pow, stats.res, stats.spd, stats.lck, stats.sty, sensorium.desc,
 	]
 
@@ -249,6 +267,7 @@ func _confirm_step() -> void:
 			return
 		CharacterCreatorLogic.apply_creation(_picked.race, _picked.faction, _picked.frame, cat_name)
 		PlayerProfile.set_mod(_picked.mod)
+		PlayerProfile.set_variant(str(_picked.get("variant", "")))
 		venture_started.emit()
 		# A new venture starts in the wilds, not the safety of the
 		# Subliminal — thrown straight into the Liminal.
@@ -262,6 +281,8 @@ func _confirm_step() -> void:
 		"race":
 			_picked["race"] = e.id
 			_picked["race_name"] = e.name
+		"look":
+			_picked["variant"] = e.id
 		"faction":
 			_picked["faction"] = e.id
 		"frame":
@@ -289,4 +310,14 @@ func _show_art(race_id: String, frame_id: String = "", mod_id: String = "") -> v
 	_portrait_art.visible = tex != null
 	# Label is hard to read over a busy illustration; dim the plate instead
 	# of hiding the name.
+	_portrait_label.modulate = Color(1, 1, 1, 0.85) if tex != null else Color.WHITE
+
+## Same as _show_art but for a specific starting-look variant, falling back to
+## the plain race illustration when that variant was not generated.
+func _show_variant_art(race_id: String, variant_id: String) -> void:
+	if _portrait_art == null:
+		return
+	var tex := IdentityArt.variant_portrait(race_id, variant_id)
+	_portrait_art.texture = tex
+	_portrait_art.visible = tex != null
 	_portrait_label.modulate = Color(1, 1, 1, 0.85) if tex != null else Color.WHITE

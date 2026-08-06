@@ -117,7 +117,8 @@ static func _native_player() -> Node3D:
 	elif PlayerProfile and not str(PlayerProfile.selected_race_id).is_empty():
 		rig.dna = HumanIdentity.build(
 			PlayerProfile.selected_race_id, PlayerProfile.selected_frame,
-			PlayerProfile.selected_mod, PlayerProfile.username.hash())
+			PlayerProfile.selected_mod, PlayerProfile.username.hash(),
+			str(PlayerProfile.selected_variant))
 	else:
 		rig.dna = HumanPresets.get_preset(0)
 	rig.auto_lod = true
@@ -127,10 +128,10 @@ static func _native_player() -> Node3D:
 ## composed via HumanIdentity so their species reads correctly, seeded off
 ## the race id so the same citizen always wears the same face everywhere.
 static func _native_npc(race_id: String, frame_id: String = "", mod_id: String = "",
-		body_seed: int = 0) -> Node3D:
+		body_seed: int = 0, variant_id: String = "") -> Node3D:
 	var rig := PeriHumanRig.new()
 	if not race_id.is_empty():
-		rig.dna = HumanIdentity.build(race_id, frame_id, mod_id, race_id.hash())
+		rig.dna = HumanIdentity.build(race_id, frame_id, mod_id, race_id.hash(), variant_id)
 	else:
 		# A fixed seed here made every race-less citizen the same person; the
 		# caller's body_seed (peer/citizen id) keeps each one stable but distinct.

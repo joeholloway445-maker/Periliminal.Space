@@ -75,3 +75,17 @@ static func label(variant_id: String) -> String:
 		"v1": "Youth", "v2": "Veteran", "v3": "Ascetic", "v4": "Bulwark",
 		"v5": "Worn", "v6": "Radiant", "v7": "Untried", "v8": "Elder",
 	}.get(variant_id, variant_id)
+
+## A one-line description for the creator's detail panel, matching the body
+## each preset produces.
+static func blurb(variant_id: String) -> String:
+	return {
+		"v1": "Lean and youthful — wiry, sharp-featured, quick on their feet.",
+		"v2": "Powerfully built and broad — heavy muscle, scarred and weathered.",
+		"v3": "Tall and gaunt — long-limbed, hollow-cheeked, ascetic.",
+		"v4": "Compact and dense — low, heavy, immovable.",
+		"v5": "Middle-aged and hard-worn — sinewy, grey, unbreakable.",
+		"v6": "Striking and unusually beautiful — fine, symmetrical features.",
+		"v7": "Young and unproven — softer, unfinished, everything still ahead.",
+		"v8": "Ancient and formidable — deeply lined, ritual-marked, undimmed.",
+	}.get(variant_id, "")
