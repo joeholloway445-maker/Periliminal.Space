@@ -18,9 +18,22 @@ and materials already use — so a race resolves the same way everywhere.
 | `voice{}` | `pitch`, `rasp`, `cadence` → the synthesized voice |
 | `style[]`, `tech_affinity` | aesthetic tags (hood/plate/tech…) for wardrobe/gallery |
 
-Plus shared, mood-bucketed pools so bark writing scales without 20 bespoke
-sets: `MOOD_OF[canon]` → one of a dozen moods; `MOOD_BARKS`, `MOOD_GREETINGS`,
-and `MOOD_COLOR` are keyed by mood.
+Pooled content (chatter, greetings, musings, taunts, farewells, flirts, story
+lines, mood colours) lives in **`src/data/persona_buckets.gd`** — a shared,
+tag-keyed template engine. A race maps to one tag per axis (`MOOD_OF` for
+temperament channels, `STANCE_OF` for the story axis), so a dozen mood buckets
+cover all twenty races and adding a race is just picking tags — no new prose.
+`RACE_OVERRIDES[canon][channel]` gives a specific race bespoke lines that win
+over the shared bucket. This is memory-light: pools are shared constants, not
+per-instance copies. `RacePersona` delegates all pooled content to it
+(`bark_line`, `greeting_line`, `line(channel,…)`, `mood_color`, `stance…`).
+
+**Adding content:** new channel → add its pool + a `CHANNELS`/`CHANNEL_AXIS`
+entry; unique lines for one race → `RACE_OVERRIDES`; retune a whole temperament
+→ edit its bucket once and every race on that tag updates.
+
+**Story axis:** the Theory-of-Everything storyline (Singularity / Anti-
+Singularity) is a first-class stance axis here — see `docs/STORY_SINGULARITY.md`.
 
 Key helpers: `movement()/movement_for_id()`, `voice()`, `describe()/short()`,
 `mannerism_cue()`, `bark_line()`, `greeting_line()`, `disposition_bias()`,

@@ -273,97 +273,56 @@ const DEFAULT_MOVEMENT := {
 }
 const DEFAULT_VOICE := {"pitch": 1.0, "rasp": 0.2, "cadence": "even"}
 
-## A broad "mood" per race — the shared temperament bucket its ambient chatter
-## and greetings are drawn from, so bark writing scales without twenty bespoke
-## pools while each race still sounds like itself (its own voice, mannerisms,
-## and quirk sit on top).
-const MOOD_OF := {
-	"Keth": "furtive", "Lumari": "proud", "Vex": "dreamy", "Ferox": "brash",
-	"Azhul": "cryptic", "Sylva": "warm", "Geara": "hyper", "Nyx": "grim",
-	"Aquis": "calm", "Igni": "brash", "Kryos": "cold", "Myco": "calm",
-	"Volt": "hyper", "Petra": "stoic", "Sanguis": "grim", "Chimera": "hyper",
-	"Astra": "dreamy", "Ferros": "proud", "Etherea": "dreamy", "Glyphe": "pedantic",
-}
-
-## Idle/ambient chatter — what a wandering NPC of this mood mutters to no one.
-const MOOD_BARKS := {
-	"furtive": ["Nothing to see here.", "...who's asking?", "Keep moving.",
-		"I didn't see anything.", "Eyes on the exits."],
-	"proud": ["Mind the finish.", "You may look. Briefly.", "Quality, obviously.",
-		"Do try to keep up.", "Standards, darling."],
-	"dreamy": ["...where was I?", "The light's strange today.", "Mm. Far away.",
-		"Did you feel that?", "...oh. You're still here."],
-	"brash": ["Out of my way.", "You want something?", "Ha! Weak.",
-		"Step up or step off.", "That all you got?"],
-	"cryptic": ["I already knew you'd pass.", "It ends as it must.", "Curious. As foreseen.",
-		"You'll understand later.", "The odds favor silence."],
-	"warm": ["Good to see you.", "Growing nicely, isn't it?", "Take care out there.",
-		"Sit a while.", "The garden remembers you."],
-	"hyper": ["Hi-hi-hey! Busy busy.", "Ooh what's that— nevermind.", "Quickquick, no time!",
-		"Didyouseethat? Never mind!", "Three things at once, easy."],
-	"grim": ["Don't.", "It never lasts.", "Everything ends.",
-		"You'll learn.", "...still here, then."],
-	"calm": ["It flows.", "No rush.", "All in time.",
-		"Easy does it.", "We drift."],
-	"cold": ["...", "Patience.", "In due course.",
-		"The cold keeps.", "You're early. Or late. No matter."],
-	"pedantic": ["Technically incorrect.", "Actually, the term is—", "Cite your source.",
-		"Imprecise, but close.", "Let me correct that."],
-	"stoic": ["Mm.", "Time enough.", "Stone endures.",
-		"It has been longer.", "Your hurry amuses me."],
-}
-
-## Greeting lines by mood — the first thing this race says when engaged.
-const MOOD_GREETINGS := {
-	"furtive": ["...you. What do you want?", "Make it quick.", "Didn't expect company."],
-	"proud": ["You have my attention. Briefly.", "Well. Look who it is.", "Speak, then."],
-	"dreamy": ["Oh... hello. Were you here long?", "Mm? A visitor.", "You drifted in too."],
-	"brash": ["What.", "You need something or not?", "Make it worth my time."],
-	"cryptic": ["I wondered when you'd come.", "As expected. Sit.", "You're right on schedule."],
-	"warm": ["Ah, welcome, welcome!", "Good to see a friendly face.", "Come, sit with me."],
-	"hyper": ["Heyheyhey! What's up what's up?", "Oh! You! Hi! What's new?", "Fast now, talk talk!"],
-	"grim": ["...what.", "You shouldn't have come.", "Speak and go."],
-	"calm": ["Peace. What brings you?", "Ah. You found me.", "Come, no hurry."],
-	"cold": ["...State your business.", "You have a moment. Use it.", "Well?"],
-	"pedantic": ["Yes? Be precise.", "You have a question. Phrase it correctly.", "Ah. Do go on — accurately."],
-	"stoic": ["You again. Sit.", "Time enough for you.", "Speak, small one."],
-}
+## The pooled content (barks, greetings, musings, taunts, farewells, flirts,
+## story lines, mood colours) and the mood/stance tag maps all live in
+## PersonaBuckets — a shared, tag-keyed template engine so writing scales
+## across all twenty races without per-race duplication. RacePersona keeps each
+## race's IDENTITY (temperament, traits, movement, voice, mannerisms) and just
+## delegates the pooled content below. See PersonaBuckets + docs.
 
 static func mood(canon_name: String) -> String:
-	return str(MOOD_OF.get(canon_name, "calm"))
-
-## A soft tint for a race's floating name/bark labels, so temperament reads at
-## a glance in the crowd. Kept light so text stays legible on it.
-const MOOD_COLOR := {
-	"furtive": Color(0.72, 0.74, 0.82), "proud": Color(0.95, 0.86, 0.55),
-	"dreamy": Color(0.78, 0.80, 0.98), "brash": Color(0.96, 0.62, 0.5),
-	"cryptic": Color(0.80, 0.68, 0.95), "warm": Color(0.7, 0.9, 0.65),
-	"hyper": Color(0.7, 0.95, 0.98), "grim": Color(0.72, 0.66, 0.7),
-	"calm": Color(0.72, 0.86, 0.92), "cold": Color(0.78, 0.9, 0.98),
-	"pedantic": Color(0.86, 0.82, 0.7), "stoic": Color(0.8, 0.78, 0.72),
-}
+	return PersonaBuckets.mood(canon_name)
 
 static func mood_color(canon_name: String) -> Color:
-	return MOOD_COLOR.get(mood(canon_name), Color.WHITE)
+	return PersonaBuckets.mood_color(canon_name)
 
-## An idle/ambient bark for a wandering NPC, drawn from its mood pool with an
-## occasional signature quirk mixed in. Seeded so a given tick is reproducible.
+## An idle/ambient bark for a wandering NPC. Mixes the mood pool with the odd
+## musing, a story-axis line, and the race's own signature quirk, so ambient
+## chatter has range instead of looping five one-liners. Seeded/reproducible.
 static func bark_line(canon_name: String, seed_value: int) -> String:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed_value
+	var r := rng.randf()
 	var p: Dictionary = PERSONAS.get(canon_name, {})
-	# One in five barks is the race's signature quirk, delivered as an aside.
-	if p.has("quirk") and rng.randf() < 0.2:
+	if p.has("quirk") and r < 0.12:
 		return str(p["quirk"])
-	var pool: Array = MOOD_BARKS.get(mood(canon_name), MOOD_BARKS["calm"])
-	return str(pool[rng.randi() % pool.size()])
+	if r < 0.24:
+		return PersonaBuckets.pick("story", canon_name, seed_value ^ 0x51D)
+	if r < 0.54:
+		return PersonaBuckets.pick("musings", canon_name, seed_value ^ 0x99A)
+	return PersonaBuckets.pick("barks", canon_name, seed_value)
 
 ## A greeting for this race, for dialogue openings — its temperament's hello.
 static func greeting_line(canon_name: String, seed_value: int = 0) -> String:
-	var rng := RandomNumberGenerator.new()
-	rng.seed = seed_value if seed_value != 0 else canon_name.hash()
-	var pool: Array = MOOD_GREETINGS.get(mood(canon_name), MOOD_GREETINGS["calm"])
-	return str(pool[rng.randi() % pool.size()])
+	return PersonaBuckets.pick("greetings", canon_name, seed_value if seed_value != 0 else canon_name.hash())
+
+## Convenience passthroughs to any bucket channel, so callers can ask for a
+## race's taunt/farewell/flirt/story line without knowing the engine.
+static func line(channel: String, canon_name: String, seed_value: int) -> String:
+	return PersonaBuckets.pick(channel, canon_name, seed_value)
+
+# ---- Story axis (Theory of Everything · Singularity / Anti-Singularity) ----
+
+## This race's stance id ("singularity" / "anti_singularity" / "seeker" /
+## "unaligned"). Provisional defaults in PersonaBuckets.STANCE_OF; overridable.
+static func stance(canon_name: String) -> String:
+	return PersonaBuckets.stance(canon_name)
+
+static func stance_label(canon_name: String) -> String:
+	return PersonaBuckets.stance_label(canon_name)
+
+static func stance_blurb(canon_name: String) -> String:
+	return PersonaBuckets.stance_blurb(canon_name)
 
 static func get_persona(canon_name: String) -> Dictionary:
 	return PERSONAS.get(canon_name, {})
@@ -483,4 +442,5 @@ static func describe(race_id_or_canon: String) -> String:
 		lines.append("Mannerisms: " + ", ".join(manner))
 	if p.has("quirk"):
 		lines.append(str(p["quirk"]))
+	lines.append("Theory: %s — %s" % [stance_label(canon), stance_blurb(canon)])
 	return "\n".join(lines)

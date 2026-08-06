@@ -217,7 +217,7 @@ func _emote(kind: String) -> void:
 		_emoter.say(RacePersona.greeting_line(_emoter.canon, randi()))
 		_flash_expression("smile", 0.9)
 	else:
-		_emoter.bark()
+		_emoter.say(RacePersona.line("taunts", _emoter.canon, randi()))
 		_flash_expression("smile", 0.4)
 
 ## Pulse a facial morph on the player's rig, then let it relax — a quick emote
