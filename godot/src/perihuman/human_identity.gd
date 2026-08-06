@@ -15,10 +15,17 @@ class_name HumanIdentity
 ## lookup. frame_id / mod_id are FrameModData ids ("veil", "overclock",
 ## ...) and may be empty.
 
-static func build(race_id: String, frame_id: String = "", mod_id: String = "", seed_value: int = 0) -> HumanDNA:
+static func build(race_id: String, frame_id: String = "", mod_id: String = "",
+		seed_value: int = 0, variant_id: String = "") -> HumanDNA:
 	var dna := HumanDNA.random(seed_value)
 	if not race_id.is_empty():
 		_apply_race(dna, CanonRaces.canon_for_id(race_id), seed_value)
+	# The starting-look variant shapes the individual (build/age/features) on
+	# top of the race, so the gallery pick drives the actual rig's proportions
+	# and not just the portrait beside it. Applied before frame/mod so those
+	# still layer over the chosen body.
+	if not variant_id.is_empty():
+		_apply_layer(dna, VariantPresets.layer(variant_id))
 	if not frame_id.is_empty():
 		_apply_layer(dna, HumanFrameArchetypes.get_archetype(frame_id))
 	if not mod_id.is_empty():

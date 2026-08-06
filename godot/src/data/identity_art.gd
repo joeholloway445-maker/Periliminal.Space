@@ -61,6 +61,44 @@ static func portrait(race_id: String, frame_id: String = "", mod_id: String = ""
 static func has_portrait(race_id: String) -> bool:
 	return portrait(race_id) != null
 
+## The starter gallery for a race+sex: every generated appearance variant
+## (crownless_v1_m, crownless_v2_m, …), as {variant_id: Texture2D}, in order.
+## A creator shows these as a "pick your starting look" row; the chosen
+## variant then seeds the PeriHuman genome for deep editing.
+static func variants(race_id: String, sex: String = "") -> Dictionary:
+	var slug := _race_slug(race_id)
+	if slug.is_empty():
+		return {}
+	var s := "_" + sex.substr(0, 1) if not sex.is_empty() else "_m"
+	var out: Dictionary = {}
+	for i in range(1, 9):
+		var vid := "v%d" % i
+		var path := DIR % ("%s_%s%s" % [slug, vid, s])
+		if not ResourceLoader.exists(path):
+			# Fall back to the sexless variant, then skip if neither exists.
+			path = DIR % ("%s_%s" % [slug, vid])
+			if not ResourceLoader.exists(path):
+				continue
+		var tex := load(path)
+		if tex is Texture2D:
+			out[vid] = tex
+	return out
+
+## Portrait for a specific starting-look variant, or the plain race art when
+## that variant was not generated.
+static func variant_portrait(race_id: String, variant: String, sex: String = "") -> Texture2D:
+	var slug := _race_slug(race_id)
+	if slug.is_empty() or variant.is_empty():
+		return portrait(race_id, "", "", sex)
+	var s := "_" + sex.substr(0, 1) if not sex.is_empty() else ""
+	for candidate in ["%s_%s%s" % [slug, variant, s], "%s_%s" % [slug, variant]]:
+		var path := DIR % candidate
+		if ResourceLoader.exists(path):
+			var tex := load(path)
+			if tex is Texture2D:
+				return tex
+	return portrait(race_id, "", "", sex)
+
 ## The Omni Dex id the art is filed under. Accepts a breed id ("tabby"), a
 ## canon name ("Keth"), or the Omni Dex id itself ("crownless").
 static func _race_slug(race_id: String) -> String:
