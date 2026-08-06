@@ -14,6 +14,7 @@ var _plate: Label3D
 ## the speed it's actually travelling on screen (measured from position deltas,
 ## since remote motion arrives as position updates, not a velocity).
 var _peri_rig: PeriHumanRig
+var _barker: PersonaBarker
 var _last_pos: Vector3
 var _has_last := false
 
@@ -54,6 +55,16 @@ func _rebuild_body() -> void:
 	_peri_rig = body if body is PeriHumanRig else null
 	_has_last = false
 	add_child(body)
+
+	# Other players mutter in character too, so the world isn't full of silent
+	# mannequins. Only when we can tell their race.
+	if _barker != null and is_instance_valid(_barker):
+		_barker.queue_free()
+		_barker = null
+	if not race_id.is_empty():
+		_barker = PersonaBarker.new()
+		add_child(_barker)
+		_barker.setup(RacePersona.canon_for_id(race_id), 2.2)
 
 	_plate = Label3D.new()
 	_plate.billboard = BaseMaterial3D.BILLBOARD_ENABLED

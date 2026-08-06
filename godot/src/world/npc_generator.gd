@@ -89,7 +89,14 @@ func _generate_single(npc_id: String, layer_filter: String) -> Dictionary:
 		return {}
 
 	var layer_variant := _get_layer_variant(layer)
+	# Give every generated citizen a canon race, so their voice, mannerisms,
+	# ambient barks, and movement all resolve to the same identity downstream.
+	var canon: String = CanonRaces.RACES[_rng.randi() % CanonRaces.RACES.size()]
+	# The deeper/abstract layers name people by their race's own phonetics;
+	# the mundane city layers keep ordinary human names.
 	var name_str := _generate_name()
+	if layer in ["periliminal", "extraliminal", "subliminal", "liminal"]:
+		name_str = RaceNameGen.name_for(canon, hash(npc_id))
 	var age := _roll_age(archetype)
 	var appearance := _generate_appearance(archetype, layer_variant)
 	var disposition := _get_disposition()
@@ -101,6 +108,7 @@ func _generate_single(npc_id: String, layer_filter: String) -> Dictionary:
 	return {
 		"id": npc_id,
 		"name": name_str,
+		"race": canon,
 		"district": district,
 		"layer": layer,
 		"archetype": archetype_id,

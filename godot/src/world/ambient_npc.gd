@@ -32,6 +32,10 @@ const PERSONA_ENDPOINT := "/api/personamatrix/request"
 @export var wander_radius: float = 6.0
 @export var wander_speed: float = 1.6
 @export var idle_time_range: Vector2 = Vector2(1.5, 4.0)
+## Canon race — when set, its persona reshapes the wander loop: jittery races
+## (Volt) pace fast and rarely stand still; ponderous ones (Petra) amble and
+## linger. Set by the spawner via apply_persona().
+@export var canon: String = ""
 
 var _has_been_interacted_with: bool = false
 var _origin: Vector3
@@ -42,6 +46,18 @@ var _is_idling: bool = true
 func _ready() -> void:
 	_origin = position
 	_wander_target = _origin
+	if not canon.is_empty():
+		apply_persona(canon)
+
+## Reshape the wander loop to the race's temperament: gait_cadence scales pace,
+## idle_energy shortens the standing-still time and widens roaming.
+func apply_persona(canon_name: String) -> void:
+	canon = canon_name
+	var move := RacePersona.movement(canon_name)
+	var energy := maxf(0.4, float(move.get("idle_energy", 1.0)))
+	wander_speed *= float(move.get("gait_cadence", 1.0))
+	idle_time_range = idle_time_range / energy
+	wander_radius *= lerpf(0.85, 1.2, clampf(energy - 0.4, 0.0, 1.2) / 1.2)
 
 func _process(delta: float) -> void:
 	if _is_idling:

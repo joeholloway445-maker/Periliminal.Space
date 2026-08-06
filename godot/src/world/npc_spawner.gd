@@ -49,14 +49,28 @@ func _create_npc(data: Dictionary) -> void:
 	root.position = Vector3(pos.get("x", 0.0), pos.get("y", 0.0), pos.get("z", 0.0))
 	add_child(root)
 
+	# Every citizen belongs to a race — it drives their name, voice, and the
+	# in-character things they mutter as you pass.
+	var canon := RacePersona.canon_for_npc(data)
+	var display_name := str(data.get("name", ""))
+	if display_name.is_empty():
+		display_name = RaceNameGen.name_for_npc(data)
+
 	# Visual: label with NPC name and emoji
 	var label := Label3D.new()
-	label.text = "%s\n%s" % [data.get("emoji", "🐱"), data.get("name", "NPC")]
+	label.text = "%s\n%s" % [data.get("emoji", "🐱"), display_name]
 	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	label.pixel_size = 0.008
 	label.position = Vector3(0, 1.8, 0)
-	label.modulate = Color.WHITE
+	label.modulate = RacePersona.mood_color(canon) if not canon.is_empty() else Color.WHITE
 	root.add_child(label)
+
+	# Ambient barks: this citizen mutters in character on a timer, voiced when
+	# you're close enough to hear.
+	if not canon.is_empty():
+		var barker := PersonaBarker.new()
+		root.add_child(barker)
+		barker.setup(canon, 2.1)
 
 	# Interaction collider
 	var area := Area3D.new()
@@ -83,6 +97,7 @@ func _create_npc(data: Dictionary) -> void:
 		ambient.persona_role = data.get("role", "npc")
 		ambient.daily_task = data.get("daily_schedule", "wandering")
 		ambient.recruitable_as = data.get("recruitable_as", "")
+		ambient.canon = canon  # persona reshapes its wander tempo in _ready
 		root.add_child(ambient)
 
 	_spawned_npcs[npc_id] = root

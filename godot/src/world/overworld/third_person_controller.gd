@@ -32,6 +32,8 @@ var _visual_root: Node3D
 ## The PeriHuman body inside _visual_root, if this build produced one — cached
 ## so _physics_process can feed it walk/run speed without searching each frame.
 var _peri_rig: PeriHumanRig
+## Player emote voice/text (PersonaBarker with auto off) — see _build_emoter.
+var _emoter: PersonaBarker
 var _collision: CollisionShape3D
 
 ## The mod actually worn shapes how it feels to move — a turbo_injector
@@ -48,8 +50,23 @@ func _ready() -> void:
 	_build_body()
 	_build_camera()
 	_refresh_mobility()
+	_build_emoter()
 	if PlayerProfile:
 		PlayerProfile.profile_updated.connect(_refresh_mobility)
+		PlayerProfile.profile_updated.connect(_build_emoter)
+
+## The player's own persona barker: silent on a timer (auto = false), it only
+## speaks when the player emotes — in the player's race voice, floating the
+## line above their head. Rebuilt when the profile (race) changes.
+func _build_emoter() -> void:
+	var canon := RacePersona.canon_for_id(str(PlayerProfile.selected_race_id)) if PlayerProfile else ""
+	if canon.is_empty():
+		return
+	if _emoter == null or not is_instance_valid(_emoter):
+		_emoter = PersonaBarker.new()
+		add_child(_emoter)
+	_emoter.setup(canon, 1.9)
+	_emoter.auto = false
 
 ## Recomputes the mod-scaled movement constants. Called on ready and again
 ## whenever the player's mod (or anything else on their profile) changes.
@@ -183,6 +200,36 @@ func _unhandled_input(event: InputEvent) -> void:
 		_cam_yaw -= event.relative.x * MOUSE_SENSITIVITY
 		_cam_pitch = clampf(_cam_pitch - event.relative.y * MOUSE_SENSITIVITY, -1.2, 0.4)
 		_update_camera_rotation()
+	elif event is InputEventKey and event.pressed and not event.echo:
+		match event.keycode:
+			KEY_V:
+				_emote("greet")
+			KEY_B:
+				_emote("taunt")
+
+## Player emote: speak a race-appropriate line in the player's own voice and
+## flash a matching face. "greet" is a friendly hello + smile; "taunt" is a
+## mood bark with a smirk. Runs off the same persona the body already moves by.
+func _emote(kind: String) -> void:
+	if _emoter == null or not is_instance_valid(_emoter):
+		return
+	if kind == "greet":
+		_emoter.say(RacePersona.greeting_line(_emoter.canon, randi()))
+		_flash_expression("smile", 0.9)
+	else:
+		_emoter.bark()
+		_flash_expression("smile", 0.4)
+
+## Pulse a facial morph on the player's rig, then let it relax — a quick emote
+## beat without fighting the procedural idle/gait that owns the skeleton.
+func _flash_expression(morph: String, value: float) -> void:
+	if _peri_rig == null or not is_instance_valid(_peri_rig):
+		return
+	_peri_rig.set_expression(morph, value)
+	var t := get_tree().create_timer(1.1)
+	t.timeout.connect(func():
+		if _peri_rig != null and is_instance_valid(_peri_rig):
+			_peri_rig.set_expression(morph, 0.0))
 
 ## Touch look — read once a frame from TouchControls.look_delta, so mobile
 ## can pan the camera with a right-thumb drag without ever needing mouse
