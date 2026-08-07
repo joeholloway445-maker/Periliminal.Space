@@ -31,24 +31,140 @@ const MOOD_OF := {
 	"Astra": "dreamy", "Ferros": "proud", "Etherea": "dreamy", "Glyphe": "pedantic",
 }
 
-## Where each race stands in the Theory-of-Everything conflict — the story
-## axis (see docs/STORY_SINGULARITY.md). PROVISIONAL and fully overridable:
-## these are sensible defaults derived from each race's element, not fixed
-## canon. Change any assignment freely; nothing downstream hard-codes it.
+## Where each race stands on the Theory of Everything — the discovery that one
+## law underlies every reality layer, and the war over what to DO with that.
+## The Liminal's first finders realized the layers could be fused into a
+## single, total state — godhood, in effect, shared and absolute. They never
+## agreed on whether that fusion was worth having, and while they argued, the
+## chance passed. What's left are the two Solutions and the people still
+## arguing them (see docs/STORY_SINGULARITY.md for the full premise):
+##   singularity      The Solution of Everything — collapse the layers into
+##                     one total state. Unity by addition.
+##   anti_singularity  The Solution of Nothing — refuse the collapse. Nothing
+##                     is fused, nothing is lost; the many stay many.
+##   seeker            Still chasing the Theory itself, undecided which
+##                     Solution it justifies.
+##   unaligned         No stake in either Solution — the Theory is a human/
+##                     scholarly argument to them, not a cause.
+## PROVISIONAL and fully overridable: derived from each race's element, not
+## fixed canon. Change any assignment freely; nothing downstream hard-codes it.
 const STANCE_OF := {
-	# The Convergence — reality resolves to one point; embrace the collapse.
+	# The Solution of Everything — reality resolves to one point; embrace the collapse.
 	"Geara": "singularity", "Volt": "singularity", "Ferros": "singularity", "Myco": "singularity",
-	# The Divergence (the twist) — the many must stay many; resist the one.
+	# The Solution of Nothing (the twist) — the many must stay many; resist the one.
 	"Sylva": "anti_singularity", "Aquis": "anti_singularity", "Ferox": "anti_singularity", "Chimera": "anti_singularity",
 	# The Seekers — chase the Theory of Everything for its own sake.
 	"Azhul": "seeker", "Glyphe": "seeker", "Astra": "seeker", "Lumari": "seeker", "Sanguis": "seeker",
-	# The Between — no stake in the war of theories; just survive the layers.
+	# The Between — no stake in the war of Solutions; just survive the layers.
 	"Keth": "unaligned", "Nyx": "unaligned", "Vex": "unaligned", "Etherea": "unaligned",
 	"Kryos": "unaligned", "Igni": "unaligned", "Petra": "unaligned",
 }
 
 const MOOD_DEFAULT := "calm"
 const STANCE_DEFAULT := "unaligned"
+
+# --------------------------------------------------------------------- origins
+
+## Not every race is from the same world, or the same PART of one — the races
+## are grouped into ORIGINS, distinct cradle-realities that only became
+## neighbors once the Liminal connected them. An origin is the unit that
+## carries history: two races from the same origin already know each other;
+## two from origins with old grudges arrive as strangers who are already
+## rivals, whatever the player does next. This is the hook for storylines
+## that "complement or contradict" across races, and the seam DLC plugs new
+## races/origins into (see "Adding a DLC race" in docs/PERSONA_SYSTEM.md).
+const ORIGINS := {
+	"ash_forged": {
+		"name": "The Ash-Forged",
+		"blurb": "A harsh, volcanic forge-world where survival meant hardening — into warriors, into iron, into blood-discipline. Martial, severe, quick to claim territory as the only safety that lasts.",
+	},
+	"void_between": {
+		"name": "The Void-Between",
+		"blurb": "Not a world so much as the gap between worlds — a lightless reality its natives learned to exist partway outside of. Patient, watchful, comfortable with not fully arriving anywhere.",
+	},
+	"verdant_cradle": {
+		"name": "The Verdant Cradle",
+		"blurb": "A living, networked biosphere-world where nothing grew alone. Communal by instinct, slow to anger, and unnervingly patient — a forest thinks in centuries.",
+	},
+	"glass_reaches": {
+		"name": "The Glass Reaches",
+		"blurb": "An ancient crystalline and glacial world, old before most others had a first age. Its natives measure time the way others measure distance, and rarely feel rushed by anything.",
+	},
+	"storm_wrought": {
+		"name": "The Storm-Wrought",
+		"blurb": "A world of perpetual electrical storms where survival meant fusing with the current instead of hiding from it — machine and organism blurred early and never fully separated again.",
+	},
+	"starfall_expanse": {
+		"name": "The Starfall Expanse",
+		"blurb": "Beings descended from a world so close to the sky's edge that its people never stopped looking up. Contemplative, a little grandiose, and instinctively drawn to the shape of big patterns.",
+	},
+}
+
+## canon race -> origin id. Provisional and overridable, same as MOOD_OF /
+## STANCE_OF; a DLC race just needs one entry here (reusing an origin, or
+## adding a new one to ORIGINS first).
+const ORIGIN_OF := {
+	"Igni": "ash_forged", "Sanguis": "ash_forged", "Ferros": "ash_forged", "Ferox": "ash_forged",
+	"Nyx": "void_between", "Vex": "void_between", "Etherea": "void_between", "Keth": "void_between",
+	"Sylva": "verdant_cradle", "Myco": "verdant_cradle", "Aquis": "verdant_cradle",
+	"Lumari": "glass_reaches", "Kryos": "glass_reaches", "Petra": "glass_reaches",
+	"Volt": "storm_wrought", "Geara": "storm_wrought", "Chimera": "storm_wrought",
+	"Astra": "starfall_expanse", "Azhul": "starfall_expanse", "Glyphe": "starfall_expanse",
+}
+
+## Sparse relation graph BETWEEN ORIGINS (not races directly — two races from
+## the same origin are automatically allies; races from unrelated origins
+## default to "neutral"). Keyed "originA|originB" with the pair sorted
+## alphabetically so lookups don't care which order you ask in. Entirely
+## provisional — this is the skeleton for storylines that make some races
+## complement each other and others contradict, independent of the Theory
+## stance above (an ash_forged singularity-believer and a storm_wrought
+## singularity-believer can still be rivals; agreement on the Theory doesn't
+## erase where you're from).
+## NOTE: keys must have their two origin ids in alphabetical order — lookup
+## sorts the pair before building the key, so an out-of-order key here would
+## silently never match and fall through to "neutral".
+const ORIGIN_RELATIONS := {
+	"ash_forged|verdant_cradle": "enemy",       # the forge-world's industry burned the green one, once
+	"ash_forged|void_between": "rival",         # both harsh philosophies, competing for the same respect
+	"ash_forged|storm_wrought": "rival",        # martial pride vs. augmented ambition
+	"glass_reaches|storm_wrought": "enemy",     # ancient permanence vs. restless reinvention
+	"glass_reaches|verdant_cradle": "ally",     # two slow, patient, deep-time worlds recognize each other
+	"starfall_expanse|void_between": "ally",    # both liminal, both at ease with the unseen
+	"storm_wrought|verdant_cradle": "rival",    # nature vs. augmentation, an old argument
+	"starfall_expanse|verdant_cradle": "ally",  # long views sympathize with long views
+}
+
+const RELATION_DEFAULT := "neutral"
+
+## Disposition swing for each relation tier, applied between the PLAYER's race
+## origin and an NPC's — see RacePersona.origin_disposition_bias(). Small on
+## purpose: history colours a first meeting, it doesn't decide it.
+const RELATION_BIAS := {"ally": 10, "rival": -6, "enemy": -14, "neutral": 0}
+
+# ---------------------------------------------------------------- factions
+
+## Which of the four human factions each race is historically tied to. This is
+## a SEPARATE axis from STANCE_OF on purpose: the Theory war is ancient and
+## cosmic, between the races themselves; the factions are recent and human —
+## SovereignCrown, WildlandsAscendant, and VeiledCurrent formed only after
+## humanity found the Liminal and, rather than understand what they'd found,
+## moved to claim it. (Factionless is the honest answer: no one could actually
+## own a reality layer, and some races/individuals never pretended otherwise.)
+## A race's faction tie reflects which claim recruited or absorbed them, not
+## which Solution they believe in — a race can be tied to SovereignCrown and
+## still privately hold the Solution of Nothing. Provisional and overridable;
+## a DLC race just needs one entry here (or none, to be born Factionless).
+const RACE_FACTION_OF := {
+	"Ferros": "SovereignCrown", "Lumari": "SovereignCrown", "Petra": "SovereignCrown",
+	"Sanguis": "SovereignCrown", "Astra": "SovereignCrown",
+	"Sylva": "WildlandsAscendant", "Ferox": "WildlandsAscendant", "Myco": "WildlandsAscendant",
+	"Aquis": "WildlandsAscendant", "Igni": "WildlandsAscendant",
+	"Vex": "VeiledCurrent", "Keth": "VeiledCurrent", "Volt": "VeiledCurrent",
+	"Geara": "VeiledCurrent", "Glyphe": "VeiledCurrent",
+	"Nyx": "Factionless", "Kryos": "Factionless", "Chimera": "Factionless",
+	"Etherea": "Factionless", "Azhul": "Factionless",
+}
 
 # ---------------------------------------------------------------- mood buckets
 
@@ -184,32 +300,52 @@ const MOOD_COLOR := {
 
 # --------------------------------------------------------------- story buckets
 
-## Story-axis lines. Deliberately THEMATIC, not plot — safe to speak anywhere,
-## and the place to pour the real narrative once it's set (per stance, or per
-## race via RACE_OVERRIDES["Keth"]["story"]). This is the twist's plug-in point.
+## Story-axis lines — the Theory of Everything and its two Solutions. Rooted
+## in the actual premise (see docs/STORY_SINGULARITY.md): the Liminal's first
+## finders could have fused the reality layers into one shared, total state —
+## godhood, held in common. Instead of agreeing to take it or leave it, they
+## fought over WHOSE claim the layers were, and the moment passed unresolved.
+## Lines are thematic, not scripted plot — safe to speak anywhere, and the
+## place to pour real dialogue once specific beats are written (per stance,
+## or per race via RACE_OVERRIDES[canon]["story"]).
 const STORY := {
-	"singularity": ["All roads run to the one point.", "Separation is a rounding error.",
-		"We are converging. Can't you feel it pulling?", "One equation, and then peace."],
-	"anti_singularity": ["Not everything should become one.", "The many must stay many.",
-		"Collapse isn't unity — it's just an ending.", "I will not be summed."],
-	"seeker": ["The Theory holds — one law under all of it.", "Every layer is a term in the same equation.",
-		"Solve it, and you'd see the whole shape at once.", "So close to the form of everything."],
-	"unaligned": ["Theories rise and set. The layers remain.", "Let them argue over the one point.",
-		"Singularity, anti — same weather to me.", "I just want out of the Liminal in one piece."],
+	"singularity": ["Everything, together, is still worth more than nothing, apart.",
+		"We were offered a single answer. I still want it.",
+		"They call it collapse. I call it finally arriving.",
+		"One state, held by all — that was always the actual prize.",
+		"Every layer, added together — that's not a loss. That's the sum."],
+	"anti_singularity": ["Nothing fused is nothing lost. That's the whole of the Solution.",
+		"They wanted to add us all into one number. I'd rather stay uncounted.",
+		"Godhood shared is still one thing wearing everyone's face. No.",
+		"The many are not a problem to be solved.",
+		"I choose the Solution that leaves something standing."],
+	"seeker": ["One law, under every layer — I've felt the edge of it.",
+		"They found the Theory and fought over the answer instead of finishing the question.",
+		"Everything or nothing. I just want to know which is TRUE, not which is comfortable.",
+		"The Theory doesn't care which Solution you'd prefer."],
+	"unaligned": ["They had godhood in reach and argued about the paperwork instead.",
+		"Everything, nothing — I just want to keep what's mine in between.",
+		"Let the old claims rot. The layers don't belong to anyone who's still arguing over them.",
+		"I wasn't there for the discovery. I'm just here for what's left."],
 }
 
+## The poetic pairing: it's the Theory of EVERYTHING, so its two competing
+## answers are named to match — the Solution of Everything (collapse, fuse,
+## become one) and the Solution of Nothing (refuse the fusion; lose nothing by
+## staying many). "Convergence"/"Divergence" survive as the plainer working
+## names people actually use day to day.
 const STANCE_LABEL := {
-	"singularity": "The Convergence",
-	"anti_singularity": "The Divergence",
+	"singularity": "The Solution of Everything",
+	"anti_singularity": "The Solution of Nothing",
 	"seeker": "The Seekers",
 	"unaligned": "The Between",
 }
 
 const STANCE_BLURB := {
-	"singularity": "Holds that all of reality is resolving toward a single point — the Singularity — and that this collapse into one is to be sought, not feared.",
-	"anti_singularity": "The counter-movement (the twist): that the many must remain many. To be summed into one point is not unity but an ending, and the Divergence exists to prevent it.",
-	"seeker": "Chases the Theory of Everything for its own sake — one law beneath every layer — without yet committing to what should be DONE once it's found.",
-	"unaligned": "Takes no side in the war of theories. The layers were here before the argument and will outlast it; survival comes first.",
+	"singularity": "Also called the Convergence: the belief that the reality layers were always meant to resolve into one total, shared state — and that fusing them, rather than fearing it, is the only claim worth finishing.",
+	"anti_singularity": "Also called the Divergence (the twist): the counter-belief that fusing everything into one state loses everything it fused. Nothing collapsed is nothing lost — the many must be allowed to stay many.",
+	"seeker": "Still chasing the Theory of Everything itself — the one law beneath every layer — without yet committing to whether the right answer is Everything or Nothing.",
+	"unaligned": "Takes no side in the war of Solutions. The layers were here before the argument over who could claim them, and will be here after; survival comes first.",
 }
 
 # ------------------------------------------------------------------- channels
@@ -226,8 +362,12 @@ const CHANNEL_AXIS := {
 }
 
 ## Sparse per-race overrides: canon -> {channel -> [lines]}. A race listed here
-## uses its own lines for that channel and ignores the shared bucket. Marquee
-## examples — extend freely; unlisted races just use the shared pools.
+## uses its own lines for that channel and ignores the shared bucket for THAT
+## channel only — any channel it doesn't list still falls through to its mood/
+## stance bucket. This is deliberately not exhaustive: 17 of 20 races have
+## bespoke lines below, and the remaining 3 (Vex, Myco, Etherea) run on shared
+## buckets alone to prove the engine degrades gracefully — add overrides for
+## them, or any DLC race, any time without touching anything else here.
 const RACE_OVERRIDES := {
 	"Volt": {
 		"musings": ["Ideas come faster than mouths work, y'know? Like—zzt—like that.",
@@ -245,6 +385,82 @@ const RACE_OVERRIDES := {
 	"Glyphe": {
 		"story": ["The Theory is a sentence. I am learning to read it correctly.",
 			"Every rune on me is one term closer to the whole equation."],
+	},
+	"Petra": {
+		"barks": ["Still here. Still standing.", "Rushing is a young habit."],
+		"musings": ["The Glass Reaches taught me patience before they taught me anything else.",
+			"I have outlived three of your factions' founders. I expect to outlive this one too."],
+		"story": ["Everything, nothing — stone doesn't need an answer to keep standing.",
+			"They argued over the layers for an age. An age is a Tuesday to me."],
+	},
+	"Nyx": {
+		"barks": ["...", "You won't hear me leave.", "Still. Watching."],
+		"taunts": ["You never saw me coming. You won't see me finish, either.",
+			"The void doesn't announce itself. Neither do I."],
+		"musings": ["Light finds everyone eventually. I've just had longer to prepare for it."],
+	},
+	"Lumari": {
+		"barks": ["Do try not to smudge the light.", "You may bask. Briefly."],
+		"story": ["The Solution of Everything is simply the correct light, held by all of us at once.",
+			"Divergence keeps its shadows. I'd rather keep my shine."],
+		"musings": ["Every surface here is a mirror if you're patient enough to polish it."],
+	},
+	"Sylva": {
+		"barks": ["Grow slow. Grow true.", "The roots remember you were here."],
+		"story": ["Nothing fused is nothing lost — a forest already knows this. Ask any root.",
+			"They wanted one great tree instead of a forest. A forest is stronger."],
+		"musings": ["Everything I am grew from something older that fed me first."],
+	},
+	"Azhul": {
+		"greetings": ["I foresaw this exact greeting. It's less satisfying than I'd hoped.",
+			"You've arrived precisely on the thread I expected."],
+		"musings": ["Probability is just patience wearing a more convincing coat.",
+			"I have seen a thousand versions of this conversation. This is, regrettably, the median one."],
+	},
+	"Sanguis": {
+		"taunts": ["I can hear your pulse quicken. That's the fear talking.",
+			"Precision beats power. Watch."],
+		"musings": ["Blood keeps better records than memory does, if you know how to read it."],
+		"story": ["I've traced the Theory through a thousand pulses. It beats the same everywhere."],
+	},
+	"Astra": {
+		"musings": ["Every star that made you is still, technically, burning somewhere in you.",
+			"Scale is the only honest measure. Everything else is opinion."],
+		"story": ["Everything, summed, is just a bigger sky. I was always going to want that.",
+			"We came from something that was already whole once. I remember the shape of it, barely."],
+	},
+	"Chimera": {
+		"barks": ["I was someone else an hour ago. Keep up.", "Don't get attached to this version of me."],
+		"taunts": ["You're fighting whoever I am right now. Good luck — I don't know either."],
+		"story": ["Nothing fused is nothing lost — and I should know, I'm never the same twice.",
+			"They wanted one clean answer. I'm the proof it was never going to be clean."],
+	},
+	"Igni": {
+		"barks": ["Don't get close if you don't run hot.", "I'm not angry. This is just my resting temperature."],
+		"taunts": ["I run hotter than your excuses.", "Careful — I bite back, and it stings."],
+		"musings": ["Ash-Forged doesn't cool. We just find something new to burn."],
+	},
+	"Kryos": {
+		"barks": ["...", "Patience outlasts everyone in a hurry.", "The cold isn't cruelty. It's honesty."],
+		"taunts": ["You'll tire before I even warm up.", "Slow is not weak. Watch and learn otherwise."],
+		"musings": ["The Glass Reaches froze solid an age before your factions had names."],
+	},
+	"Aquis": {
+		"barks": ["It'll pass. Everything does.", "No need to fight the current."],
+		"story": ["Nothing fused is nothing lost — water never insists on becoming ice.",
+			"They wanted one still ocean. An ocean was never meant to be still."],
+		"flirts": ["You flow well. I noticed the first time you walked in."],
+	},
+	"Ferox": {
+		"taunts": ["You smell like fear already. Good instinct.", "Kneel now, save yourself the bruise."],
+		"story": ["The many hunt better than the one ever could. That's reason enough for me.",
+			"They wanted one great pack under one master. I've never taken orders well."],
+		"musings": ["Ash-Forged raised me on the idea that softness gets eaten. It wasn't wrong, often."],
+	},
+	"Geara": {
+		"musings": ["Every system wants to be one system, eventually. I just help it get there faster.",
+			"Storm-Wrought doesn't fear the merge. We ARE the merge — us and the machine both."],
+		"story": ["Everything, unified, patched, and running clean — that's not loss, that's finally working."],
 	},
 }
 
@@ -294,3 +510,50 @@ static func stance_label(canon: String) -> String:
 
 static func stance_blurb(canon: String) -> String:
 	return str(STANCE_BLURB.get(stance(canon), ""))
+
+# --------------------------------------------------------------------- origins
+
+## Origin id for a race, or "" if unset (a DLC race with no ORIGIN_OF entry is
+## simply origin-less — every helper below degrades to "unrelated stranger"
+## rather than erroring).
+static func origin(canon: String) -> String:
+	return str(ORIGIN_OF.get(canon, ""))
+
+static func origin_name(canon: String) -> String:
+	var o := origin(canon)
+	return str(ORIGINS.get(o, {}).get("name", "Unknown Origin"))
+
+static func origin_blurb(canon: String) -> String:
+	var o := origin(canon)
+	return str(ORIGINS.get(o, {}).get("blurb", ""))
+
+## How origin_a and origin_b regard each other: "ally" / "rival" / "enemy" /
+## "neutral". Same origin is always "ally" (kin by default, even without an
+## explicit entry); an unset relation defaults to "neutral"; the lookup is
+## order-independent.
+static func origin_relation(origin_a: String, origin_b: String) -> String:
+	if origin_a.is_empty() or origin_b.is_empty():
+		return RELATION_DEFAULT
+	if origin_a == origin_b:
+		return "ally"
+	var pair := [origin_a, origin_b]
+	pair.sort()
+	var key := "%s|%s" % [pair[0], pair[1]]
+	return str(ORIGIN_RELATIONS.get(key, RELATION_DEFAULT))
+
+## Convenience: relation between two RACES (resolves each to its origin first).
+static func relation(canon_a: String, canon_b: String) -> String:
+	return origin_relation(origin(canon_a), origin(canon_b))
+
+## Disposition swing an NPC of canon_b starts with toward someone of canon_a,
+## purely from where their peoples are from. Small and additive — flavour, not
+## a verdict.
+static func relation_bias(canon_a: String, canon_b: String) -> int:
+	return int(RELATION_BIAS.get(relation(canon_a, canon_b), 0))
+
+# -------------------------------------------------------------------- factions
+
+## The human faction this race is historically tied to ("" / "Factionless" if
+## none). Separate from stance() on purpose — see RACE_FACTION_OF.
+static func race_faction(canon: String) -> String:
+	return str(RACE_FACTION_OF.get(canon, "Factionless"))

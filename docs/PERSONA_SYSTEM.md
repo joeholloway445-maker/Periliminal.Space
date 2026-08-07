@@ -32,8 +32,17 @@ per-instance copies. `RacePersona` delegates all pooled content to it
 entry; unique lines for one race → `RACE_OVERRIDES`; retune a whole temperament
 → edit its bucket once and every race on that tag updates.
 
-**Story axis:** the Theory-of-Everything storyline (Singularity / Anti-
-Singularity) is a first-class stance axis here — see `docs/STORY_SINGULARITY.md`.
+**Story axis:** the Theory of Everything storyline (Solution of Everything /
+Solution of Nothing) is a first-class stance axis here — see
+`docs/STORY_SINGULARITY.md` for the premise. **Origins** (`ORIGIN_OF`,
+`ORIGINS`, `ORIGIN_RELATIONS`) are a separate axis: not every race is from
+the same world, and races from allied/rival/enemy origins colour NPC
+disposition toward the player before a word is spoken
+(`RacePersona.relation()`, wired in `ui/npc_dialogue_ui.gd`). **Faction ties**
+(`RACE_FACTION_OF`) are a third, independent axis — see the story doc for why
+factions and Theory stance are deliberately not the same thing, and how the
+Unbound Writ (`item_database.gd`) lets a player pledge outside their race's
+historical claim.
 
 Key helpers: `movement()/movement_for_id()`, `voice()`, `describe()/short()`,
 `mannerism_cue()`, `bark_line()`, `greeting_line()`, `disposition_bias()`,

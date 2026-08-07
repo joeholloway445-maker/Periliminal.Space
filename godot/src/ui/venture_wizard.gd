@@ -180,8 +180,17 @@ func _render_step() -> void:
 			})
 		"faction":
 			_title.text = "PLEDGE YOUR BANNER"
+			# Most races were historically claimed by one of the three human
+			# factions (the factions ARE that claim — humanity's ego, fighting
+			# over layers no one could really own). By default your faction
+			# choice is your race's tie, or Factionless (always open — it needs
+			# no unbinding). An Unbound Writ lifts the limit entirely.
+			var tied := _tied_faction()
+			var unbound := bool(PlayerProfile and PlayerProfile.has_unbound_writ)
 			_entries = FACTIONS.map(func(f): return {
-				"id": f, "name": f, "color": FACTION_COLORS[f], "blurb": FACTION_LORE[f], "stats": "",
+				"id": f, "name": f, "color": FACTION_COLORS[f],
+				"blurb": _faction_blurb(f, tied, unbound),
+				"stats": "", "locked": f != "Factionless" and f != tied and not unbound,
 			})
 		"frame":
 			_title.text = "CHOOSE YOUR FRAME"
@@ -203,9 +212,32 @@ func _render_step() -> void:
 			_title.text = "NAME YOUR FIGHTER"
 			_render_final_preview()
 			return
+	# Land on the recommended pick where there is one (the faction step lands
+	# on the race's tie), rather than always starting the roster at index 0.
 	_cursor = 0
+	if step == "faction":
+		for i in _entries.size():
+			if not bool(_entries[i].get("locked", false)) and str(_entries[i].id) == _tied_faction():
+				_cursor = i
+				break
 	_build_roster()
 	_update_portrait()
+
+## The faction the currently picked race is historically tied to, or "" if no
+## race has been picked yet (nothing to gate on — every faction is open).
+func _tied_faction() -> String:
+	var race_id := str(_picked.get("race", ""))
+	if race_id.is_empty():
+		return ""
+	return RacePersona.race_faction(RacePersona.canon_for_id(race_id))
+
+func _faction_blurb(faction_id: String, tied: String, unbound: bool) -> String:
+	var base := str(FACTION_LORE[faction_id])
+	if faction_id == "Factionless" or unbound or faction_id == tied or tied.is_empty():
+		if faction_id == tied and tied != "":
+			return "%s\n\n[color=#8fe0a0]Your people's claim. Recommended.[/color]" % base
+		return base
+	return "%s\n\n[color=#e0a06a]🔒 Your race was claimed by another banner. Requires an Unbound Writ to pledge elsewhere.[/color]" % base
 
 ## Race lore plus its persona tag, so the pick reads as a kind of person —
 ## how they carry themselves, not just their stats.
@@ -225,12 +257,14 @@ func _build_roster() -> void:
 	_tiles.clear()
 	for i in _entries.size():
 		var e: Dictionary = _entries[i]
+		var locked := bool(e.get("locked", false))
 		var tile := Button.new()
 		tile.custom_minimum_size = Vector2(96, 96)
-		tile.text = str(e.name)
+		tile.text = ("🔒 " + str(e.name)) if locked else str(e.name)
 		tile.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		tile.disabled = locked  # locked tiles can still be viewed via keyboard, just not selected
 		var mat := StyleBoxFlat.new()
-		mat.bg_color = e.color
+		mat.bg_color = e.color.darkened(0.5) if locked else e.color
 		mat.set_corner_radius_all(6)
 		tile.add_theme_stylebox_override("normal", mat)
 		tile.pressed.connect(func():
@@ -240,8 +274,8 @@ func _build_roster() -> void:
 			tile.modulate = Color.WHITE)
 		_roster_row.add_child(tile)
 		_tiles.append(tile)
-	if not _tiles.is_empty():
-		_tiles[0].modulate = Color.WHITE
+	if not _tiles.is_empty() and _cursor < _tiles.size():
+		_tiles[_cursor].modulate = Color.WHITE
 
 func _update_portrait() -> void:
 	if _entries.is_empty():
@@ -300,6 +334,12 @@ func _confirm_step() -> void:
 	if _entries.is_empty():
 		return
 	var e: Dictionary = _entries[_cursor]
+	if step == "faction" and bool(e.get("locked", false)):
+		# Keyboard SELECT can still land on a locked tile even though the
+		# button itself is disabled — refuse the same way an invalid name is
+		# refused, instead of silently letting it through.
+		_detail.text += "\n\n[color=#ff6666]🔒 Requires an Unbound Writ to pledge to this banner.[/color]"
+		return
 	match step:
 		"race":
 			_picked["race"] = e.id

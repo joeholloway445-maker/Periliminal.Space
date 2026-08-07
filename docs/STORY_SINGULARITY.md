@@ -1,75 +1,126 @@
-# Main Storyline Scaffold — The Theory of Everything
+# Main Storyline — The Theory of Everything
 
-> Status: **SCAFFOLD, not canon.** This file wires the *machinery* for the
-> main storyline so races, dialogue, and the Dex can reference it — but the
-> actual plot is yours to write. Every assignment and line here is a provisional
-> default chosen to be safe and easily overridden. Nothing downstream hard-codes
-> a plot point; changing this file cannot break code.
+> Status: **premise locked, beats open.** The core concept below is the
+> established main storyline. What's still open is the specific plot —
+> quests, characters, scenes, the exact order things are revealed. Everything
+> here is built as data buckets so those specifics can be poured in later
+> without touching code, and so DLC can extend it without touching existing
+> entries.
 
-## The premise (as given)
+## The premise
 
-The through-line is **The Theory of Everything** — the idea that a single law
-underlies every reality layer (subliminal → periliminal). Two movements form
-around what that means:
+Long before humanity found the casino floor, the Liminal's first finders
+discovered **the Theory of Everything** — one law underlying every reality
+layer, subliminal to periliminal. It implied something enormous: fuse the
+layers, and whoever held that fusion would hold a shared, total state.
+**Godhood, in effect, achievable and shared.**
 
-- **The Singularity** — reality is resolving toward one point; all layers,
-  all beings, collapse into a single unified state. Its believers seek that
-  convergence.
-- **The Anti-Singularity (the twist)** — the counter-movement: that collapse
-  into one is not unity but an *ending*. The many must remain many. It exists
-  to resist the Convergence.
+They never agreed on whether to take it. Instead of pursuing the fusion
+together, the finders fought over **whose claim the layers were** — and while
+they fought, the moment passed, unresolved. What's left, generations later,
+are two answers to the same question, still being argued:
 
-Between them sit the **Seekers** (who chase the Theory for its own sake, not yet
-committed to what to *do* with it) and **the Between** (who take no side and
-just want to survive the layers).
+- **The Solution of Everything** (singularity, "the Convergence") — the
+  layers were always meant to resolve into one total, shared state. Collapse
+  isn't loss, it's arrival. Sought, not feared.
+- **The Solution of Nothing** (anti-singularity, "the Divergence" — **the
+  twist**) — fusing everything into one loses everything it fused. Nothing
+  collapsed is nothing lost; the many must be allowed to stay many.
 
-## Where it lives in code
+*(The wordplay is the point: it's the Theory of Everything, so its two
+answers are named to match — Everything, or Nothing.)*
 
-Everything routes through one axis in `src/data/persona_buckets.gd`:
+Between them: the **Seekers**, still chasing the Theory itself without yet
+committing to which Solution it justifies, and **the Between**, who never had
+a stake in the argument and just want to survive the layers.
 
-| Piece | What it is |
+## Two separate conflicts, on purpose
+
+This story runs on **two axes that don't collapse into each other**:
+
+1. **The Theory war** (`STANCE_OF` — singularity / anti_singularity / seeker /
+   unaligned) — ancient, cosmic, and **between the races themselves**. It's
+   about what reality-fusion means and whether it should happen.
+2. **The faction war** (`SovereignCrown` / `WildlandsAscendant` /
+   `VeiledCurrent` / `Factionless`) — recent and **human**. The factions
+   *are* the ignorance and ego this story is actually about: rather than
+   understand what the Liminal's finders had discovered, humanity moved to
+   **claim** it — three competing claims on layers no one could really own.
+   Factionless is the honest answer standing outside that fight.
+
+A race's Theory stance and its historical faction tie are independent —
+a race tied to SovereignCrown by claim can still privately hold the Solution
+of Nothing. That gap is deliberate story texture: institutional loyalty and
+personal belief don't have to agree, and that tension is free plot material.
+
+## Origins: not every race is from the same world
+
+Races are grouped into **origins** — distinct cradle-realities that only
+became neighbors once the Liminal connected them (`ORIGIN_OF`,
+`src/data/persona_buckets.gd`):
+
+| Origin | Races | Character |
+|---|---|---|
+| The Ash-Forged | Igni, Sanguis, Ferros, Ferox | volcanic forge-world; martial, severe, quick to claim territory |
+| The Void-Between | Nyx, Vex, Etherea, Keth | the gap between worlds; patient, watchful, half-arrived |
+| The Verdant Cradle | Sylva, Myco, Aquis | living networked biosphere; communal, slow to anger |
+| The Glass Reaches | Lumari, Kryos, Petra | ancient crystal/glacial world; measures time like distance |
+| The Storm-Wrought | Volt, Geara, Chimera | perpetual-storm world; fused with the current instead of hiding from it |
+| The Starfall Expanse | Astra, Azhul, Glyphe | close to the sky's edge; contemplative, drawn to big patterns |
+
+Origins carry a **relation graph** (`ORIGIN_RELATIONS`) — ally / rival /
+enemy / neutral, sparse and provisional. Two races from the same origin are
+automatic allies; an unset pair defaults to neutral. This is the seam for
+storylines where some races complement each other and others contradict —
+independent of who agrees on the Theory. It's already live in dialogue:
+`RacePersona.relation()` colours NPC disposition toward the player by a small
+amount before either side says a word (`ui/npc_dialogue_ui.gd`).
+
+## How the player enters it: race, faction, and the Unbound Writ
+
+Most races were historically claimed by one of the three human factions
+(`RACE_FACTION_OF`). By default, **picking your race recommends and limits
+your faction to that tie** — Factionless is always open (it needs no
+unbinding). To pledge to a *different* claim faction than your race's
+history, you need an **Unbound Writ** (`item_database.gd`, id
+`unbound_writ`) — earned through play, price 0, not sold. It's the fictional
+answer to "any race, any faction": refusing to be reduced to the one label
+your race was assigned is, in miniature, the Solution of Nothing. That's the
+deliberate difference from a cash-shop alliance unlock — the mechanic *is*
+the theme, not a bypass of it.
+
+Implemented in `ui/venture_wizard.gd`'s faction step: your race's tie is
+pre-selected and marked "recommended"; other claim factions show locked
+(🔒) until the Writ is held; Factionless is never locked.
+
+## Adding to this — DLC / future content
+
+Everything is additive-only constants in `src/data/persona_buckets.gd`. A new
+race, origin, or relation never requires editing an existing entry:
+
+| To add... | Do this |
 |---|---|
-| `STANCE_OF[canon]` | each race's stance id — **provisional**, derived from element |
-| `STANCE_LABEL` / `STANCE_BLURB` | display name + one-paragraph description per stance |
-| `STORY[stance]` | the line pool a race speaks about the conflict (thematic, fillable) |
-| `RACE_OVERRIDES[canon]["story"]` | bespoke story lines for a specific race |
+| A DLC race using an existing origin | `ORIGIN_OF["NewRace"] = "ash_forged"` (etc.) |
+| A DLC race with a new homeworld | Add an entry to `ORIGINS`, then point `ORIGIN_OF` at it |
+| A relation between two origins | One `ORIGIN_RELATIONS` entry, `"originA|originB": "enemy"` |
+| A race's Theory stance | `STANCE_OF["NewRace"] = "seeker"` (etc.) |
+| A race's faction tie | `RACE_FACTION_OF["NewRace"] = "VeiledCurrent"` (or omit for Factionless) |
+| Bespoke dialogue for one race | `RACE_OVERRIDES["NewRace"]["story"] = [...]` (or barks/musings/taunts/…) |
+| A whole new DLC storyline arc | A new stance or channel — one `CHANNELS`/`CHANNEL_AXIS` entry |
 
-Read it through `RacePersona.stance()` / `stance_label()` / `stance_blurb()`,
-or pull a line with `RacePersona.line("story", canon, seed)`. The Dex persona
-block (`ui/omni_dex_ui.gd`) and the creator persona panel already surface the
-stance, and ambient NPC barks mix in a story line now and then.
+Nothing downstream needs to know a new race, origin, or stance exists ahead
+of time — every consumer (dialogue, Dex, creator, barks) reads through the
+same handful of resolver functions.
 
-## Provisional stance assignments
+## Open for the next pass (plot, not premise)
 
-Chosen from each race's existing element/lore — **change any of them freely.**
+The concept above is settled. Still open, whenever you're ready to write it:
 
-- **The Convergence (singularity):** Geara, Volt, Ferros, Myco
-- **The Divergence (anti_singularity):** Sylva, Aquis, Ferox, Chimera
-- **The Seekers:** Azhul, Glyphe, Astra, Lumari, Sanguis
-- **The Between (unaligned):** Keth, Nyx, Vex, Etherea, Kryos, Igni, Petra
-
-## How to make it *your* story
-
-1. **Set the stances** — edit `STANCE_OF`. That single map decides who's on
-   which side; movement, voice, and mannerisms already come from the persona.
-2. **Rewrite the tone** — edit `STANCE_LABEL` / `STANCE_BLURB` to match the
-   names and framing you actually want (e.g. if the Anti-Singularity has a
-   proper in-world name).
-3. **Pour in the plot lines** — replace the placeholder `STORY[stance]` pools
-   with real dialogue, or give key races bespoke lines via `RACE_OVERRIDES`.
-4. **Add a channel if you need one** — e.g. a `"prophecy"` or `"faction_pitch"`
-   channel is just another entry in `CHANNELS` + `CHANNEL_AXIS`; no new code.
-
-Because it's a bucket engine, the *structure* is fixed and safe while the
-*content* is entirely yours — so building this out now can't paint the
-storyline into a corner. When you're ready, hand me the real framing (names,
-who sides with whom, key beats) and I'll fill the buckets and wire it into
-quests/factions.
-
-## Open questions for you (so the buckets get filled right)
-
-- Does the Anti-Singularity have an in-world name, or is "the Divergence" it?
-- Do the four factions (SovereignCrown / WildlandsAscendant / VeiledCurrent /
-  Factionless) map onto these stances, or is the Theory conflict orthogonal to
-  faction?
-- Is the player pushed toward a stance, or do they choose — and can they change?
+- The actual scene/order of the Liminal's discovery — who found it, when,
+  and what the first fight over it looked like.
+- Named leaders/figures for the Solution of Everything and Solution of
+  Nothing movements (currently thematic, unnamed).
+- Whether the player is pushed toward a stance by their race/faction, or
+  earns the choice through the main quest.
+- Specific origin rivalries beyond the provisional relation graph — any of
+  them can be promoted from "flavor" to an actual plot beat.

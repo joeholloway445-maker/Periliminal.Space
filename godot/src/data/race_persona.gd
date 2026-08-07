@@ -324,6 +324,30 @@ static func stance_label(canon_name: String) -> String:
 static func stance_blurb(canon_name: String) -> String:
 	return PersonaBuckets.stance_blurb(canon_name)
 
+# ------------- Origins & inter-race relations (allies/rivals/enemies) -------
+
+## The cradle-reality this race hails from — not every race is from the same
+## world or even the same part of one. See PersonaBuckets.ORIGINS.
+static func origin_name(canon_name: String) -> String:
+	return PersonaBuckets.origin_name(canon_name)
+
+static func origin_blurb(canon_name: String) -> String:
+	return PersonaBuckets.origin_blurb(canon_name)
+
+## "ally" / "rival" / "enemy" / "neutral" between two races' origins — the
+## seam that lets storylines make some races complement each other and others
+## contradict, independent of who agrees on the Theory.
+static func relation(canon_a: String, canon_b: String) -> String:
+	return PersonaBuckets.relation(canon_a, canon_b)
+
+## The human faction this race is historically tied to (SovereignCrown /
+## WildlandsAscendant / VeiledCurrent / Factionless). See PersonaBuckets —
+## this is deliberately a different axis than stance(): the Theory war is
+## ancient and between the races; the factions are recent, human, and driven
+## by the ego that fought over claiming the layers instead of using them.
+static func race_faction(canon_name: String) -> String:
+	return PersonaBuckets.race_faction(canon_name)
+
 static func get_persona(canon_name: String) -> Dictionary:
 	return PERSONAS.get(canon_name, {})
 
@@ -434,6 +458,12 @@ static func describe(race_id_or_canon: String) -> String:
 		return ""
 	var lines: Array = []
 	lines.append("%s — %s" % [str(p.get("element", canon)), str(p.get("temperament", ""))])
+	var origin := origin_name(canon)
+	if origin != "" and origin != "Unknown Origin":
+		lines.append("Origin: %s" % origin)
+	var tied := race_faction(canon)
+	if tied != "":
+		lines.append("Faction tie: %s" % FactionSystem.display_name(tied))
 	var traits: Array = p.get("traits", [])
 	if not traits.is_empty():
 		lines.append("Tends toward: " + ", ".join(traits))

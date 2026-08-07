@@ -21,6 +21,15 @@ var selected_frame: String = "veil"
 ## Second frame, chosen at Champion ascension (level 50+). Empty until then.
 var ascended_frame: String = ""
 var selected_mod: String = ""
+## True once this player holds an Unbound Writ — the in-fiction answer to
+## "any race, any faction": most races were historically claimed by one of the
+## three human factions (RacePersona.race_faction), and by default a new
+## character's faction choice is limited to their race's tie or Factionless
+## (Factionless is always open — "bound by nothing" needs no unbinding). The
+## Writ lifts that limit. It's earned, not purchased, and it's thematically
+## the Solution of Nothing in miniature: refusing to be reduced to the one
+## label your race was assigned.
+var has_unbound_writ: bool = false
 ## True once CharacterCreatorLogic.apply_creation has actually run — the
 ## title screen's "Continue Expedition" only lights up once this is true;
 ## a fresh install always starts at "Start New Venture" no matter what
@@ -65,6 +74,7 @@ func _load() -> void:
 	selected_frame = data.get("selected_frame", "veil")
 	ascended_frame = data.get("ascended_frame", "")
 	selected_mod = data.get("selected_mod", "")
+	has_unbound_writ = bool(data.get("has_unbound_writ", false))
 	active_companion_ids = Array(data.get("active_companions", []), TYPE_STRING, "", null)
 	var dna = data.get("perihuman_dna", {})
 	perihuman_dna = dna if dna is Dictionary else {}
@@ -91,6 +101,7 @@ func _save() -> void:
 		"selected_frame": selected_frame,
 		"ascended_frame": ascended_frame,
 		"selected_mod": selected_mod,
+		"has_unbound_writ": has_unbound_writ,
 		"has_expedition": has_expedition,
 		"active_companions": active_companion_ids,
 		"perihuman_dna": perihuman_dna,
@@ -166,6 +177,12 @@ func set_perihuman_dna(dna: Dictionary) -> void:
 
 func set_mod(mod_id: String) -> void:
 	selected_mod = mod_id
+	_save()
+	profile_updated.emit()
+
+## Grant (or, in principle, revoke) the Unbound Writ. See has_unbound_writ.
+func set_unbound_writ(granted: bool) -> void:
+	has_unbound_writ = granted
 	_save()
 	profile_updated.emit()
 

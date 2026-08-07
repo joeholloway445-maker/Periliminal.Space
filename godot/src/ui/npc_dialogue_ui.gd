@@ -263,7 +263,20 @@ func _current_disposition() -> int:
 	# open, haughty/cold ones make you earn it.
 	if not _canon.is_empty():
 		score += RacePersona.disposition_bias(_canon)
+		score += _origin_relation_bias()
 	return clampi(score, -100, 100)
+
+## History colours a first meeting: an NPC whose people are ALLIED with the
+## player's race origin starts a touch warmer; one from an ENEMY origin starts
+## cooler — before either of them has said a word. Small and additive, same
+## spirit as the temperament bias above.
+func _origin_relation_bias() -> int:
+	if not PlayerProfile or str(PlayerProfile.selected_race_id).is_empty():
+		return 0
+	var player_canon := RacePersona.canon_for_id(str(PlayerProfile.selected_race_id))
+	if player_canon.is_empty() or player_canon == _canon:
+		return 0
+	return PersonaBuckets.relation_bias(player_canon, _canon)
 
 func _faction_disposition_modifier() -> int:
 	var npc_faction := str(_npc.get("faction", "Factionless"))
