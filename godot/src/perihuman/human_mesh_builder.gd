@@ -160,7 +160,7 @@ static func head_point(fp: Dictionary, expr: Dictionary, phi: float, theta: floa
 	var jaw_t := clampf((-phi - 0.25) / 0.5, 0.0, 1.0)
 	var xscale := lerpf(1.0, fp.jaw_f, jaw_t)
 	var fore_t := clampf((phi - 0.35) / 1.2, 0.0, 1.0)
-	var yscale := 1.0 + fp.forehead_lift * fore_t
+	var yscale: float = 1.0 + fp.forehead_lift * fore_t
 	var pos := Vector3(
 		fp.rx * cos(phi) * sin(theta) * xscale,
 		ry * sin(phi) * yscale,
