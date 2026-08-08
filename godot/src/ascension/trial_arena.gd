@@ -28,7 +28,8 @@ func _ready() -> void:
 	add_child(_player)
 	_player.global_position = Vector3(0, 2, ARENA_R * 0.6)
 	var stats := CharacterCreatorLogic.build_starting_stats(
-		PlayerProfile.selected_race_id, PlayerProfile.faction, PlayerProfile.selected_frame)
+		PlayerProfile.selected_race_id, PlayerProfile.faction,
+		PlayerProfile.selected_frame, PlayerProfile.selected_mod)
 	_attack_damage = 16 + int(stats.pow) / 2 + PlayerProfile.level
 
 	var hotbar := HotbarUI.new()
@@ -111,7 +112,8 @@ func _next_wave() -> void:
 ## The shadow: Knoll in your silhouette, biased by Hope's read on you.
 func _spawn_shadow(shadow_frame: String) -> void:
 	var stats := CharacterCreatorLogic.build_starting_stats(
-		PlayerProfile.selected_race_id, PlayerProfile.faction, shadow_frame)
+		PlayerProfile.selected_race_id, PlayerProfile.faction,
+		shadow_frame, PlayerProfile.selected_mod)
 	var bias: Dictionary = Hope.combat_profile()
 	var shadow_entity := {
 		"id": "knoll", "name": "Knoll (you)",
@@ -141,23 +143,25 @@ func _on_bitten(damage: int) -> void:
 		AscensionTrial.lose(AscensionTrial.current_round)
 
 func _on_cast(sk: Dictionary) -> void:
-	SkillVFX.cast_flash(self, _player.global_position)
-	var radius: float = maxf(float(sk.get("radius", 3.0)), 4.0)
-	var power: float = float(sk.get("power", 1.0))
-	match sk.get("kind", "damage"):
-		"shield":
-			_shield = maxi(_shield, int(30 * power))
-			SkillVFX.shield_bubble(self, _player)
-		"mobility":
-			_player.global_position += -_player.global_transform.basis.z * (6.0 + 6.0 * power)
-		_:
-			var dmg := int(_attack_damage * power)
-			SkillVFX.aoe_ring(self, _player.global_position, radius)
-			for c in _creatures.duplicate():
-				if is_instance_valid(c) and c.dist_to(_player.global_position) < radius:
-					c.take_hit(dmg)
-					SkillVFX.hit_spark(self, c.global_position)
-					SkillManager.gain_ultimate(6.0)
+	if _player == null or not is_instance_valid(_player):
+		return
+	var targets: Array = []
+	for c in _creatures.duplicate():
+		if is_instance_valid(c):
+			targets.append(c)
+	var opts := {
+		"base_attack": _attack_damage,
+		"targets": targets,
+		"skip_windup": OS.has_feature("headless"),
+		"on_self_shield": func(amount: int):
+			_shield = maxi(_shield, amount)
+			SkillVFX.shield_bubble(self, _player),
+		"on_self_mobility": func(dist: float):
+			_player.global_position += -_player.global_transform.basis.z * dist,
+	}
+	var result: Dictionary = await SkillCastResolver.resolve_async(self, _player, sk, opts)
+	if int(result.get("hits", 0)) > 0:
+		SkillManager.gain_ultimate(2.0 * float(result.hits))
 
 func _process(_d: float) -> void:
 	if _hud == null:

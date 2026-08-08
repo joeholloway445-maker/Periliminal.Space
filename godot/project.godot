@@ -17,13 +17,16 @@ config/tags=PackedStringArray("mmo", "casino", "social", "cats")
 run/main_scene="res://scenes/ui/splash.tscn"
 config/features=PackedStringArray("4.3", "Forward Plus")
 config/icon="res://assets/ui/icon.png"
+boot_splash/bg_color=Color(0.02, 0, 0.05, 1)
+boot_splash/image="res://assets/ui/boot_splash.png"
+boot_splash/fullsize=true
+boot_splash/use_filter=true
 
 [autoload]
 
 AutoloadInit="*res://src/core/autoload_init.gd"
 ExternalHandoff="*res://src/core/external_handoff.gd"
 WorldLoader="*res://src/world/world_loader.gd"
-WorldQuestBridge="*res://src/world/world_quest_bridge.gd"
 GameManager="*res://src/core/game_manager.gd"
 EconomyManager="*res://src/core/economy_manager.gd"
 AccountManager="*res://src/core/account_manager.gd"
@@ -36,6 +39,7 @@ BattlePass="*res://src/liveops/battlepass.gd"
 EventManager="*res://src/liveops/event_manager.gd"
 SocialManager="*res://src/social/social_manager.gd"
 FactionSystem="*res://src/social/faction_system.gd"
+FactionManager="*res://src/factions/faction_manager.gd"
 LiveOpsManager="*res://src/liveops/liveops_manager.gd"
 CompanionSystem="*res://src/companion/companion_system.gd"
 CompanionManager="*res://src/companion/companion_system.gd"
@@ -47,6 +51,10 @@ InventoryManager="*res://src/inventory/inventory_manager.gd"
 NetworkManager="*res://src/networking/network_manager.gd"
 PlayerProfile="*res://src/character/player_profile.gd"
 QuestManager="*res://src/world/quest_manager.gd"
+QuestSystem="*res://src/quests/quest_system.gd"
+NPCDialogueSystem="*res://src/social/npc_dialogue_system.gd"
+WorldQuestBridge="*res://src/world/world_quest_bridge.gd"
+FactionQuestBridge="*res://src/quests/faction_quest_bridge.gd"
 XPManager="*res://src/core/xp_manager.gd"
 NotificationUI="*res://src/ui/notification_ui.gd"
 GameModeManager="*res://src/core/game_mode_manager.gd"
@@ -66,6 +74,8 @@ PeriliminalRuns="*res://src/layers/periliminal_runs.gd"
 DungeonManager="*res://src/layers/dungeon_manager.gd"
 PartyManager="*res://src/social/party_manager.gd"
 PvpMissions="*res://src/systems/pvp_missions.gd"
+DungeonRuns="*res://src/layers/dungeon_runs.gd"
+WorldBossScheduler="*res://src/world/world_boss_scheduler.gd"
 ExtraliminalManager="*res://src/layers/extraliminal_manager.gd"
 SkillManager="*res://src/skills/skill_manager.gd"
 GuildManager="*res://src/social/guild_manager.gd"
@@ -83,9 +93,12 @@ PresenceManager="*res://src/multiplayer/presence_manager.gd"
 PvxcManager="*res://src/pvxc/pvxc_manager.gd"
 BlueprintManager="*res://src/blueprints/blueprint_manager.gd"
 Marketplace="*res://src/economy/marketplace.gd"
+TradeManager="*res://src/economy/trade_manager.gd"
 MusicManager="*res://src/audio/music_manager.gd"
 CasinoHTTPClient="*res://src/networking/http_client.gd"
 NPCManager="*res://src/world/npc_manager.gd"
+IAPManager="*res://src/core/iap_manager.gd"
+Proprioception="*res://src/core/proprioception.gd"
 
 [display]
 
@@ -97,6 +110,86 @@ window/stretch/aspect="expand"
 
 [input]
 
+move_forward={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":87,"physical_keycode":87,"key_label":0,"unicode":119,"location":0,"echo":false,"script":null)
+]
+}
+move_back={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":83,"physical_keycode":83,"key_label":0,"unicode":115,"location":0,"echo":false,"script":null)
+]
+}
+move_left={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":65,"physical_keycode":65,"key_label":0,"unicode":97,"location":0,"echo":false,"script":null)
+]
+}
+move_right={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":68,"physical_keycode":68,"key_label":0,"unicode":100,"location":0,"echo":false,"script":null)
+]
+}
+jump={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":32,"physical_keycode":32,"key_label":0,"unicode":32,"location":0,"echo":false,"script":null)
+]
+}
+sprint={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":4194328,"physical_keycode":4194328,"key_label":0,"unicode":0,"location":0,"echo":false,"script":null)
+]
+}
+ability_1={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":49,"physical_keycode":49,"key_label":0,"unicode":49,"location":0,"echo":false,"script":null)
+]
+}
+ability_2={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":50,"physical_keycode":50,"key_label":0,"unicode":50,"location":0,"echo":false,"script":null)
+]
+}
+ability_3={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":51,"physical_keycode":51,"key_label":0,"unicode":51,"location":0,"echo":false,"script":null)
+]
+}
+ability_4={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":52,"physical_keycode":52,"key_label":0,"unicode":52,"location":0,"echo":false,"script":null)
+]
+}
+ability_5={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":53,"physical_keycode":53,"key_label":0,"unicode":53,"location":0,"echo":false,"script":null)
+]
+}
+ability_6={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":54,"physical_keycode":54,"key_label":0,"unicode":54,"location":0,"echo":false,"script":null)
+]
+}
+ability_7={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":55,"physical_keycode":55,"key_label":0,"unicode":55,"location":0,"echo":false,"script":null)
+]
+}
+ability_8={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":56,"physical_keycode":56,"key_label":0,"unicode":56,"location":0,"echo":false,"script":null)
+]
+}
+roll_left={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":81,"physical_keycode":81,"key_label":0,"unicode":113,"location":0,"echo":false,"script":null)
+]
+}
+roll_right={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":69,"physical_keycode":69,"key_label":0,"unicode":101,"location":0,"echo":false,"script":null)
+]
+}
 ui_accept={
 "deadzone": 0.5,
 "events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":4194309,"physical_keycode":0,"key_label":0,"unicode":0,"location":0,"echo":false,"script":null)
@@ -135,4 +228,12 @@ gdscript/warnings/inferred_declaration=0
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/terrain_3d/plugin.cfg")
+; terrain_3d DELIBERATELY not enabled here: when its GDExtension fails to
+; load (as it does in the godot-ci container), the enabled editor plugin
+; throws parse errors and pops MODAL error dialogs — which in headless CI
+; hang `godot --import` forever (6h timeout kills it; confirmed via run
+; 29177454189's logs). Runtime terrain doesn't need the plugin: TerrainBridge
+; probes for Terrain3D classes and falls back to ProceduralTerrain. Enable
+; the plugin locally in the editor (Project Settings -> Plugins) for
+; terrain sculpting sessions only; never commit it enabled.
+enabled=PackedStringArray()

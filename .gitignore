@@ -43,12 +43,22 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# Generated asset job manifests (scripts/export_asset_prompts.py)
+# Generated asset job manifests (scripts/export_asset_prompts.py) and
+# Godot export builds (generated locally or in CI) — same directory name,
+# both purposes
 build/
+builds/
 
 # Python bytecode from the fetch/export scripts
 __pycache__/
 *.pyc
 
-# Generated viewer output — rebuild with scripts/build_omnidex_viewer.py
-build/
+# Godot runtime server config — contains Nakama server key, never commit
+godot/server_config.json
+
+# nginx TLS certs (managed by certbot on VPS)
+nginx/certs/
+
+# Non-redistributable personal downloads (RenderPeople, TurboSquid RF, etc.)
+godot/assets/private/**
+!godot/assets/private/README.md

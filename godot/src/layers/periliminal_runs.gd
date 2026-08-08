@@ -28,6 +28,10 @@ func _ready() -> void:
 	_load_ledger()
 	LayerManager.pulled_into_periliminal.connect(func(): begin_run(["local_player"]))
 
+## Stable seed for the active wipe-run (0 when idle).
+func run_seed() -> int:
+	return _run_seed
+
 func begin_run(members: Array[String]) -> void:
 	if active:
 		return
@@ -75,6 +79,10 @@ func difficulty() -> float:
 ## it demands scales with your personal difficulty: the layer makes the
 ## hard cases walk further through their own hell before mercy arrives.
 func blessing_depth() -> int:
+	# Prototype mode keeps the spine playable in one sitting without
+	# changing production difficulty math.
+	if LayerManager.is_prototype_mode():
+		return 1
 	return 2 + int(round(difficulty() * 2.0))
 
 func blessing_ready() -> bool:
@@ -92,6 +100,14 @@ func exit_alive() -> void:
 	run_survived.emit(depth, earned)
 	active = false
 	LayerManager.transition_to("liminal", true)
+
+## Slipping out the unwitnessed way (Proprioception's recall): the run just
+## ends. No blessing, no banked fragments — escape pays nothing — but no
+## wipe either. The blessing door stays the only exit that REWARDS.
+func recall_escape() -> void:
+	if not active:
+		return
+	active = false
 
 ## ANY party member dying wipes the whole party: entities, inventory, and
 ## every balance except prestige.

@@ -6,7 +6,7 @@ signal transition_started(from_district: String, to_district: String)
 signal transition_finished(district: String)
 
 const DISTRICT_SCENES = {
-	"paw_vegas":     "res://scenes/world/main.tscn",
+	"paw_vegas":     "res://scenes/world/paw_vegas_hub.tscn",
 	"cat_coliseum":  "res://scenes/world/cat_coliseum.tscn",
 	"neon_alley":    "res://scenes/world/neon_alley.tscn",
 	"cat_forest":    "res://scenes/world/cat_forest.tscn",
@@ -14,7 +14,7 @@ const DISTRICT_SCENES = {
 }
 
 const DISTRICT_NAMES = {
-	"paw_vegas":     "Paw Vegas 🎰",
+	"paw_vegas":     "Paws Vegas 🎰",
 	"cat_coliseum":  "Cat Coliseum ⚔️",
 	"neon_alley":    "Neon Alley 🏁",
 	"cat_forest":    "Cat Forest 🌿",
@@ -53,7 +53,8 @@ func travel_to(district_id: String) -> void:
 
 	var cost = ENTRY_COSTS.get(district_id, 0)
 	if cost > 0 and EconomyManager:
-		EconomyManager.spend_coins(cost)
+		if not await EconomyManager.spend_coins(cost, "district_entry"):
+			return
 
 	_transitioning = true
 	var from = _current_district

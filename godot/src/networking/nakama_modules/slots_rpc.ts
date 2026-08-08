@@ -28,9 +28,10 @@ const PAYOUTS: Record<string, number> = {
 interface SlotsPayload {
     bet?: number;
     game?: string;
+    multiplier?: number;
 }
 
-const rpcSpinSlots: nkruntime.RpcFunction = function(
+export function rpcSpinSlots(
     ctx: nkruntime.Context,
     logger: nkruntime.Logger,
     nk: nkruntime.Nakama,
@@ -40,6 +41,7 @@ const rpcSpinSlots: nkruntime.RpcFunction = function(
     try { data = JSON.parse(payload); } catch { throw new Error("Invalid JSON"); }
 
     const { bet = 50, game = "slots" } = data;
+    const eventMult = Math.max(1, Math.min(5, Number(data.multiplier ?? 1) || 1));
     if (bet <= 0) throw new Error("Invalid bet amount");
 
     try {
@@ -59,6 +61,7 @@ const rpcSpinSlots: nkruntime.RpcFunction = function(
     } else if (s1 === s2 || s2 === s3) {
         multiplier = 1; // 2 of a kind
     }
+    multiplier *= eventMult;
 
     const payout = Math.floor(bet * multiplier);
     if (payout > 0) {
@@ -83,6 +86,5 @@ export function register_slots_rpc(
     _nk: nkruntime.Nakama,
     initializer: nkruntime.Initializer
 ): void {
-    initializer.registerRpc("spin_slots", rpcSpinSlots);
     logger.info("slots_rpc module initialized");
 }

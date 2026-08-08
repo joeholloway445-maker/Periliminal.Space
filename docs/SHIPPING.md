@@ -7,7 +7,26 @@ visual bar (`docs/VISUAL_DIRECTION_ESO.md`). Gate table: [`docs/V01_GOTY.md`](V0
 
 Open `godot/project.godot` in **Godot 4.3+** (**Forward+** on desktop). First
 open imports assets; hit Play. Boot: splash → login (or Play Offline) → title.
-Drop MetaHuman GLBs into `godot/assets/models/` per the visual direction doc.
+PeriHuman/MPFB slots already ship; overwrite with cinema MetaHuman/CC4
+GLBs into the same `godot/assets/models/` filenames when ready
+(`docs/VISUAL_DIRECTION_ESO.md`, `docs/PINNED_LEFT.md`).
+
+### Browser build (HTML5)
+
+`builds/` is gitignored (large wasm/pck). Export locally or via CI:
+
+```bash
+# Needs Godot 4.3 + export templates (web_release.zip)
+bash scripts/export_web.sh
+bash scripts/serve_web.sh   # http://127.0.0.1:8080
+```
+
+Then: **Play Offline** → **Play Prototype Spine**.
+
+CI (`.github/workflows/godot-ci.yml`) uploads a `periliminal-space-html5`
+artifact on PRs that touch `godot/`. Download that zip, unzip, and serve
+with `bash scripts/serve_web.sh` (set `WEB_ROOT=` to the unzipped folder)
+or any static host that sends COOP/COEP headers.
 
 ## 2. What's fully playable today
 
@@ -117,10 +136,14 @@ stylised and read as chibi against the photoscanned props — see
 `docs/OMNIDEX_MAPPING.md` and the `metahuman_<race_id>.glb` slots for the
 realistic path.
 
-**Interchangeable sounds** — drop looped audio into `godot/assets/audio/`
-as `<slot>.ogg`: `city_traffic`, `city_crowd`, `neon_hum`, `machine_hum`.
-Absent slots are synthesized live (traffic rumble, crowd murmur, neon
-buzz, machine drone) so the city is never silent.
+**Interchangeable sounds** — drop audio into `godot/assets/audio/` as
+`<slot>.ogg` (`.wav` / `.mp3` also OK):
+- City loops: `city_traffic`, `city_crowd`, `neon_hum`, `machine_hum`
+  (absent → live synth beds via `CityAmbience`)
+- Combat one-shots: `skill_cast`, `skill_hit`, `skill_ult`, `skill_shield`,
+  `boss_spawn`, `boss_phase`, `boss_death` (absent → `CombatSfx` synth;
+  wired from `SkillVFX` / `WorldEntity`)
+Absent city/combat slots are synthesized so the game is never silent.
 
 Also worth grabbing (bigger lifts, still free):
 - **godotengine/tps-demo** (github) — reference-quality character

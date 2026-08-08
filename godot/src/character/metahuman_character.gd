@@ -78,9 +78,9 @@ static func build_npc(visual_mode: String = "identity", race_id: String = "",
 		return _native_npc(race_id)
 	# No race to honour: an anonymous citizen. Stock humanoid packs give real
 	# silhouette variety here, which is exactly what a crowd wants.
-	var stock := AssetLibrary.instance_variant(HUMAN_NPC, body_seed)
+	var stock := AssetLibrary.instance_variant_by_seed(HUMAN_NPC, body_seed)
 	if stock == null:
-		stock = AssetLibrary.instance_variant(HUMAN_PLAYER, body_seed)
+		stock = AssetLibrary.instance_variant_by_seed(HUMAN_PLAYER, body_seed)
 	if stock != null:
 		_try_apply_metahuman_materials(stock)
 		return _as_root(stock)

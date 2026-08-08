@@ -1,11 +1,13 @@
 extends Node
-class_name NPCDialogueSystem
+# Autoload: NPCDialogueSystem — dialogue trees, disposition, memory.
+# (No class_name: it would collide with the autoload singleton name.)
 
 signal dialogue_started(npc_id: String, dialogue_key: String)
 signal dialogue_option_presented(npc_id: String, options: Array[Dictionary])
 signal dialogue_ended(npc_id: String, choice: String)
 
 # NPC dialogue database: npc_id → dialogue tree
+# Keys are hub ids ("barista") and layer variants ("barista_subliminal").
 var _dialogue_db: Dictionary = {}
 
 # NPC dispositions: npc_id → disposition_value (-100 to 100)
@@ -13,6 +15,11 @@ var _npc_dispositions: Dictionary = {}
 
 # NPC memory: what they know about you (from WordOfMouth)
 var _npc_memory: Dictionary = {}
+## Active dialogue choice list — choose_dialogue_option used to rebuild an
+## empty array every call, so custom options never fired.
+var _pending_npc_id: String = ""
+var _pending_resolved_key: String = ""
+var _pending_options: Array = []
 
 func _ready() -> void:
 	_load_dialogue_db()
@@ -20,43 +27,76 @@ func _ready() -> void:
 
 # ── Dialogue Initiation ────────────────────────────────────────────────────
 func start_dialogue(npc_id: String, dialogue_key: String = "greeting") -> bool:
-	if npc_id not in _dialogue_db:
+	var base_id := _base_npc_id(npc_id)
+	var resolved := _resolve_npc_key(npc_id)
+	if resolved.is_empty():
 		push_error("NPC dialogue not found: %s" % npc_id)
 		return false
 
-	var npc_dialogue = _dialogue_db[npc_id]
+	var npc_dialogue = _dialogue_db[resolved]
 	var dialogue_tree = npc_dialogue.get(dialogue_key, {})
 
 	if dialogue_tree.is_empty():
 		return false
 
-	dialogue_started.emit(npc_id, dialogue_key)
+	dialogue_started.emit(base_id, dialogue_key)
 
 	# Check disposition-based dialogue variants
-	var disposition = _npc_dispositions.get(npc_id, 0)
+	var disposition = _npc_dispositions.get(base_id, 0)
 	var dialogue_line = _get_disposition_variant(dialogue_tree, disposition)
 
 	# Inject word-of-mouth greeting if available
-	var wow_line = WordOfMouth.greeting_line(npc_id)
+	var wow_line = WordOfMouth.greeting_line(base_id)
 	if wow_line:
 		dialogue_line = "%s\n\n(Rumor has it: %s)" % [dialogue_line, wow_line]
 
 	# Present dialogue with options
-	_present_dialogue(npc_id, dialogue_key, dialogue_line, dialogue_tree)
+	_present_dialogue(base_id, dialogue_key, dialogue_line, dialogue_tree)
+	_pending_resolved_key = resolved
 
 	return true
+
+## Prefer `<npc>_<current_layer>` when present; else hub `<npc>`; else exact key.
+func _resolve_npc_key(npc_id: String) -> String:
+	var base_id := _base_npc_id(npc_id)
+	# Explicit layered id (suffix was a known layer) — keep as-is.
+	if base_id != npc_id and npc_id in _dialogue_db:
+		return npc_id
+	var layer := "hyperliminal"
+	var lm := AutoloadGate.get_node("LayerManager")
+	if lm != null:
+		layer = str(lm.get("current_layer_id"))
+	var layered := "%s_%s" % [base_id, layer]
+	if layered in _dialogue_db:
+		return layered
+	if base_id in _dialogue_db:
+		return base_id
+	if npc_id in _dialogue_db:
+		return npc_id
+	return ""
+
+func _base_npc_id(npc_id: String) -> String:
+	# Explicit String typing — Godot 4.3 cannot infer `:=` from untyped Array elems.
+	for layer_name: String in [
+		"subliminal", "liminal", "supraliminal",
+		"hyperliminal", "extraliminal", "periliminal",
+	]:
+		var suffix: String = "_" + layer_name
+		if npc_id.ends_with(suffix):
+			return npc_id.substr(0, npc_id.length() - suffix.length())
+	return npc_id
 
 func _get_disposition_variant(dialogue_tree: Dictionary, disposition: int) -> String:
 	# Disposition-based dialogue variants
 	if disposition > 50:
-		return dialogue_tree.get("line_friendly", dialogue_tree.get("line", ""))
+		return str(dialogue_tree.get("line_friendly", dialogue_tree.get("line", "")))
 	elif disposition < -50:
-		return dialogue_tree.get("line_hostile", dialogue_tree.get("line", ""))
+		return str(dialogue_tree.get("line_hostile", dialogue_tree.get("line", "")))
 	else:
-		return dialogue_tree.get("line", "")
+		return str(dialogue_tree.get("line", ""))
 
 func _present_dialogue(npc_id: String, dialogue_key: String, line: String, tree: Dictionary) -> void:
-	var options = []
+	var options: Array[Dictionary] = []
 
 	# Social options (nice/mean/flirt)
 	if tree.get("allow_social_options", true):
@@ -105,41 +145,49 @@ func _present_dialogue(npc_id: String, dialogue_key: String, line: String, tree:
 	})
 
 	# Filter options by requirements
+	for opt in options:
+		if "npc_id" not in opt:
+			opt["npc_id"] = npc_id
 	options = _filter_options_by_requirements(options)
-
+	_pending_npc_id = npc_id
+	_pending_options = options
 	dialogue_option_presented.emit(npc_id, options)
 
 # ── Dialogue Choice ────────────────────────────────────────────────────────
 func choose_dialogue_option(npc_id: String, option_index: int) -> void:
-	if npc_id not in _dialogue_db:
+	var base_id := _base_npc_id(npc_id)
+	if _pending_resolved_key.is_empty() and base_id not in _dialogue_db and npc_id not in _dialogue_db:
 		return
 
-	var options = []  # This would be populated from the UI state
-	if option_index >= options.size():
+	var options: Array = _pending_options if base_id == _pending_npc_id else []
+	if option_index < 0 or option_index >= options.size():
 		return
 
 	var choice = options[option_index]
 
 	# Apply effects
-	_apply_dialogue_effect(npc_id, choice.get("effect", {}))
+	_apply_dialogue_effect(base_id, choice.get("effect", {}))
 
 	# Track choice in NPC memory
-	if npc_id not in _npc_memory:
-		_npc_memory[npc_id] = []
-	_npc_memory[npc_id].append({
+	if base_id not in _npc_memory:
+		_npc_memory[base_id] = []
+	_npc_memory[base_id].append({
 		"choice": choice.get("text"),
 		"timestamp": Time.get_ticks_msec()
 	})
 
 	# Record tone for WordOfMouth
 	if "tone" in choice.get("effect", {}):
-		WordOfMouth.record_interaction(npc_id, choice["effect"]["tone"])
+		WordOfMouth.record_interaction(base_id, choice["effect"]["tone"])
 
-	# Proceed to next dialogue or end
+	# Proceed to next dialogue or end (re-resolve keeps the active layer tree)
 	if choice.get("next_dialogue"):
-		start_dialogue(npc_id, choice["next_dialogue"])
+		start_dialogue(base_id, choice["next_dialogue"])
 	else:
-		dialogue_ended.emit(npc_id, choice.get("text", ""))
+		_pending_options = []
+		_pending_npc_id = ""
+		_pending_resolved_key = ""
+		dialogue_ended.emit(base_id, choice.get("text", ""))
 
 func _apply_dialogue_effect(npc_id: String, effect: Dictionary) -> void:
 	# Disposition change
@@ -173,7 +221,7 @@ func set_disposition(npc_id: String, value: int) -> void:
 
 # ── Option Filtering ───────────────────────────────────────────────────────
 func _filter_options_by_requirements(options: Array[Dictionary]) -> Array[Dictionary]:
-	var filtered = []
+	var filtered: Array[Dictionary] = []
 
 	for opt in options:
 		var req = opt.get("requirements", {})
@@ -184,18 +232,22 @@ func _filter_options_by_requirements(options: Array[Dictionary]) -> Array[Dictio
 				continue
 
 		# Faction requirement
+		var profile := AutoloadGate.get_node("PlayerProfile")
 		if "faction" in req:
-			if PlayerProfile.faction != req["faction"] and PlayerProfile.faction != "Factionless":
+			var faction := str(profile.get("faction")) if profile else "Factionless"
+			if faction != req["faction"] and faction != "Factionless":
 				continue
 
-		# Companion requirement
+		# Companion requirement — uses PlayerProfile compat getters
 		if "companion_race" in req:
-			if not PlayerProfile.selected_companion or PlayerProfile.selected_companion_race != req["companion_race"]:
+			if profile == null \
+					or str(profile.get("selected_companion")).is_empty() \
+					or str(profile.get("selected_companion_race")) != req["companion_race"]:
 				continue
 
 		# Frame requirement
 		if "frame" in req:
-			if PlayerProfile.selected_frame != req["frame"]:
+			if profile == null or str(profile.get("selected_frame")) != req["frame"]:
 				continue
 
 		filtered.append(opt)
@@ -214,11 +266,12 @@ func _load_dialogue_db() -> void:
 		while file_name != "":
 			if file_name.ends_with(".json"):
 				var npc_id = file_name.trim_suffix(".json")
-				var dialogue_data = JSON.parse_string(
-					ResourceLoader.load(dialogue_dir + file_name).get_text()
-				)
-				if dialogue_data:
-					_dialogue_db[npc_id] = dialogue_data
+				var path: String = dialogue_dir + file_name
+				var f := FileAccess.open(path, FileAccess.READ)
+				if f:
+					var dialogue_data = JSON.parse_string(f.get_as_text())
+					if dialogue_data is Dictionary:
+						_dialogue_db[npc_id] = dialogue_data
 			file_name = dir.get_next()
 
 func _load_dispositions() -> void:

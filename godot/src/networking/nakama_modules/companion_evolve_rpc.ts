@@ -1,8 +1,7 @@
 const EVOLVE_XP_REQUIRED = [0, 1000, 3000, 7000, 15000];
 const EVOLVE_STAT_BONUS = { pow: 5, res: 5, spd: 3, lck: 3, sty: 4 };
 
-const CompanionEvolveRpc = {
-  feedCompanion: function(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string {
+export function feedCompanion(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string {
     const userId = ctx.userId;
     if (!userId) throw new Error("Not authenticated");
 
@@ -11,7 +10,7 @@ const CompanionEvolveRpc = {
 
     const cost = Math.ceil(xp_amount / 10);
 
-    const walletUpdates = [{ userId, changeset: { cat_coins: -cost }, metadata: { reason: "companion_feed" } }];
+    const walletUpdates = [{ userId, changeset: { coins: -cost }, metadata: { reason: "companion_feed" } }];
     nk.walletsUpdate(walletUpdates, true);
 
     const key = `companion_${companion_id}`;
@@ -38,9 +37,9 @@ const CompanionEvolveRpc = {
     }]);
 
     return JSON.stringify({ success: true, companion, leveled_up: leveledUp, cost });
-  },
+  }
 
-  evolveCompanion: function(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string {
+export function evolveCompanion(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string {
     const userId = ctx.userId;
     if (!userId) throw new Error("Not authenticated");
 
@@ -56,7 +55,7 @@ const CompanionEvolveRpc = {
     if (companion.evolved) throw new Error("Companion already evolved");
 
     const cost = 5000;
-    nk.walletsUpdate([{ userId, changeset: { cat_coins: -cost }, metadata: { reason: "companion_evolve" } }], true);
+    nk.walletsUpdate([{ userId, changeset: { coins: -cost }, metadata: { reason: "companion_evolve" } }], true);
 
     companion.evolved = true;
     companion.evolve_bonus = EVOLVE_STAT_BONUS;
@@ -72,10 +71,9 @@ const CompanionEvolveRpc = {
 
     return JSON.stringify({ success: true, companion, cost });
   }
-};
+
 
 export function register_companion_evolve_rpc(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, initializer: nkruntime.Initializer): void {
-  initializer.registerRpc("feed_companion", CompanionEvolveRpc.feedCompanion);
-  initializer.registerRpc("evolve_companion", CompanionEvolveRpc.evolveCompanion);
+
   logger.info("Companion evolve RPC module loaded");
 }

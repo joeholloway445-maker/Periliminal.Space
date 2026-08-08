@@ -22,7 +22,14 @@ var _init_errors: Array[String] = []
 
 # ── Lifecycle ─────────────────────────────────────────────────────────────────
 func _ready() -> void:
-	# Connect manager signals
+	# Deferred: GameManager is autoload #4, but AccountManager/DistrictManager
+	# init LATER in the [autoload] list — at this exact moment they're still
+	# null, so connecting here silently no-ops (the old `if AccountManager:`
+	# guard "passed" by skipping the connection entirely). One deferred hop
+	# lands after every autoload's _ready has run.
+	_connect_manager_signals.call_deferred()
+
+func _connect_manager_signals() -> void:
 	if AccountManager:
 		AccountManager.authenticated.connect(_on_authenticated)
 		AccountManager.session_expired.connect(_on_session_expired)
@@ -63,11 +70,21 @@ func set_state(new_state: GameState) -> void:
 func is_in_state(state: GameState) -> bool:
 	return game_state == state
 
-func enter_game(game_type: int, variant_id: int) -> void:
+func enter_game(game_type: int, variant_id: int, scene_path: String = "") -> void:
 	_set_state(GameState.GAME)
+	# Prefer a real packed scene (lobby catalog) over a blank factory stub.
+	if scene_path != "" and ResourceLoader.exists(scene_path):
+		get_tree().change_scene_to_file(scene_path)
+		return
+	if GameFactory and GameFactory.has_method("create_game_from_catalog"):
+		var catalog_node := GameFactory.create_game_from_catalog(game_type, variant_id)
+		if catalog_node:
+			if get_tree().current_scene:
+				get_tree().current_scene.add_child(catalog_node)
+			return
 	if GameFactory:
 		var game_node := GameFactory.create_game(game_type, variant_id)
-		if game_node:
+		if game_node and get_tree().current_scene:
 			get_tree().current_scene.add_child(game_node)
 
 func exit_game() -> void:
@@ -87,8 +104,13 @@ func _init_account_manager() -> void:
 	await AccountManager.initialize()
 
 func _init_economy_manager() -> void:
-	# EconomyManager initializes after AccountManager completes auth
-	pass
+	# Offline/guest boot must still arm EconomyManager so spend/earn works
+	# before (or without) Nakama auth. initialize(null) keeps local cache.
+	if not EconomyManager:
+		_init_errors.append("EconomyManager not found")
+		return
+	var client = AccountManager.get_nakama_client() if AccountManager else null
+	EconomyManager.initialize(client)
 
 func _init_companion_system() -> void:
 	if not CompanionSystem:

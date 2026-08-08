@@ -1,6 +1,6 @@
 extends Node
-class_name NPCManager
-## Autoload: manages NPC population with lazy-loading and LOD.
+## Autoload "NPCManager": manages NPC population with lazy-loading and LOD.
+## Do not add class_name — it collides with the autoload singleton name.
 ## - Generates 1000+ unique NPCs per layer on demand
 ## - Keeps ~50 full-detail NPCs loaded at once (others use impostors)
 ## - Integrates with WorldLoader and NPCSpawner
@@ -9,7 +9,7 @@ const MAX_ACTIVE_NPCS := 50
 const LOD_DISTANCE_NEAR := 30.0
 const LOD_DISTANCE_FAR := 100.0
 
-var generator := NPCGenerator.new()
+var generator: NPCGenerator
 var _loaded_npcs: Dictionary = {}  # layer -> {npc_id -> NPC dict}
 var _player: Node3D = null
 var _active_instances: Array[Node] = []
@@ -19,6 +19,7 @@ signal npc_spawned(npc: Node3D, data: Dictionary)
 signal npc_despawned(npc_id: String)
 
 func _ready() -> void:
+	generator = NPCGenerator.new()
 	# Don't initialize yet; wait for WorldLoader
 	if WorldLoader.world_loaded.is_connected(_on_world_loaded):
 		return
@@ -28,18 +29,25 @@ func _ready() -> void:
 	_on_world_loaded()
 
 func _on_world_loaded() -> void:
-	# Initialize: generate NPCs for each layer
+	# Lore dialogue blocks first (one per archetype × layer) so every
+	# generated NPC's dialogue_id resolves in npc_dialogue_ui.
+	NpcDialogueLibrary.register_all()
+
+	# Initialize: generate NPCs for each public layer.
+	# Subliminal is NEVER auto-populated — it is each player's private
+	# safe zone. Ambient figures there require an active creator subscription
+	# (see SubliminalManager.place_ambient_npc).
 	var seed_map := {
-		"subliminal": "layer_subliminal",
 		"liminal": "layer_liminal",
 		"supraliminal": "layer_supraliminal",
 		"hyperliminal": "layer_hyperliminal",
 		"extraliminal": "layer_extraliminal",
 		"periliminal": "layer_periliminal"
 	}
+	_loaded_npcs["subliminal"] = {}
 
 	for layer: String in seed_map.keys():
-		var seed_key := seed_map[layer]
+		var seed_key: String = str(seed_map[layer])
 		var count := _npc_count_for_layer(layer)
 		var npcs := generator.generate_npcs(count, seed_key, layer)
 		_loaded_npcs[layer] = {}
@@ -47,16 +55,20 @@ func _on_world_loaded() -> void:
 			_loaded_npcs[layer][npc.id] = npc
 			_npc_cache[npc.id] = npc
 
-	# Merge generated NPCs into WorldLoader
-	for layer_npcs in _loaded_npcs.values():
+	# Merge generated NPCs into WorldLoader (subliminal stays empty)
+	for layer_key in _loaded_npcs.keys():
+		if layer_key == "subliminal":
+			continue
+		var layer_npcs: Dictionary = _loaded_npcs[layer_key]
 		WorldLoader.npcs.merge(layer_npcs)
 
-	print("[NPCManager] Generated %d NPCs across %d layers" % [_npc_cache.size(), _loaded_npcs.size()])
+	print("[NPCManager] Generated %d NPCs across %d layers (subliminal auto-spawn=0)" % [_npc_cache.size(), _loaded_npcs.size()])
 
 func _npc_count_for_layer(layer: String) -> int:
-	# Distribute ~1000 NPCs across layers; smaller layers get fewer
+	# Distribute ~1000 NPCs across layers. Subliminal is hard-locked at 0 —
+	# creator-paid ambient placement is the only path into that layer.
 	var distribution := {
-		"subliminal": 50,      # small - just your apartment area
+		"subliminal": 0,        # private safe zone — never auto-spawn
 		"liminal": 100,         # medium - transitional space
 		"supraliminal": 300,    # large - 4 cities
 		"hyperliminal": 150,    # medium-large - casino
@@ -114,6 +126,10 @@ func set_player(player: Node3D) -> void:
 
 ## Preload a layer's NPCs into memory (called when entering a layer).
 func preload_layer(layer_id: String) -> void:
+	if layer_id == "subliminal":
+		# Hard lock: never generate ambient population for the private zone.
+		_loaded_npcs["subliminal"] = _loaded_npcs.get("subliminal", {})
+		return
 	if layer_id in _loaded_npcs:
 		# Already loaded; just update LOD
 		pass
@@ -121,6 +137,9 @@ func preload_layer(layer_id: String) -> void:
 		# Generate on-demand
 		var seed_key := "layer_%s" % layer_id
 		var count := _npc_count_for_layer(layer_id)
+		if count <= 0:
+			_loaded_npcs[layer_id] = {}
+			return
 		var npcs := generator.generate_npcs(count, seed_key, layer_id)
 		_loaded_npcs[layer_id] = {}
 		for npc in npcs:
@@ -132,7 +151,7 @@ func preload_layer(layer_id: String) -> void:
 func unload_layer(layer_id: String) -> void:
 	if layer_id in _loaded_npcs:
 		# Keep in cache but remove active instances
-		var layer_npcs := _loaded_npcs[layer_id]
+		var layer_npcs: Dictionary = _loaded_npcs[layer_id]
 		_active_instances = _active_instances.filter(func(inst):
 			var npc_id = inst.name
 			return not (npc_id in layer_npcs)
@@ -152,33 +171,20 @@ func unregister_instance(npc_id: String) -> void:
 	npc_despawned.emit(npc_id)
 
 ## Update LOD for all active instances based on player distance.
+## Uses the LIVE node position — ambient NPCs wander, so the spawn point
+## in their data dict goes stale within seconds.
 func update_lod(player_pos: Vector3) -> void:
 	for inst in _active_instances:
-		if is_instance_valid(inst):
-			var npc_id := inst.name
-			var npc_data := get_npc(npc_id)
-			if npc_data.is_empty():
-				continue
-
-			var npc_pos := Vector3(
-				npc_data.get("position", {}).get("x", 0.0),
-				npc_data.get("position", {}).get("y", 0.0),
-				npc_data.get("position", {}).get("z", 0.0)
-			)
-
-			var dist := npc_pos.distance_to(player_pos)
-			npc_data["last_seen_distance"] = dist
-
-			if dist < LOD_DISTANCE_NEAR:
-				npc_data["lod_level"] = 0
-			elif dist < LOD_DISTANCE_FAR:
-				npc_data["lod_level"] = 1
-			else:
-				npc_data["lod_level"] = 2
-
-			# Update instance if it has a lod_update method
-			if inst.has_method("update_lod"):
-				inst.call("update_lod", npc_data["lod_level"])
+		if not is_instance_valid(inst) or not (inst is Node3D):
+			continue
+		var dist: float = (inst as Node3D).global_position.distance_to(player_pos)
+		var level := 0
+		if dist >= LOD_DISTANCE_FAR:
+			level = 2
+		elif dist >= LOD_DISTANCE_NEAR:
+			level = 1
+		if inst.has_method("update_lod"):
+			inst.call("update_lod", level)
 
 func _process(_delta: float) -> void:
 	if _player and is_instance_valid(_player):

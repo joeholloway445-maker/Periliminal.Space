@@ -17,19 +17,19 @@ enum District {
 
 # ── Constants ──────────────────────────────────────────────────────────────────
 const DISTRICT_SCENES: Dictionary = {
-	District.PAW_VEGAS:     "res://scenes/world/districts/paw_vegas.tscn",
-	District.NEON_ALLEY:    "res://scenes/world/districts/neon_alley.tscn",
-	District.CAT_COLISEUM:  "res://scenes/world/districts/cat_coliseum.tscn",
-	District.ARCADE_GALAXY: "res://scenes/world/districts/arcade_galaxy.tscn",
-	District.CAT_FOREST:    "res://scenes/world/districts/cat_forest.tscn",
+	District.PAW_VEGAS:     "res://scenes/world/paw_vegas_hub.tscn",
+	District.NEON_ALLEY:    "res://scenes/world/neon_alley.tscn",
+	District.CAT_COLISEUM:  "res://scenes/world/cat_coliseum.tscn",
+	District.ARCADE_GALAXY: "res://scenes/world/arcade_galaxy.tscn",
+	District.CAT_FOREST:    "res://scenes/world/cat_forest.tscn",
 }
 
-const DISTRICT_MUSIC: Dictionary = {
-	District.PAW_VEGAS:     "res://assets/audio/music/paw_vegas_theme.ogg",
-	District.NEON_ALLEY:    "res://assets/audio/music/neon_alley_theme.ogg",
-	District.CAT_COLISEUM:  "res://assets/audio/music/coliseum_theme.ogg",
-	District.ARCADE_GALAXY: "res://assets/audio/music/arcade_galaxy_theme.ogg",
-	District.CAT_FOREST:    "res://assets/audio/music/cat_forest_theme.ogg",
+const DISTRICT_MUSIC_CONTEXT: Dictionary = {
+	District.PAW_VEGAS:     "theme",
+	District.NEON_ALLEY:    "racing",
+	District.CAT_COLISEUM:  "ascension",
+	District.ARCADE_GALAXY: "theme",
+	District.CAT_FOREST:    "overworld",
 }
 
 const MAX_PLAYERS_PER_DISTRICT := 200
@@ -58,6 +58,9 @@ func get_current_district() -> District:
 	return current_district
 
 func get_district_name(district: District) -> String:
+	# Enum stays PAW_VEGAS (ids/paths); display brand is Paws Vegas.
+	if district == District.PAW_VEGAS:
+		return "Paws Vegas"
 	return District.keys()[district].replace("_", " ").capitalize()
 
 func get_player_count(district: District) -> int:
@@ -86,34 +89,22 @@ func transition_to_district(district: District) -> void:
 	await get_tree().process_frame
 	emit_signal("district_loading_progress", 0.25)
 
-	# Load new scene
+	# Load new scene as the current scene (not a nested child of the old one).
 	var scene_path: String = DISTRICT_SCENES.get(district, "")
-	if scene_path and ResourceLoader.exists(scene_path):
-		var loader := ResourceLoader.load_threaded_request(scene_path)
-		var progress := []
-		while true:
-			var status := ResourceLoader.load_threaded_get_status(scene_path, progress)
-			if status == ResourceLoader.THREAD_LOAD_LOADED:
-				break
-			elif status == ResourceLoader.THREAD_LOAD_FAILED:
-				push_error("DistrictManager: failed to load %s" % scene_path)
-				break
-			emit_signal("district_loading_progress", 0.25 + progress[0] * 0.60)
-			await get_tree().process_frame
-		var scene := ResourceLoader.load_threaded_get(scene_path) as PackedScene
-		if scene:
-			_current_scene_node = scene.instantiate()
-			get_tree().current_scene.add_child(_current_scene_node)
-	else:
-		# Placeholder — district scene not yet created
-		push_warning("DistrictManager: no scene for %s" % District.keys()[district])
-
 	emit_signal("district_loading_progress", 0.90)
 	current_district = district
 	_is_transitioning = false
 	emit_signal("district_loading_progress", 1.0)
 	emit_signal("district_loaded", district)
 	_fire_visit_quest_triggers(district)
+	AchievementManager.check("district_visited", District.keys()[district])
+	var music_ctx: String = DISTRICT_MUSIC_CONTEXT.get(district, "theme")
+	if MusicManager:
+		MusicManager.play_context(music_ctx)
+	if scene_path and ResourceLoader.exists(scene_path):
+		get_tree().change_scene_to_file(scene_path)
+	else:
+		push_warning("DistrictManager: no scene for %s" % District.keys()[district])
 
 ## Advances both quest systems on arrival: the JSON quests' generic
 ## "visit_district" trigger, the built-in per-district objectives, and
@@ -134,10 +125,14 @@ func _fire_visit_quest_triggers(district: District) -> void:
 
 # ── Private ────────────────────────────────────────────────────────────────────
 func _poll_player_counts() -> void:
-	# In a real implementation, query Nakama match presence
-	# For now, simulate with random counts
+	# Prefer live PresenceManager headcount when in a layer match / ghosts.
+	var live := 0
+	if PresenceManager != null and PresenceManager.has_method("presence_count"):
+		live = int(PresenceManager.presence_count())
 	for district in _player_counts:
-		_player_counts[district] = randi() % 150
+		# Blend a soft ambient baseline with live presence so hubs never read as empty.
+		var ambient := 12 + (hash(str(district)) % 40)
+		_player_counts[district] = ambient + live
 		emit_signal("player_count_updated", district, _player_counts[district])
 
 func update_player_count(district: District, count: int) -> void:

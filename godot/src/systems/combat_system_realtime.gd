@@ -162,8 +162,68 @@ const ABILITY_DATABASE = {
 		"cast_time": 1.1,
 		"aoe_radius": 8.0,
 		"description": "Unleash fury in an area around you"
+	},
+
+	# FACTIONLESS - unaligned starter kit. Every player can fight before
+	# (or without ever) pledging a faction; lore-consistent with
+	# FactionSystem's "no bonuses, no restrictions" Factionless entry.
+	"claw_strike": {
+		"name": "Claw Strike",
+		"faction": "Factionless",
+		"type": "damage",
+		"damage_base": 45,
+		"energy_cost": 12,
+		"cooldown": 1.0,
+		"range": 2.5,
+		"cast_time": 0.25,
+		"description": "A quick, unaugmented claw swipe"
+	},
+	"pounce": {
+		"name": "Pounce",
+		"faction": "Factionless",
+		"type": "damage",
+		"damage_base": 55,
+		"energy_cost": 18,
+		"cooldown": 2.0,
+		"range": 4.0,
+		"cast_time": 0.4,
+		"description": "Close distance fast and strike"
+	},
+	"scratch_guard": {
+		"name": "Scratch Guard",
+		"faction": "Factionless",
+		"type": "defense",
+		"damage_reduction": 0.25,
+		"energy_cost": 15,
+		"cooldown": 3.0,
+		"duration": 4.0,
+		"range": 0.0,
+		"cast_time": 0.5,
+		"description": "Brace and reduce incoming damage"
+	},
+	"hiss": {
+		"name": "Hiss",
+		"faction": "Factionless",
+		"type": "control",
+		"energy_cost": 10,
+		"cooldown": 3.5,
+		"range": 3.0,
+		"cast_time": 0.3,
+		"effect": "weakness",
+		"status_chance": 0.4,
+		"duration": 3.0,
+		"description": "Startle a target, weakening their next strike"
 	}
 }
+
+## Returns this faction's ability ids, sorted for stable hotbar-slot order.
+static func abilities_for_faction(faction: String) -> Array[String]:
+	var ids: Array[String] = []
+	for ability_id in ABILITY_DATABASE.keys():
+		if ABILITY_DATABASE[ability_id].get("faction", "") == faction:
+			ids.append(ability_id)
+	ids.sort()
+	return ids
 
 # Status effects dictionary
 const STATUS_EFFECTS = {
@@ -408,25 +468,95 @@ func end_combat(combat_id: String) -> void:
 	}
 
 	combat_ended.emit(winner_id, loser_id, stats)
-	entity_defeated.emit(loser_id, winner_id, [])  # TODO: Loot generation
+
+	var loot := _generate_loot(combat)
+	entity_defeated.emit(loser_id, winner_id, loot)
+
+	if winner_id == PLAYER_ACTOR_ID:
+		_grant_victory_rewards(loot, stats)
+
+## Real reward-granting on player victory, mirroring combat_manager.gd's
+## (the networked-combat system's) proven pattern — same quest-trigger
+## vocabulary ("enter_combat"/"win_combat") so existing quest data works
+## with zero changes, same NotificationUI/AchievementManager/XPManager/
+## EconomyManager calls. Previously this whole path was a TODO with an
+## empty loot array and nothing granted on any win.
+func _grant_victory_rewards(loot: Array, stats: Dictionary) -> void:
+	var coins := 20 + int(stats.get("player_damage", 0)) * 2
+	EconomyManager.add_coins(coins, "combat_victory")
+	for item in loot:
+		if not item is Dictionary:
+			continue
+		var qty: int = maxi(1, int(item.get("quantity", 1)))
+		for i in range(qty):
+			var entry: Dictionary = item.duplicate()
+			# InventoryManager keys by id — give unique instances per stack unit.
+			if qty > 1:
+				entry["id"] = "%s_%d_%d" % [str(item.get("id", "loot")), Time.get_ticks_msec(), i]
+				entry["name"] = str(item.get("name", item.get("id", "loot")))
+			InventoryManager.add_item(entry)
+	XPManager.award_game("combat", true)
+	AchievementManager.check("battle_win")
+	QuestManager.update_progress("enter_combat")
+	QuestManager.update_progress("win_combat")
+	var loot_text := "" if loot.is_empty() else " + %d item(s)" % loot.size()
+	NotificationUI.notify_win("Victory! +%d coins%s ⚔️" % [coins, loot_text])
+
+## Simple procedural loot table — no per-entity loot definitions exist yet
+## (EntityDexData carries only lore text, no combat/reward data), so this
+## rolls a generic currency-adjacent item drop scaled by fight length
+## rather than leaving loot empty. Replace with real per-entity tables
+## once EntityDexData gains stat/reward fields.
+func _generate_loot(combat: Dictionary) -> Array:
+	var loot := []
+	var duration: float = combat.get("duration", 0.0)
+	var roll_count := 1 + int(duration / 15.0)
+	var table := [
+		{"id": "material_crystal_shard", "name": "Crystal Shard", "type": 0, "rarity": 0},
+		{"id": "material_feral_fang", "name": "Feral Fang", "type": 1, "rarity": 1},
+	]
+	for i in range(mini(roll_count, 3)):
+		if randf() < 0.45:
+			var pick: Dictionary = table[randi() % table.size()].duplicate()
+			pick["quantity"] = randi_range(1, 3)
+			loot.append(pick)
+	return loot
 
 func move_actor(actor_id: String, new_position: Vector2) -> void:
 	"""Move actor in real-time (for positioning-based abilities)"""
 	player_positions[actor_id] = new_position
 
+## Matches combat_ui.gd's DEFAULT_PLAYER_ID — NOT the same identity as
+## VehicleSeat.PLAYER_ID ("local_player"), which is unrelated (world-
+## discovery tracking, a different subsystem entirely). Every real caller
+## of start_combat()/use_ability() in the reachable game uses "player".
+const PLAYER_ACTOR_ID := "player"
+var _actor_stats: Dictionary = {} # actor_id -> {"strength": int, "defense": int, ...}
+
+## Registers real stats for a non-player actor (enemy) before combat
+## starts — see EntityCombatSpawner, which derives a stat block from the
+## encountered entity's faction/stage. Actors that never register (or the
+## player, resolved live below) fall back to a reasonable default instead
+## of silently returning the same flat 10 for everyone, which is what this
+## function did previously — every fight was mechanically identical
+## regardless of who or what you were fighting.
+func register_actor_stats(actor_id: String, stats: Dictionary) -> void:
+	_actor_stats[actor_id] = stats
+
 func get_actor_stat(actor_id: String, stat_name: String) -> int:
-	"""Get actor stat. The local player reads their real race/frame stat
-	sheet (CharacterCreatorLogic) with their mod's combat math layered on
-	top (ModMechanics); anything else (no CharacterProgression system for
-	NPCs/enemies yet) falls back to the flat placeholder."""
-	if actor_id == "player" and PlayerProfile:
-		var stats := CharacterCreatorLogic.build_starting_stats(
-			PlayerProfile.selected_race_id, PlayerProfile.faction, PlayerProfile.selected_frame)
-		var combat := ModMechanics.combat_for(PlayerProfile.selected_mod)
-		match stat_name:
-			"strength": return int(float(stats.get("pow", 10)) * float(combat.damage_mult))
-			"defense": return int(float(stats.get("res", 10)) * float(combat.defense_mult))
-	return 10  # Default stat value
+	if actor_id == PLAYER_ACTOR_ID and has_node("/root/PlayerProfile"):
+		var profile := get_node("/root/PlayerProfile")
+		var built := CharacterCreatorLogic.build_starting_stats(
+			str(profile.get("selected_race_id")),
+			str(profile.get("faction")),
+			str(profile.get("selected_frame")),
+			str(profile.get("selected_mod")))
+		var level := int(profile.get("level")) if profile.get("level") != null else 1
+		var key := {"strength": "pow", "defense": "res", "speed": "spd", "luck": "lck"}.get(stat_name, stat_name)
+		return int(built.get(key, 10)) + level * 2
+	if _actor_stats.has(actor_id):
+		return int(_actor_stats[actor_id].get(stat_name, 10))
+	return 10 # Unregistered actor — default, not player-scaled.
 
 func get_energy_level(actor_id: String) -> float:
 	"""Get current energy as percentage (0-1)"""

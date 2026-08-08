@@ -1,22 +1,32 @@
 class_name CharacterCreatorLogic
 # Pure logic for the character creator — no UI dependency
+# Autoload access via AutoloadGate (class_name scripts must not bare-ref Autoloads).
 
-static func build_starting_stats(race_id: String, faction: String, frame_id: String) -> Dictionary:
+static func build_starting_stats(race_id: String, faction: String, frame_id: String, mod_id: String = "") -> Dictionary:
 	var base := {pow=10, res=10, spd=10, lck=10, sty=10}
 	var race_bonuses := RaceDataCharacter.get_stat_bonuses(race_id)
 	for stat in race_bonuses.keys():
 		base[stat] = base.get(stat, 0) + race_bonuses[stat]
-	var faction_bonuses: Dictionary = FactionSystem.get_stat_bonuses(faction)
+	var faction_bonuses: Dictionary = {}
+	var factions := AutoloadGate.get_node("FactionSystem")
+	if factions and factions.has_method("get_stat_bonuses"):
+		faction_bonuses = factions.call("get_stat_bonuses", faction)
 	for stat in faction_bonuses.keys():
 		base[stat] = base.get(stat, 0) + faction_bonuses.get(stat, 0)
-	var frame_data := FrameModData.get_frame(frame_id)
-	if not frame_data.is_empty():
-		for stat in ["pow", "res", "spd", "lck", "sty"]:
-			base[stat] = frame_data.get(stat, base[stat])
+	# Frames and mods carry their stats in `stat_bonus` and ADD to the base —
+	# they never replace the race/faction contributions.
+	base = FrameModData.apply_frame_stats(frame_id, base)
+	if not mod_id.is_empty():
+		base = FrameModData.apply_mod_stats(mod_id, base)
 	return base
 
 static func validate_name(name: String) -> bool:
-	return name.length() >= 2 and name.length() <= 20 and name.is_valid_identifier()
+	var trimmed := name.strip_edges()
+	if trimmed.length() < 2 or trimmed.length() > 20:
+		return false
+	# Allow spaces between words; reject control / punctuation noise.
+	var cleaned := trimmed.replace(" ", "")
+	return cleaned.is_valid_identifier()
 
 static func get_starter_companions(faction: String) -> Array[String]:
 	match faction:
@@ -33,13 +43,24 @@ static func build_loadout(race_id: String, frame_id: String, mod_id: String = ""
 	}
 
 static func apply_creation(race_id: String, faction: String, frame_id: String, name: String) -> void:
-	PlayerProfile.set_faction(faction)
-	PlayerProfile.set_race(race_id)
-	PlayerProfile.set_frame(frame_id)
-	PlayerProfile.username = name
+	var profile := AutoloadGate.get_node("PlayerProfile")
+	if profile == null:
+		push_error("CharacterCreatorLogic: PlayerProfile unavailable")
+		return
+	profile.call("set_faction", faction)
+	profile.call("set_race", race_id)
+	profile.call("set_frame", frame_id)
+	profile.set("username", name.strip_edges())
 	var companions := get_starter_companions(faction)
+	var active: Array = profile.get("active_companion_ids")
+	if active == null:
+		active = []
 	for c in companions:
-		if c not in PlayerProfile.active_companion_ids:
-			PlayerProfile.active_companion_ids.append(c)
-	PlayerProfile.has_expedition = true
-	PlayerProfile.profile_updated.emit()
+		if c not in active:
+			active.append(c)
+	profile.set("active_companion_ids", active)
+	profile.set("has_expedition", true)
+	if profile.has_method("_save"):
+		profile.call("_save")
+	if profile.has_signal("profile_updated"):
+		profile.emit_signal("profile_updated")

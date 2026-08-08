@@ -73,7 +73,11 @@ func _process(delta: float) -> void:
 		return
 	position += to_target.normalized() * wander_speed * delta
 	if to_target.length() > 0.01:
-		look_at(position + to_target, Vector3.UP)
+		# Yaw only — Node3D.look_at can tip humanoids onto their backs when
+		# the mesh forward axis disagrees with -Z (ship PeriHuman bug class).
+		rotation.y = atan2(to_target.x, to_target.z)
+		rotation.x = 0.0
+		rotation.z = 0.0
 
 func _pick_new_wander_target() -> void:
 	var angle := randf_range(0.0, TAU)
@@ -103,10 +107,8 @@ func _request_ai_reaction(player_id: String) -> void:
 		"daily_task": daily_task,
 		"aware": GameModeManager.is_aware(),
 	}
-	var client := CasinoHTTPClient.new()
-	add_child(client)
-	var response := await client.post_json(PERSONA_ENDPOINT, task)
-	client.queue_free()
+	# CasinoHTTPClient is an autoload singleton (no class_name).
+	var response: Dictionary = await CasinoHTTPClient.post_json(PERSONA_ENDPOINT, task)
 	if response.get("ok", false):
 		reaction_received.emit(response.get("data", {}))
 

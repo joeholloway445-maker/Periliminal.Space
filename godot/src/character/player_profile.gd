@@ -49,6 +49,25 @@ var playtime_seconds: float = 0.0
 ## entities, also renders them undistorted — the opt-out travels with you.
 var view_scale_style: String = ""
 
+## Soft state for TitleEffects / dialogue gates (not all persisted yet).
+var _stat_modifiers: Dictionary = {}
+var _unlocked_abilities: Array[String] = []
+
+## Compat: first equipped companion id (quest/dialogue legacy field).
+var selected_companion: String:
+	get:
+		return active_companion_ids[0] if not active_companion_ids.is_empty() and not active_companion_ids[0].is_empty() else ""
+
+## Compat: race of the equipped companion if known, else player race.
+var selected_companion_race: String:
+	get:
+		if selected_companion.is_empty():
+			return ""
+		var entry: Dictionary = CompanionRegistry.get_by_id(selected_companion)
+		if not entry.is_empty():
+			return str(entry.get("race", entry.get("species", selected_race_id)))
+		return selected_race_id
+
 var _session_start: float = 0.0
 
 func _ready() -> void:
@@ -210,11 +229,42 @@ func add_title(title: String) -> void:
 	if title not in titles:
 		titles.append(title)
 		_save()
+		# Apply TitleEffects immediately so identity/faction/ability shifts land.
+		TitleEffects.apply_title_effects({
+			"titles": titles,
+			"active_title": active_title,
+		})
+		profile_updated.emit()
 
 func set_active_title(title: String) -> void:
 	active_title = title
 	_save()
+	TitleEffects.apply_title_effects({
+		"titles": titles,
+		"active_title": active_title,
+	})
 	profile_updated.emit()
+
+func set_active_companions(ids: Array[String]) -> void:
+	active_companion_ids = ids
+	_save()
+	profile_updated.emit()
+
+func add_stat_modifier(stat: String, amount: float) -> void:
+	_stat_modifiers[stat] = float(_stat_modifiers.get(stat, 0.0)) + amount
+	profile_updated.emit()
+
+func get_stat_modifier(stat: String) -> float:
+	return float(_stat_modifiers.get(stat, 0.0))
+
+func unlock_ability(ability_id: String) -> void:
+	if ability_id.is_empty() or ability_id in _unlocked_abilities:
+		return
+	_unlocked_abilities.append(ability_id)
+	profile_updated.emit()
+
+func has_ability(ability_id: String) -> bool:
+	return ability_id in _unlocked_abilities
 
 func get_display_name() -> String:
 	if active_title.is_empty():
