@@ -23,6 +23,13 @@ const SAVE_PATH := "user://pvp_missions.json"
 ## life in hours; `board` the crown leaderboard it scores into; `stake` what
 ## you forfeit on failure. Ranks mirror DungeonData's bands so one vocabulary
 ## covers both group content types.
+##
+## These 5 aren't random — reward:stake sits at roughly 2.25-3x across all
+## of them, and prestige tracks rank at roughly rank*1.3. That's a
+## consistent curve, not a balance pass: it hasn't been validated against
+## real playtime-to-reward data, so treat the ratio as the thing to
+## preserve if you retune amounts, and treat the absolute numbers as still
+## provisional. See docs/HANDOFF.md.
 const MISSIONS := [
 	{
 		"id": "bounty_run", "name": "Bounty Run", "rank": 1,

@@ -35,6 +35,14 @@ OVERPASS_URL = os.environ.get(
 # Target in-game city span (meters). Hub chunks are 384–512 units; keep the
 # downtown core comfortably inside that without hub-to-hub travel becoming
 # real-world duration. Matches docs/DFW_METROPLEX_MAP.md compression intent.
+#
+# NOT runtime-tunable: this scale is baked into godot/world_data/osm/*.json
+# at fetch time (see `scale = TARGET_SPAN / span` below), not read at
+# Godot load time. To retune hub size relative to the wilds, change this
+# one number and re-run this script — which needs live Overpass API
+# access this sandbox's network policy doesn't allow (confirmed: fetch
+# fails with a 403 from the proxy). Do it somewhere with open network,
+# or run it locally once the editor is open to eyeball the result.
 TARGET_SPAN = 280.0
 
 # Downtown cores — tight boxes around the recognizable centers called out
@@ -44,7 +52,9 @@ HUBS = {
     "dallas": {
         "name": "New Dallas",
         "real_world": "Dallas",
-        "bbox": (32.7750, -96.8120, 32.7920, -96.7900),
+        # Widened west/south to reach Margaret Hunt Hill Bridge, which sits
+        # on the Trinity River just outside the original downtown-only box.
+        "bbox": (32.7680, -96.8280, 32.7920, -96.7900),
         "landmark_queries": [
             "Reunion Tower",
             "Bank of America Plaza",
@@ -54,7 +64,9 @@ HUBS = {
     "fort_worth": {
         "name": "Hell's Half Acre",
         "real_world": "Fort Worth",
-        "bbox": (32.7480, -97.3350, 32.7600, -97.3200),
+        # Widened north/west to reach the Stockyards, which sit north of
+        # downtown proper, outside the original box.
+        "bbox": (32.7480, -97.3500, 32.7900, -97.3200),
         "landmark_queries": [
             "Tarrant County Courthouse",
             "Fort Worth Stockyards",
@@ -64,7 +76,9 @@ HUBS = {
     "arlington": {
         "name": "Soulless Sanctuary",
         "real_world": "Arlington",
-        "bbox": (32.7400, -97.1000, 32.7600, -97.0700),
+        # Widened south/west to reach the UTA campus, south/west of the
+        # stadium district the original box was centered on.
+        "bbox": (32.7250, -97.1200, 32.7600, -97.0700),
         "landmark_queries": [
             "AT&T Stadium",
             "Globe Life Field",
@@ -75,7 +89,9 @@ HUBS = {
     "denton": {
         "name": "Sky Fjord",
         "real_world": "Denton",
-        "bbox": (33.2100, -97.1400, 33.2200, -97.1250),
+        # Widened on all sides as a safety margin around the courthouse
+        # square/water tower cluster.
+        "bbox": (33.2050, -97.1500, 33.2250, -97.1150),
         "landmark_queries": [
             "Denton County Courthouse",
             "Courthouse-on-the-Square",

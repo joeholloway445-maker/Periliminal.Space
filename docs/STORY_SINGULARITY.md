@@ -162,13 +162,21 @@ The concept above is settled. Still open, whenever you're ready to write it:
   earns the choice through the main quest.
 - Specific origin rivalries beyond the provisional relation graph — any of
   them can be promoted from "flavor" to an actual plot beat.
-- **Which one of the 20 canon races is the actual, literal Human race.**
-  None of `RACES` in `src/data/canon_races.gd` is currently written as
-  baseline-human — every entry in `human_race_archetypes.gd` carries a
-  signature non-human trait (Ferros is metal-plated, Vex is translucent,
-  Etherea is partly incorporeal, and so on). The faction war is framed
-  throughout this doc as specifically **humanity's** ego and ignorance, not
-  every race's — so which single race that indicts, and how the other 19
-  relate to a conflict that was never really theirs, is a load-bearing fact
-  this doc can't guess at. Blocks writing the origin/faction lore accurately
-  for real until answered.
+
+## Resolved: "race" is doing double duty, on purpose
+
+Earlier drafts of this doc worried that none of the 20 canon races is
+literally, biologically Human, while also framing the faction war as
+specifically humanity's ego — treating those as a contradiction. They're
+not. **All 20 races are Human** — "race" here means what it means in the
+real world, not species. Ferros, Vex, Etherea, and the rest are the
+game's way of rendering real human diversity as fantasy archetypes, the
+same move the "cat breed" skin already makes at the gameplay layer
+(`CanonRaces` docstring: "every breed is a canon race wearing the house
+skin"). So when this doc says the faction war is **humanity's** ego, that
+indicts all 20 races at once, not 19 non-human bystanders watching one
+guilty species — every race has its own relationship to the same three
+claims, which is exactly why `RACE_FACTION_OF` ties races from every
+origin into every faction rather than clustering by species. No code or
+doc change needed beyond this note — the origin/faction data already reads
+correctly under this framing.

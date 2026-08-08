@@ -27,11 +27,11 @@ fixed here:
   each gets its own local storyline (`LAYER_ARCS` in `persona_buckets.gd`),
   with the Theory war as the throughline underneath all of them, not a
   seventh competing plot.
-- **Still blocking**: which one of the 20 canon races is the literal Human
-  race. None currently is — see the open-questions list in
-  `docs/STORY_SINGULARITY.md`. This decides how the origin/faction lore
-  should actually read for the other 19, so it's flagged rather than
-  guessed at.
+- **Resolved**: "which race is Human" was a false alarm — "race" in this
+  game means what it means in the real world (human diversity, not
+  species). All 20 canon races are Human; the faction war being
+  "humanity's ego" indicts all 20 at once, not one literal human among 19
+  aliens. See the "Resolved" note in `docs/STORY_SINGULARITY.md`.
 
 ## The one thing that matters most
 
@@ -99,7 +99,8 @@ Three new autoloads are registered in `project.godot`: `DungeonManager`,
   as a wall — that is the new collision, not a regression in placement.
 - **`build/` is gitignored.** `asset_jobs.jsonl` is derived from committed
   data; regenerate it, do not commit it.
-- **Two race rosters exist and do not match** — see below.
+- **Three race rosters exist and do not match** — see below (was
+  documented as two; a full sweep of the codebase found a third).
 
 ## Open decisions that need a human
 
@@ -107,12 +108,30 @@ Three new autoloads are registered in `project.godot`: `DungeonManager`,
    races with the canon PeriHuman races: 9 confident, 6 arguable, 5 with no
    clean partner. Nothing in code reads the mapping until someone signs off,
    because it decides which body belongs to which race.
-2. **PvP mission balance.** Every stake, target and reward in
-   `pvp_missions.gd` is invented. Those are design numbers.
-3. **~50 MB of recoverable bloat.** `godot/assets` is ~200 MB against a Web
-   export target. Documented in `SHIPPING.md` §3: the 23 MB mech, ~33% base64
-   overhead on embedded props, duplicate material sets in some photoscans.
-   All reversible — the fetch scripts re-pull everything.
+2. **A third, unreconciled race roster.** `docs/LORE_FOUNDATION.md` has a
+   full 20-race "Light/Heavy, perceptual-lens" system (Luminant, Kinetic,
+   Chronal, …) that neither `docs/OMNIDEX.md` nor any code knows about.
+   Nothing reads it. Needs a decision: merge into the canon races, repurpose
+   as a different axis entirely, or retire it. Flagged with a status note
+   at the top of that doc so it stops reading as current canon in the
+   meantime.
+3. **PvP mission balance.** `pvp_missions.gd`'s 5 missions aren't random —
+   reward:stake holds ~2.25-3x and prestige tracks rank*1.3 consistently —
+   but that curve has never been validated against real playtime-to-reward
+   data. Documented in a comment at the top of the file. Preserve the ratio
+   if you retune amounts.
+4. **Combat loot generation is a no-op.** `combat_system_realtime.gd`'s
+   `end_combat()` always emits `entity_defeated` with an empty loot array —
+   there's no loot table anywhere in the codebase yet. Nothing currently
+   depends on that array having contents (`pvp_missions.gd`'s handler
+   discards it), so it's silent, not broken — but a real drop system is
+   unbuilt, not just unbalanced.
+5. **~27 MB of remaining recoverable bloat.** `godot/assets` was ~200 MB
+   against a Web export target; the 23 MB mislabeled `mech_tps.glb` has
+   been deleted (nothing referenced it), leaving ~33% base64 overhead on
+   embedded props and duplicate material sets in some photoscans per
+   `SHIPPING.md` §3. Reversible — the fetch scripts re-pull everything —
+   just not done yet.
 
 ## Known incomplete, and safe to pick up
 
@@ -123,6 +142,16 @@ Three new autoloads are registered in `project.godot`: `DungeonManager`,
   a batch. The exporter flags each one.
 - `player_cat` / `npc_cat` remain procedural — no reachable CC0 cat model.
 - Interior texture sets are installed but read by nothing outside venues.
+- `scripts/fetch_osm_cities.py`'s 4 hub bboxes were widened tonight to
+  actually reach their listed landmarks (Margaret Hunt Hill Bridge, Fort
+  Worth Stockyards, UTA campus, Denton courthouse/water-tower cluster) —
+  but regenerating `godot/world_data/osm/*.json` to pick up the change
+  needs a live Overpass API call, which this sandbox's network policy
+  blocks (confirmed: 403 from the proxy). Re-run the script somewhere with
+  open network access.
+- `TARGET_SPAN` in that same script isn't runtime-tunable — it's baked into
+  the generated JSON at fetch time, not read by Godot at load. Same
+  network blocker applies to seeing the effect of changing it.
 
 ## Regenerating things rather than hand-editing
 
