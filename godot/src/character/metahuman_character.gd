@@ -170,3 +170,27 @@ static func _try_apply_metahuman_materials(root: Node3D) -> void:
 	# Marker only — full surface remapping needs per-export surface maps
 	# (see MetaHumanGodot look-dev). Avoid forcing broken shaders on TPS interim.
 	root.set_meta("metahuman_shader_ready", true)
+
+## Diagnostic: which visual tier would win for the local player right now,
+## in GLB-slot terms — "peri_human_race" | "peri_human_player" |
+## "metahuman_race" | "metahuman_player" | "player_human" | "player_cat" |
+## "procedural_rig". Note this describes slot *availability*, not this
+## file's actual build path: build_player()/_native_player() always
+## succeeds via the native PeriHuman genome (PeriHumanRig) once GLB slots
+## are exhausted, so "procedural_rig" here means "no GLB slot filled," not
+## "nothing rendered."
+static func resolve_tier(visual_mode: String = "identity") -> String:
+	if visual_mode == "cat" and AssetLibrary.has_asset(CAT_PLAYER):
+		return "player_cat"
+	var race_id := ""
+	if PlayerProfile:
+		race_id = str(PlayerProfile.selected_race_id)
+	if not race_id.is_empty() and AssetLibrary.has_asset("peri_human_%s" % race_id):
+		return "peri_human_race"
+	if not race_id.is_empty() and AssetLibrary.has_asset("metahuman_%s" % race_id):
+		return "metahuman_race"
+	if AssetLibrary.has_asset("peri_human_player") or AssetLibrary.has_asset(META_PLAYER):
+		return "peri_human_player"
+	if AssetLibrary.has_asset(HUMAN_PLAYER):
+		return "player_human"
+	return "procedural_rig"

@@ -255,8 +255,8 @@ func _charge(currency: String, amount: int) -> bool:
 		return true
 	if not EconomyManager:
 		return true
-	if EconomyManager.has_method("spend_currency"):
-		return bool(EconomyManager.spend_currency(currency, amount, "pvp_mission_stake"))
+	if EconomyManager.has_method("spend_currency_local"):
+		return bool(EconomyManager.spend_currency_local(currency, amount, "pvp_mission_stake"))
 	return true
 
 func _self_id() -> String:
