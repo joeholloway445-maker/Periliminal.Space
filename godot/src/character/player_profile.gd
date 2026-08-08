@@ -133,7 +133,15 @@ func xp_progress() -> float:
 	if span <= 0: return 1.0
 	return clampf(float(xp - current_thresh) / float(span), 0.0, 1.0)
 
+## Sets the character's faction — but only once. Factionless is a status,
+## not a fourth faction: it's what every character starts as, and the first
+## real faction picked (SovereignCrown / WildlandsAscendant / VeiledCurrent)
+## is permanent for that character, no swapping or returning to Factionless.
+## Calling this again after a real faction is already set is a no-op.
 func set_faction(new_faction: String) -> void:
+	if faction != "Factionless" and faction != new_faction:
+		push_warning("PlayerProfile: faction is permanent once set (%s), ignoring set_faction(%s)" % [faction, new_faction])
+		return
 	faction = new_faction
 	_save()
 	profile_updated.emit()

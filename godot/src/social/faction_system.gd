@@ -1,5 +1,12 @@
 extends Node
-# Faction allegiance and synergy bonus calculation
+# Faction allegiance and synergy bonus calculation.
+#
+# Three real factions — SovereignCrown, WildlandsAscendant, VeiledCurrent.
+# "Factionless" is not a fourth: it's the unjoined status every character
+# starts in, kept in this dict only so lookups against an unpledged
+# character resolve to real (zero) numbers instead of needing a null-check
+# everywhere. See PlayerProfile.set_faction() — leaving Factionless for a
+# real faction is permanent, no swapping back or sideways.
 
 const FACTIONS = {
 	"SovereignCrown": {
@@ -40,7 +47,7 @@ const FACTIONS = {
 		combat_bonus = 0.0,
 		race_spd_bonus = 0,
 		companion_synergy_threshold = 0,
-		lore = "Not a faction so much as an acknowledgment: some cats answer to no one. They receive no faction bonuses — but suffer no faction restrictions either.",
+		lore = "Not a faction — the state every cat starts in. New arrivals stay Factionless as long as they like, with their own entity pool to collect from, right up until they pledge. That pledge, once made, cannot be unmade or swapped.",
 	},
 }
 

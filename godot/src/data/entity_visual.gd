@@ -1,6 +1,8 @@
 class_name EntityVisual
-## Gives every one of the ~270 entities (up to 3 stages each, ~810 forms) a
-## body and an icon of its own, generated from the data it already carries.
+## Gives every one of the 270 entity lines — 600 forms counting evolutions,
+## 150 per faction across SovereignCrown/VeiledCurrent/WildlandsAscendant/
+## Factionless (see EntityDexData) — a body and an icon of its own, generated
+## from the data it already carries.
 ##
 ## Until now every entity in the game instanced the same `creature` model, so
 ## an Apex Quantum horror and a Utility Matter drone were the same orc. This

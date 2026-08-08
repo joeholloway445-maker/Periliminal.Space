@@ -3,6 +3,36 @@
 Written for whoever picks this up next, human or agent. Everything below is
 pushed; the working tree is clean.
 
+## Correction pass (after the owner's review)
+
+The owner caught real mistakes in the previous session's lore/faction work,
+fixed here:
+
+- **Only 3 factions**, not 4 — Factionless is the unjoined starting status,
+  not a fourth ideology. `RACE_FACTION_OF` had 5 races wrongly tied to
+  "Factionless" as if it were a historical claim faction; fixed to fall
+  through to the default instead (see `persona_buckets.gd`). Faction choice
+  is now enforced as permanent in code — `PlayerProfile.set_faction()`
+  refuses to change an already-set faction. Player-facing copy
+  (`tutorial_ui.gd`, `npc_dialogue.gd`, `screen_list.md`) corrected to match.
+- **Entity Dex is already correct at 600** (150/faction × 3 factions +
+  Factionless, counting evolution stages) — `entity_dex_data.gd`'s own
+  header comment had this right; the wrong "~270 entities" number was only
+  in a stale comment in `entity_visual.gd`, now fixed. Companion roster is
+  604, not the 200/500 that had drifted into tutorial and dialogue copy.
+- **Main storyline confirmed**: Theory of Everything / Solution of
+  Everything vs Solution of Nothing, exactly as scaffolded — see
+  `docs/STORY_SINGULARITY.md`.
+- **New structural note**: the six reality layers don't share one plot —
+  each gets its own local storyline (`LAYER_ARCS` in `persona_buckets.gd`),
+  with the Theory war as the throughline underneath all of them, not a
+  seventh competing plot.
+- **Still blocking**: which one of the 20 canon races is the literal Human
+  race. None currently is — see the open-questions list in
+  `docs/STORY_SINGULARITY.md`. This decides how the origin/faction lore
+  should actually read for the other 19, so it's flagged rather than
+  guessed at.
+
 ## The one thing that matters most
 
 **None of this has been compiled.** It was written in a container with no

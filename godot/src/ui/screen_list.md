@@ -149,7 +149,8 @@ Tab System:
 ## TIER 2: SOCIAL/PROGRESSION (Launch + 2 weeks)
 
 ### 11. **Faction Reputation Panel**
-- 4 faction rows: Sovereign Crown, Veiled Current, Wildlands, Factionless
+- 3 faction rows: Sovereign Crown, Veiled Current, Wildlands — Factionless
+  isn't a row here, it's the pre-pledge state the panel is hidden/blank for
 - Reputation bar per faction (-300 to +300 scale)
 - Tier badge (showing current standing)
 - Faction-specific perks/unlocks at each tier

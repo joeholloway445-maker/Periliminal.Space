@@ -144,17 +144,21 @@ const RELATION_BIAS := {"ally": 10, "rival": -6, "enemy": -14, "neutral": 0}
 
 # ---------------------------------------------------------------- factions
 
-## Which of the four human factions each race is historically tied to. This is
+## Which of the three human factions each race is historically tied to. This is
 ## a SEPARATE axis from STANCE_OF on purpose: the Theory war is ancient and
 ## cosmic, between the races themselves; the factions are recent and human —
 ## SovereignCrown, WildlandsAscendant, and VeiledCurrent formed only after
 ## humanity found the Liminal and, rather than understand what they'd found,
-## moved to claim it. (Factionless is the honest answer: no one could actually
-## own a reality layer, and some races/individuals never pretended otherwise.)
-## A race's faction tie reflects which claim recruited or absorbed them, not
-## which Solution they believe in — a race can be tied to SovereignCrown and
-## still privately hold the Solution of Nothing. Provisional and overridable;
-## a DLC race just needs one entry here (or none, to be born Factionless).
+## moved to claim it. A race's faction tie reflects which claim recruited or
+## absorbed them, not which Solution they believe in — a race can be tied to
+## SovereignCrown and still privately hold the Solution of Nothing.
+## Factionless is NOT a fourth claim faction and never a historical tie — it's
+## the absence of one, worn by races no claim ever recruited, and by every new
+## character before they pledge (see PlayerProfile.set_faction: once a
+## character leaves Factionless the choice is permanent, no swapping back or
+## sideways). A race simply omitted here is born Factionless by default —
+## that's how Nyx, Kryos, Chimera, Etherea, and Azhul read. Provisional and
+## overridable; a DLC race just needs one entry here (or none).
 const RACE_FACTION_OF := {
 	"Ferros": "SovereignCrown", "Lumari": "SovereignCrown", "Petra": "SovereignCrown",
 	"Sanguis": "SovereignCrown", "Astra": "SovereignCrown",
@@ -162,8 +166,49 @@ const RACE_FACTION_OF := {
 	"Aquis": "WildlandsAscendant", "Igni": "WildlandsAscendant",
 	"Vex": "VeiledCurrent", "Keth": "VeiledCurrent", "Volt": "VeiledCurrent",
 	"Geara": "VeiledCurrent", "Glyphe": "VeiledCurrent",
-	"Nyx": "Factionless", "Kryos": "Factionless", "Chimera": "Factionless",
-	"Etherea": "Factionless", "Azhul": "Factionless",
+	# Nyx, Kryos, Chimera, Etherea, Azhul: intentionally absent — no claim
+	# faction ever recruited them, so race_faction() falls through to
+	# "Factionless" via its default, same as any future DLC race with no tie.
+}
+
+# ------------------------------------------------------------ layer arcs
+
+## The six reality layers (docs/LORE_FOUNDATION.md) don't share one plot —
+## a player spends most of a session in one or two layers, so each layer
+## carries its own grounded storyline, and the Theory of Everything /
+## Solution of Everything vs Nothing (STANCE_OF, STORY) is the myth that
+## runs underneath and eventually threads all of them together, not a
+## seventh plot competing with them. Scaffold only — `hook` is one line
+## naming where that layer's local story starts and how it touches the
+## Theory war; the actual quest content is a separate, later pass.
+## `arc_status()` below reads this the same way stance()/origin_name() read
+## their tables, so wiring a layer's real storyline into dialogue/quests
+## later is a data change here, not new code.
+const LAYER_ARCS := {
+	"subliminal": {
+		"name": "The Base",
+		"hook": "Something in the daily loop is off — the first thread anyone actually pulls.",
+	},
+	"liminal": {
+		"name": "The Thresholds",
+		"hook": "Fractured people caught mid-loop, some of them old enough to remember the Liminal being found.",
+	},
+	"supraliminal": {
+		"name": "The Surface",
+		"hook": "SovereignCrown's 'perfected' layer — the clearest place to meet the faction war as policy, not just symbol.",
+	},
+	"hyperliminal": {
+		"name": "The Casino",
+		"hook": "Where every faction and origin's money ends up regardless of allegiance — neutral ground with its own stakes.",
+	},
+	"extraliminal": {
+		"name": "The Territory",
+		"hook": "Faction and origin conflict made spatial — guild warfare over ground nobody actually owns, the claim fight in miniature.",
+	},
+	"periliminal": {
+		"name": "The Gauntlet",
+		"hook": "Personalized to the player's own Hope profile — where the Solution of Everything/Nothing stops being ideology and gets asked of you directly.",
+	},
 }
 
 # ---------------------------------------------------------------- mood buckets
@@ -557,3 +602,13 @@ static func relation_bias(canon_a: String, canon_b: String) -> int:
 ## none). Separate from stance() on purpose — see RACE_FACTION_OF.
 static func race_faction(canon: String) -> String:
 	return str(RACE_FACTION_OF.get(canon, "Factionless"))
+
+# ---------------------------------------------------------------- layer arcs
+
+static func layer_arc_name(layer_id: String) -> String:
+	return str(LAYER_ARCS.get(layer_id, {}).get("name", layer_id.capitalize()))
+
+## One-line entry point for that reality layer's local storyline — see
+## LAYER_ARCS. Empty string for an unrecognized layer id, never a crash.
+static func layer_arc_hook(layer_id: String) -> String:
+	return str(LAYER_ARCS.get(layer_id, {}).get("hook", ""))

@@ -41,12 +41,18 @@ This story runs on **two axes that don't collapse into each other**:
 1. **The Theory war** (`STANCE_OF` — singularity / anti_singularity / seeker /
    unaligned) — ancient, cosmic, and **between the races themselves**. It's
    about what reality-fusion means and whether it should happen.
-2. **The faction war** (`SovereignCrown` / `WildlandsAscendant` /
-   `VeiledCurrent` / `Factionless`) — recent and **human**. The factions
-   *are* the ignorance and ego this story is actually about: rather than
-   understand what the Liminal's finders had discovered, humanity moved to
-   **claim** it — three competing claims on layers no one could really own.
-   Factionless is the honest answer standing outside that fight.
+2. **The faction war** — three factions, `SovereignCrown` /
+   `WildlandsAscendant` / `VeiledCurrent` — recent and **human**. The
+   factions *are* the ignorance and ego this story is actually about: rather
+   than understand what the Liminal's finders had discovered, humanity moved
+   to **claim** it — three competing claims on layers no one could really
+   own. **`Factionless` is not a fourth faction** — it's the unpledged
+   status every character starts in, with its own entity pool to play and
+   collect from before committing. The commitment, once made, is permanent:
+   a character who pledges to a faction cannot swap to another or fall back
+   to Factionless (`PlayerProfile.set_faction()` enforces this in code).
+   Factionless exists so new or undecided players still have somewhere to
+   play, not as a fourth ideology sitting beside the other three.
 
 A race's Theory stance and its historical faction tie are independent —
 a race tied to SovereignCrown by claim can still privately hold the Solution
@@ -76,6 +82,34 @@ independent of who agrees on the Theory. It's already live in dialogue:
 `RacePersona.relation()` colours NPC disposition toward the player by a small
 amount before either side says a word (`ui/npc_dialogue_ui.gd`).
 
+## Multiple layers, multiple storylines
+
+There are six reality layers (`docs/LORE_FOUNDATION.md`), and a player
+spends most of any session in one or two of them — so this isn't one linear
+main quest, it's **one myth underneath six local storylines**. The Theory of
+Everything / Solution of Everything vs Nothing is the throughline that
+eventually threads all six together; it is not a seventh plot competing with
+them, and it doesn't require a player to have touched every layer to matter
+in the one or two they actually play.
+
+`LAYER_ARCS` (`src/data/persona_buckets.gd`) gives each layer a `hook` — one
+line for where that layer's local story starts and how it touches the
+Theory war — read through `PersonaBuckets.layer_arc_hook(layer_id)`:
+
+| Layer | Local story is about... |
+|---|---|
+| Subliminal (The Base) | the daily loop being subtly wrong — the first thread most players pull |
+| Liminal (The Thresholds) | fractured people caught mid-loop, some old enough to remember the discovery |
+| Supraliminal (The Surface) | the faction war as policy — SovereignCrown's "perfected" layer made concrete |
+| Hyperliminal (The Casino) | neutral ground where every faction's and origin's money ends up regardless of allegiance |
+| Extraliminal (The Territory) | the claim fight made spatial — guild warfare over ground nobody actually owns |
+| Periliminal (The Gauntlet) | personalized to the player's own Hope profile — where the Solution question stops being ideology and gets asked of *you* |
+
+Same convention as everywhere else in this doc: the table above is
+machinery and placement, not written plot. Filling in an actual storyline
+for one layer never requires touching the other five, and a DLC layer or
+sub-region just needs one more `LAYER_ARCS` entry.
+
 ## How the player enters it: race, faction, and the Unbound Writ
 
 Most races were historically claimed by one of the three human factions
@@ -91,7 +125,10 @@ the theme, not a bypass of it.
 
 Implemented in `ui/venture_wizard.gd`'s faction step: your race's tie is
 pre-selected and marked "recommended"; other claim factions show locked
-(🔒) until the Writ is held; Factionless is never locked.
+(🔒) until the Writ is held; Factionless is never locked — because staying
+Factionless isn't a step in this wizard at all, it's simply what happens if
+you never spend the pledge. Whichever of the three factions you do confirm
+at creation is that character's faction for good.
 
 ## Adding to this — DLC / future content
 
@@ -107,6 +144,7 @@ race, origin, or relation never requires editing an existing entry:
 | A race's faction tie | `RACE_FACTION_OF["NewRace"] = "VeiledCurrent"` (or omit for Factionless) |
 | Bespoke dialogue for one race | `RACE_OVERRIDES["NewRace"]["story"] = [...]` (or barks/musings/taunts/…) |
 | A whole new DLC storyline arc | A new stance or channel — one `CHANNELS`/`CHANNEL_AXIS` entry |
+| A DLC reality layer or sub-region's storyline | One `LAYER_ARCS` entry |
 
 Nothing downstream needs to know a new race, origin, or stance exists ahead
 of time — every consumer (dialogue, Dex, creator, barks) reads through the
@@ -124,3 +162,13 @@ The concept above is settled. Still open, whenever you're ready to write it:
   earns the choice through the main quest.
 - Specific origin rivalries beyond the provisional relation graph — any of
   them can be promoted from "flavor" to an actual plot beat.
+- **Which one of the 20 canon races is the actual, literal Human race.**
+  None of `RACES` in `src/data/canon_races.gd` is currently written as
+  baseline-human — every entry in `human_race_archetypes.gd` carries a
+  signature non-human trait (Ferros is metal-plated, Vex is translucent,
+  Etherea is partly incorporeal, and so on). The faction war is framed
+  throughout this doc as specifically **humanity's** ego and ignorance, not
+  every race's — so which single race that indicts, and how the other 19
+  relate to a conflict that was never really theirs, is a load-bearing fact
+  this doc can't guess at. Blocks writing the origin/faction lore accurately
+  for real until answered.
