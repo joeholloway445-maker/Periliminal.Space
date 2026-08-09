@@ -57,6 +57,7 @@ const VARIANTS_MANIFEST := "res://data/asset_variants.json"
 static var _cache: Dictionary = {}
 static var _audio_cache: Dictionary = {}
 static var _texture_cache: Dictionary = {}
+static var _variant_cache: Dictionary = {}
 static var _variants_manifest: Dictionary = {}
 static var _variants_loaded := false
 static var _variant_scene_cache: Dictionary = {}  # "slot/file" -> PackedScene or null
@@ -79,6 +80,35 @@ static func instance(slot: String) -> Node3D:
 			return null
 	_cache[slot] = null
 	return null
+
+## Variant-aware slot pick. When a pack of interchangeable bodies/props is
+## installed as `<slot>_a`, `<slot>_b`, … one is chosen by `variant_seed`;
+## otherwise this is just `instance(slot)`. The pick is deterministic so a
+## given NPC keeps the same body every time it streams back in — a crowd is
+## varied, but nobody changes face when you turn around.
+## Suffix-file variant (`<slot>_a`, `<slot>_b`, …), picked by a raw int seed.
+## Distinct from the rng-based instance_variant() below, which reads a
+## different on-disk convention (`assets/models/variants/<slot>/*.glb` via
+## a JSON manifest) — both conventions have real callers, kept separate
+## rather than merged into one signature.
+static func instance_variant_by_seed(slot: String, variant_seed: int) -> Node3D:
+	var names := variant_names(slot)
+	if names.is_empty():
+		return instance(slot)
+	return instance(names[absi(variant_seed) % names.size()])
+
+## Installed `<slot>_<letter>` variants, in a stable order ("" if none).
+static func variant_names(slot: String) -> PackedStringArray:
+	if _variant_cache.has(slot):
+		return _variant_cache[slot]
+	var found := PackedStringArray()
+	for i in 26:
+		# String.chr, not the global char() — that was removed in Godot 4.
+		var name := "%s_%s" % [slot, String.chr(97 + i)]
+		if has_asset(name):
+			found.append(name)
+	_variant_cache[slot] = found
+	return found
 
 ## True if a real (non-procedural) asset file exists for the slot (no instantiate).
 static func has_asset(slot: String) -> bool:
@@ -105,8 +135,11 @@ static func has(slot: String) -> bool:
 ## Convenience: try the slot; if absent, call `fallback` (a Callable that
 ## returns Node3D). Applies the identity lens material to real assets'
 ## mesh surfaces too, so imported models still obey the race lens.
-static func instance_or(slot: String, fallback: Callable, lens_color: Color = Color.WHITE, lens_strength: float = 0.2) -> Node3D:
-	var node := instance(slot)
+## `variant_seed` picks among installed `<slot>_a`, `<slot>_b`, … so scattered
+## props vary; with no variants installed this is exactly `instance(slot)`.
+static func instance_or(slot: String, fallback: Callable, lens_color: Color = Color.WHITE,
+		lens_strength: float = 0.2, variant_seed: int = 0) -> Node3D:
+	var node := instance_variant_by_seed(slot, variant_seed)
 	if node == null:
 		return fallback.call()
 	if lens_strength > 0.0:
@@ -236,7 +269,8 @@ static func material(slot: String, base_color: Color, lens_strength: float = 0.2
 	var mat := IdentityLens.world_material(base_color, lens_strength) if IdentityLens else StandardMaterial3D.new()
 	mat.metallic = metallic
 	mat.roughness = roughness
-	var maps := _texture_maps(slot)
+	# Per-race surfaces when installed; the lens tints on top either way.
+	var maps := _texture_maps(slot, _viewer_race())
 	if maps.has("albedo"):
 		mat.albedo_texture = maps["albedo"]
 	if maps.has("normal"):
@@ -252,20 +286,52 @@ static func material(slot: String, base_color: Color, lens_strength: float = 0.2
 		mat.emission_energy_multiplier = 1.0
 	return mat
 
-static func _texture_maps(slot: String) -> Dictionary:
-	if _texture_cache.has(slot):
-		return _texture_cache[slot]
-	var maps: Dictionary = {}
+## Texture maps for a slot, preferring a per-race set when one is installed.
+##
+## The identity lens tints a shared texture, which makes the same wall a
+## different COLOUR per race. Dropping `<slot>__<race>_albedo.png` into
+## assets/textures/ goes further and makes it a different SURFACE — a
+## crystalline race can be given faceted glass where a biotech race gets
+## grown chitin, on the same geometry. Any race without its own set falls
+## back to the shared one, so a partial set is fine: fill in the races you
+## have art for and the rest keep the lens tint.
+##
+## Double underscore separates slot from race so slot names containing "_"
+## (facade_glass, city_prop) stay unambiguous.
+static func _texture_maps(slot: String, race_id: String = "") -> Dictionary:
+	var key_id := "%s__%s" % [slot, race_id] if not race_id.is_empty() else slot
+	if _texture_cache.has(key_id):
+		return _texture_cache[key_id]
+
 	var suffixes := {"albedo": "_albedo", "normal": "_normal", "rough": "_rough",
 		"metal": "_metallic", "emis": "_emissive"}
+	var maps: Dictionary = {}
 	for key in suffixes:
 		for ext in TEXTURE_EXTENSIONS:
-			var path := "res://assets/textures/%s%s.%s" % [slot, suffixes[key], ext]
+			var path := "res://assets/textures/%s%s.%s" % [key_id, suffixes[key], ext]
 			if ResourceLoader.exists(path):
 				maps[key] = load(path)
 				break
-	_texture_cache[slot] = maps
+
+	# A race set that exists but is incomplete inherits the missing maps from
+	# the shared slot rather than rendering half-textured.
+	if not race_id.is_empty():
+		if maps.is_empty():
+			maps = _texture_maps(slot)
+		else:
+			var shared := _texture_maps(slot)
+			for k in shared:
+				if not maps.has(k):
+					maps[k] = shared[k]
+
+	_texture_cache[key_id] = maps
 	return maps
 
+## The race whose surfaces the local player sees everything through.
+static func _viewer_race() -> String:
+	if PlayerProfile:
+		return str(PlayerProfile.selected_race_id)
+	return ""
+
 static func has_texture(slot: String) -> bool:
-	return not _texture_maps(slot).is_empty()
+	return not _texture_maps(slot, _viewer_race()).is_empty()

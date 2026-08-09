@@ -59,6 +59,7 @@ func _build_ui() -> void:
 		{label="🐾 Companions", scene="res://scenes/ui/companion_viewer.tscn"},
 		{label="🛒 Shop", scene="res://scenes/ui/shop.tscn"},
 		{label="🏆 Achievements", scene="res://scenes/ui/achievements.tscn"},
+		{label="🧬 Character Studio", scene="res://scenes/ui/perihuman_creator.tscn"},
 		{label="🌐 Game Modes", scene="res://scenes/ui/game_mode_store.tscn"},
 		{label="🗺️ Overworld", scene="res://scenes/layers/supraliminal.tscn"},
 		{label="🌀 Reality Layers", scene="res://scenes/layers/layer_select.tscn"},

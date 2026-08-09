@@ -101,6 +101,29 @@ func _transfer_crown(crown: Dictionary, new_holder: String) -> void:
 		# Charges: quests, leaderboards, achievements — never the casino.
 		EconomyManager.earn_currency("charges", 25, "crown_%s" % crown.id)
 
+## The local standings for a board, highest first, as
+## [{player_id, score, rank}]. This is what the game actually ranks crowns
+## on, so it is also the honest offline leaderboard — `Leaderboard` reads it
+## when there is no server to ask.
+func standings(leaderboard: String, limit: int = 20) -> Array:
+	var board: Array = _leaderboards.get(leaderboard, [])
+	var out: Array = []
+	var rank := 1
+	for e in board:
+		if out.size() >= limit:
+			break
+		out.append({
+			"player_id": str(e.get("player_id", "")),
+			"score": int(e.get("score", 0)),
+			"rank": rank,
+		})
+		rank += 1
+	return out
+
+## Every board that has had a score posted to it.
+func board_ids() -> Array:
+	return _leaderboards.keys()
+
 func crowns_of(player_id: String) -> Array[int]:
 	var r: Array[int] = []
 	for cid in _holders.keys():

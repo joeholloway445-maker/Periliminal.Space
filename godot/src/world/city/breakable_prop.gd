@@ -26,8 +26,11 @@ var _prompt: Label3D
 
 func _ready() -> void:
 	add_to_group("breakable")
+	# Seeded on placement (variant_seed, set by MegaCityBuilder) so a street
+	# shows benches, hydrants, planters and statues rather than the same
+	# prop repeated, while any given prop keeps its identity across streaming.
 	var vrng := RandomNumberGenerator.new()
-	vrng.seed = variant_seed
+	vrng.seed = variant_seed if variant_seed != 0 else hash(global_position.snapped(Vector3.ONE))
 	var real := AssetLibrary.instance_variant("city_prop", vrng)
 	if real != null:
 		_visual = real

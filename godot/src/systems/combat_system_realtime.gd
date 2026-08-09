@@ -321,7 +321,10 @@ func use_ability(actor_id: String, ability_id: String, target_id: String, target
 
 	# Calculate damage with variance
 	var damage = calculate_damage(actor_id, ability, target_id)
-	var is_crit = randf() < ability.get("crit_chance", 0.05)
+	var crit_bonus := 0.0
+	if actor_id == "player" and PlayerProfile:
+		crit_bonus = float(ModMechanics.combat_for(PlayerProfile.selected_mod).crit_chance_bonus)
+	var is_crit = randf() < (float(ability.get("crit_chance", 0.05)) + crit_bonus)
 	if is_crit:
 		damage = int(damage * 1.5)
 

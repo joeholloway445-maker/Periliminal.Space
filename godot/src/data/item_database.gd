@@ -33,6 +33,10 @@ const ITEMS: Array[Dictionary] = [
 	{id="elixir_luck", type=ItemType.CONSUMABLE, rarity=ItemRarity.UNCOMMON, name="Luck Elixir", stat_bonus={lck=30}, price=200, desc="+30 LCK for 3 battles.", duration_battles=3},
 	{id="mega_boost", type=ItemType.CONSUMABLE, rarity=ItemRarity.RARE, name="Mega Boost", stat_bonus={pow=25, spd=25, res=15}, price=500, desc="All stats up for 1 battle.", duration_battles=1},
 	{id="daily_token", type=ItemType.CONSUMABLE, rarity=ItemRarity.COMMON, name="Daily Token", stat_bonus={}, price=0, desc="Doubles next daily bonus claim.", special="daily_double"},
+	# price=0: earned through the story, not sold — the "any race, any faction"
+	# unlock lives in fiction (refusing the one label your race was assigned),
+	# not a shop purchase. Redeeming it should call PlayerProfile.set_unbound_writ(true).
+	{id="unbound_writ", type=ItemType.CONSUMABLE, rarity=ItemRarity.LEGENDARY, name="Unbound Writ", stat_bonus={}, price=0, desc="Frees your faction choice from your race's historic claim. You may pledge to any faction — or none.", special="unbind_faction"},
 	# Companion gear
 	{id="treat_basic", type=ItemType.COMPANION_GEAR, rarity=ItemRarity.COMMON, name="Companion Treat", stat_bonus={}, price=100, desc="Restores companion fatigue.", special="companion_heal"},
 	{id="bond_crystal", type=ItemType.COMPANION_GEAR, rarity=ItemRarity.RARE, name="Bond Crystal", stat_bonus={lck=5, sty=5}, price=1000, desc="+10% companion synergy bonus.", special="synergy_boost"},

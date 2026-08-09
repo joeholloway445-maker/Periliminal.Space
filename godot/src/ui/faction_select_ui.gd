@@ -1,6 +1,8 @@
 extends Control
 class_name FactionSelectUI
-# UI for choosing or changing faction allegiance
+# UI for a Factionless character's one-time faction pledge. Not reachable
+# once a real faction is already set — PlayerProfile.set_faction() is
+# permanent, and this screen doesn't offer a way around that.
 
 signal faction_selected(faction: String)
 
@@ -38,24 +40,21 @@ const FACTION_DATA = [
 		companion_bonus = "+8 race SPD bonus",
 		lore = "The Veiled Current operates beneath the surface. Neon Alley's water district is their stronghold.",
 	},
-	{
-		id = "Factionless",
-		name = "Factionless",
-		icon = "⚡",
-		color = Color(0.6, 0.6, 0.6),
-		tagline = "Bound by nothing.",
-		slot_bonus = "No faction bonuses",
-		combat_bonus = "No faction restrictions",
-		companion_bonus = "Use any companion type",
-		lore = "Some cats answer to no one. They receive no faction bonuses — but suffer no faction restrictions either.",
-	},
 ]
+# Factionless deliberately isn't a card here — it's the unjoined status
+# every character already starts in, not a pledge this screen can make you
+# choose. It has its own entity pool and stays available to collect from
+# right up until one of the three faction cards above is confirmed.
 
 var _cards: Array[Control] = []
 var _selected_faction: String = ""
 var _confirm_btn: Button
 
 func _ready() -> void:
+	if PlayerProfile and str(PlayerProfile.get("faction")) != "Factionless":
+		# Already pledged — this screen has nothing left to offer.
+		queue_free()
+		return
 	_build_ui()
 
 func _build_ui() -> void:

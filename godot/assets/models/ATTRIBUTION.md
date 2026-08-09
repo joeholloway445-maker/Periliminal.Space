@@ -1,5 +1,63 @@
 # Model & code attribution
 
+All models below are CC0 (Creative Commons Zero / public domain) unless
+noted otherwise — free for personal, educational, and commercial use, no
+attribution legally required. Credited anyway because Kenney and the
+Godot project earn it.
+
+| File | Source | Pack | License |
+|---|---|---|---|
+| `player_human.glb`, `npc_human.glb`'s predecessor | [godotengine/tps-demo](https://github.com/godotengine/tps-demo) player model | — | MIT (Godot) |
+| `city_prop.glb`, `ruin_pillar.glb`'s predecessor | godotengine/tps-demo level geometry | — | MIT |
+| `city_tower.glb`, `city_lowrise.glb` | [Kenney — City Kit (Commercial)](https://kenney.nl/assets/city-kit-commercial) | `building-skyscraper-d`, `building-g` | CC0 |
+| `city_house.glb` | [Kenney — City Kit (Suburban)](https://kenney.nl/assets/city-kit-suburban) | `building-type-e` | CC0 |
+| `sidewalk.glb` | Kenney — City Kit (Suburban) | `path-long` | CC0 |
+| `city_industrial.glb` | [Kenney — City Kit (Industrial)](https://kenney.nl/assets/city-kit-industrial) | `building-m` | CC0 |
+| `road_segment.glb`, `streetlight.glb`, `neon_sign.glb` | [Kenney — City Kit (Roads)](https://kenney.nl/assets/city-kit-roads) | `road-straight`, `light-square`, `sign-highway-detailed` | CC0 |
+| `tree.glb` | [Kenney — Nature Kit](https://kenney.nl/assets/nature-kit) | `tree_detailed` | CC0 |
+| `rock.glb` | Kenney — Nature Kit | `rock_largeA` | CC0 |
+| `apartment_prop.glb` | [Kenney — Furniture Kit](https://kenney.nl/assets/furniture-kit) | `loungeSofa` | CC0 |
+| `creature.glb`, `harvest_node.glb` | [Kenney — Mini Dungeon](https://kenney.nl/assets/mini-dungeon) | `character-orc`, `chest` | CC0 |
+| `npc_human.glb` | [Kenney — Blocky Characters](https://kenney.nl/assets/blocky-characters) | `character-a` | CC0 |
+| `ruin_pillar.glb` | [Kenney — Graveyard Kit](https://kenney.nl/assets/graveyard-kit) | `column-large` | CC0 |
+| `extraction_gate.glb` | [Kenney — Space Kit](https://kenney.nl/assets/space-kit) | `gate_complex` | CC0 |
+| `crystal.glb` | Kenney — Space Kit | `rock_crystalsLargeA` | CC0 |
+| `rock_b.glb` | Terrain3D demo (Tokisan Games) | — | MIT |
+| `npc_human_a.glb` … `npc_human_l.glb` | [Kenney — Mini Characters](https://kenney.nl/assets/mini-characters) | `character-female-a…f`, `character-male-a…f` | CC0 |
+| `kenney_characters/blocky-a.glb` … `blocky-r.glb` | [Kenney — Blocky Characters](https://kenney.nl/assets/blocky-characters) | `character-a…r` | CC0 |
+| `polyhaven/*.glb` (28 props) | [Poly Haven — Models](https://polyhaven.com/models) | see `scripts/fetch_polyhaven_models.py` | CC0 |
+
+## Textures — `godot/assets/textures/`
+
+45 PBR maps (albedo / normal / rough / metallic) covering every slot
+`AssetLibrary.material()` reads, plus five interior sets. All from
+[Poly Haven](https://polyhaven.com/textures), CC0. Re-fetch or change
+resolution with `bash scripts/fetch_polyhaven_textures.sh` (`RES=2k` for a
+desktop-only build); the slot→asset mapping lives in that script.
+
+## HDRI skies — `godot/assets/environments/`
+
+12 panoramas from [Poly Haven — HDRIs](https://polyhaven.com/hdris), CC0,
+1k `.hdr`. `DayNightSky` cross-fades a day and a night plate through
+`assets/shaders/hdri_day_night_sky.gdshader`, which re-applies the per-frame
+identity tint so a photographic sky still differs per viewer. Swap which two
+are used via `DayNightSky.day_hdri` / `night_hdri`; with none installed the
+procedural sky carries the cycle exactly as before.
+
+All Kenney packs above via [kenney.nl/assets](https://kenney.nl/assets) —
+same source AssetLibrary/SHIPPING.md already pointed at. Each is a single
+cherry-picked file out of a much larger pack (20-150+ models each); the
+full packs aren't vendored, only what's wired to an `AssetLibrary` slot.
+
+**Still open** (no free model found that clearly fit, or intentionally
+left procedural): `player_cat.glb` / `npc_cat.glb` (no CC0 cat-creature
+model turned up — the procedural `CharacterRig`/PeriHuman fallback still
+carries this), `metahuman_player.glb` / `metahuman_npc.glb` (these are
+meant to be *your own* MetaHuman exports per `docs/VISUAL_DIRECTION_ESO.md`,
+not a stock download).
+
+## Additional assets (parallel branch, merged in)
+
 | File | Source | License |
 |---|---|---|
 | `metahuman_player.glb`, `peri_human_player.glb`, `player_human.glb` | [MPFB2](http://static.makehumancommunity.org/mpfb.html) + MakeHuman Community CC0 packs (system assets, skins, hair, shirts, pants, shoes) via `scripts/bake_mpfb_characters.py` | **CC0** |
@@ -136,6 +194,50 @@ wants to go further:
 
 See `docs/VISUAL_DIRECTION_ESO.md`.
 
+## Realism pass — stylised models retired from live slots
+
+The Kenney humanoids and blocky props are CC0 and still in the repo under
+`kenney_characters/`, but none of them occupy a live `AssetLibrary` slot any
+more: their chibi/blocky proportions clash badly with the photoscanned
+Poly Haven surfaces, and with the slots empty the resolver falls through to
+`PeriHumanRig` — the parametric human — which is the realistic path and the
+only one that can express a race's substance. Kept, not deleted: a
+deliberately stylised reality layer would want exactly these.
+
+| Was | Now | Why |
+|---|---|---|
+| `npc_human_a…l` (Kenney Mini Characters) | `kenney_characters/mini-a…l.glb` | chibi proportions |
+| `npc_human.glb` (Kenney Blocky) | `kenney_characters/blocky-npc-legacy.glb` | blocky |
+| `player_human.glb` (TPS demo) | `mech_tps.glb` | it is a mech, not a human |
+
+Realistic fills added from [Poly Haven](https://polyhaven.com/models), CC0:
+
+| Slot | Model |
+|---|---|
+| `city_door` | `rollershutter_door` |
+| `landmark_longhorn_gate` | `large_iron_gate` |
+| `city_prop_a…e` | `concrete_cat_statue`, `painted_wooden_bench`, `fire_hydrant`, `planter_box_01`, `wooden_picnic_table` |
+| `ruin_pillar_a…c` | `gothic_statue`, `horse_statue_01`, `bronze_shark_statue` |
+
+## Generated art — `godot/assets/entities/`
+
+Generated with [Pollinations](https://pollinations.ai) (keyless, free) from
+the prompts in `godot/data/entity_image_prompts/` and
+`scripts/prompt_templates.py`, composed per `STYLE_BIBLE.md`. Reproduce or
+extend with:
+
+```bash
+python3 scripts/prompt_templates.py --matrix --kind race --actions idle \
+    --out build/race_batch.jsonl
+python3 scripts/generate_assets.py --provider pollinations \
+    --jobs build/race_batch.jsonl
+```
+
+Seeds are carried from the authored set where one exists, so a re-run
+reproduces the same image and a single subject can be re-rolled alone.
+Review the licence terms of whichever model Pollinations routes to before a
+commercial release.
+
 ## MakeHuman-generated humans (2026-07-17 — the human gap is CLOSED)
 
 | File | Source | License |
@@ -157,5 +259,7 @@ Details that matter to consumers:
   aesthetic). No skeletal animation exists in the game yet, so no rig is
   currently a non-loss; when animation lands, regenerate with MPFB's rig
   (`scripts/` pipeline can be re-run — see AGENTS.md).
-- The tps-demo robot (`player_human.glb`) stays on disk as the last-chance
-  fallback and for anything that intentionally wants the robot.
+- The tps-demo robot was `player_human.glb`; that file has since been
+  deleted from the repo (misfiled name — it's a mech, not a human/robot —
+  see the "Realism pass" table above). It survives only as `mech_tps.glb`,
+  explicitly not restored under the `player_human` name.

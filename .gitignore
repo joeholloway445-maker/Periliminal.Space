@@ -43,15 +43,21 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# Generated asset job manifests (scripts/export_asset_prompts.py) and
+# Godot export builds (generated locally or in CI) — same directory name,
+# both purposes
+build/
+builds/
+
+# Python bytecode from the fetch/export scripts
+__pycache__/
+*.pyc
+
 # Godot runtime server config — contains Nakama server key, never commit
 godot/server_config.json
 
 # nginx TLS certs (managed by certbot on VPS)
 nginx/certs/
-
-# Godot export builds (generated locally or in CI)
-build/
-builds/
 
 # Non-redistributable personal downloads (RenderPeople, TurboSquid RF, etc.)
 godot/assets/private/**

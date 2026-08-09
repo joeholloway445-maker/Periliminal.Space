@@ -37,7 +37,11 @@ func setup(e: Dictionary, target: Node3D) -> void:
 	var profile := {"level": rarity * 15, "faction": e.get("faction", ""),
 		"alignment": "feral", "stats": {"pow": e.get("pow", 50)}}
 	var seen: Dictionary = IdentityLens.perceive_being(profile, Color(0.6, 0.3, 0.3))
-	_visual = AssetLibrary.instance("creature")
+	# Every entity used to instance the same `creature` model, so an Apex
+	# Quantum horror and a Utility Matter drone looked identical. EntityVisual
+	# composes a body from this entity's own faction/category/role/stage, and
+	# still defers to authored art at entity_<id> when it exists.
+	_visual = EntityVisual.build(str(e.get("id", "")), e, int(e.get("stage", 0)))
 	if _visual == null:
 		var mi := MeshInstance3D.new()
 		var caps := CapsuleMesh.new()

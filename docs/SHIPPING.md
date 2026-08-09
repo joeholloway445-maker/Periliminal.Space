@@ -59,45 +59,82 @@ The engine-side pipeline is done: `AssetLibrary` checks
 game automatically, keeping the identity-lens shading. The environment
 already runs ACES tonemapping, SSAO, SSIL, volumetric fog, and glow.
 
-Because this sandbox's proxy can't fetch external repos, download these
-yourself (all free/CC0, no attribution required) and drop the models in:
+**Done** — these slots are filled in the repo today (see
+`godot/assets/models/ATTRIBUTION.md` for exact source file per model, all
+CC0 from kenney.nl, no attribution legally required):
+
+| Slot | Filled with |
+|---|---|
+| `creature.glb` | Kenney Mini Dungeon `character-orc` |
+| `tree.glb`, `rock.glb` | Kenney Nature Kit |
+| `crystal.glb` | Kenney Space Kit `rock_crystalsLargeA` |
+| `ruin_pillar.glb` | Kenney Graveyard Kit `column-large` |
+| `extraction_gate.glb` | Kenney Space Kit `gate_complex` |
+| `harvest_node.glb` | Kenney Mini Dungeon `chest` |
+| `apartment_prop.glb` | Kenney Furniture Kit `loungeSofa` |
+| `npc_human.glb` | Kenney Blocky Characters `character-a` |
+
+**Still open** — no free model was found that clearly fit (the
+procedural fallback carries these until you have one):
 
 | Get this | From | Rename into `godot/assets/models/` as |
 |---|---|---|
-| A rigged cat/creature character | **Quaternius "Animated Animals"** (quaternius.com) or Kenney "Animal Pack" | `player_cat.glb`, `npc_cat.glb` |
-| Monsters/creatures | **Quaternius "Ultimate Monsters"** | `creature.glb` |
-| Trees, rocks | **Kenney "Nature Kit"** (kenney.nl) or Quaternius "Ultimate Nature" | `tree.glb`, `rock.glb` |
-| Crystals | Quaternius "Cave Kit" / KayKit Dungeon | `crystal.glb` |
-| Ruins/pillars | **KayKit "Dungeon Remastered"** (kaylousberg.itch.io) | `ruin_pillar.glb` |
-| Sci-fi gate/portal | Quaternius "Ultimate Space Kit" | `extraction_gate.glb` |
-| Loot containers | KayKit Dungeon (chests) | `harvest_node.glb` |
-| Furniture (apartment) | Kenney "Furniture Kit" | `apartment_prop.glb` |
+| A rigged cat/creature character | **Quaternius "Animated Animals"** (quaternius.com, itch.io claim required) or Kenney "Animal Pack" | `player_cat.glb`, `npc_cat.glb` |
 
 ### Mega-city assets (DFW Metroplex hubs)
 
 The mega-city is **fully functional procedurally today** — every hub
 (Dallas, Fort Worth, Denton, Arlington) builds a real city on entry:
 road grid, per-block buildings, streetlights + neon wired to the
-day/night rig, and a per-district sound bed. Drop these in to replace the
-procedural shells with real art — zero code changes (`MegaCityBuilder`
-asks `AssetLibrary` for each slot first):
+day/night rig, and a per-district sound bed. All of the slots below are
+now **filled** with real art from Kenney's City Kit family (Commercial /
+Suburban / Industrial / Roads) — zero code changes needed, `MegaCityBuilder`
+already asked `AssetLibrary` for each slot first and now finds them:
 
-| Get this | From | Rename into `godot/assets/models/` as |
-|---|---|---|
-| Skyscrapers | **Kenney "City Kit (Commercial)"** / Quaternius "Ultimate Modular Buildings" | `city_tower.glb`, `city_lowrise.glb` |
-| Houses | Kenney "City Kit (Suburban)" | `city_house.glb` |
-| Warehouses | Kenney "City Kit" industrial pieces | `city_industrial.glb` |
-| Roads/sidewalks | Kenney "City Kit (Roads)" | `road_segment.glb`, `sidewalk.glb` |
-| Street lamps | Kenney "City Kit" props | `streetlight.glb` |
-| Signage | any neon/billboard prop | `neon_sign.glb` |
-| Benches/hydrants/bins | Kenney "City Kit" props | `city_prop.glb` |
+| Slot | Filled with |
+|---|---|
+| `city_tower.glb`, `city_lowrise.glb` | Kenney City Kit (Commercial) |
+| `city_house.glb` | Kenney City Kit (Suburban) |
+| `city_industrial.glb` | Kenney City Kit (Industrial) |
+| `road_segment.glb`, `sidewalk.glb`, `streetlight.glb`, `neon_sign.glb` | Kenney City Kit (Roads) |
+| `city_prop.glb` | Kenney City Kit (Suburban) `planter` |
 
-**Interchangeable textures** — drop PBR maps into `godot/assets/textures/`
-named `<slot>_albedo.png` (+ `_normal`, `_rough`, `_metallic`,
-`_emissive`). The city asks for: `facade_glass`, `facade_concrete`,
-`facade_brick`, `facade_metal`, `asphalt`, `sidewalk`, `neon`. Any that
-exist are used; the per-race identity lens still tints on top, so the same
-wall is a different material on every player's client.
+Swap any of these for a different pick from the same packs (each is one
+cherry-picked file out of 25-70+ per pack under
+`godot/assets/models/ATTRIBUTION.md`'s linked sources) whenever you want
+more variety per hub.
+
+**Textures — now filled.** All nine slots `AssetLibrary.material()` reads
+(`asphalt`, `sidewalk`, `facade_glass`, `facade_concrete`, `facade_brick`,
+`facade_metal`, `streetlight`, `neon`, `city_prop`) ship with real
+photoscanned PBR from [Poly Haven](https://polyhaven.com/textures), CC0 —
+albedo + normal + roughness each, plus metallic where the source had one.
+The per-race identity lens still tints on top, so the same wall is a
+different material on every player's client.
+
+Re-fetch or change resolution with
+`bash scripts/fetch_polyhaven_textures.sh` — 1k by default because the ship
+target is a Web export, `RES=2k` for a desktop-only build. The slot→asset
+mapping lives in that script; swap an entry to change a surface.
+
+Five interior sets (`interior_floor`, `interior_wall`, `interior_carpet`,
+`interior_marble`, `interior_tile`) are also present but **not read by any
+code yet** — venues currently build storefront shells with no interior
+geometry. They are staged for whenever interiors land.
+
+**HDRI skies — now filled.** 12 CC0 panoramas in `assets/environments/`.
+`DayNightSky` cross-fades a day and a night plate through
+`assets/shaders/hdri_day_night_sky.gdshader` and re-applies the frame tint,
+so a photographic sky still differs per viewer; swap which two via
+`DayNightSky.day_hdri` / `night_hdri`. With none installed the procedural
+sky carries the cycle exactly as before.
+
+**Humanoids.** 12 Kenney mini-characters ship as `npc_human_a…l`, picked by
+`AssetLibrary.instance_variant()` for anonymous citizens; 18 blocky
+characters sit unassigned in `models/kenney_characters/`. Note these are
+stylised and read as chibi against the photoscanned props — see
+`docs/OMNIDEX_MAPPING.md` and the `metahuman_<race_id>.glb` slots for the
+realistic path.
 
 **Interchangeable sounds** — drop audio into `godot/assets/audio/` as
 `<slot>.ogg` (`.wav` / `.mp3` also OK):
@@ -113,8 +150,26 @@ Also worth grabbing (bigger lifts, still free):
   controller + IK setup to graft onto `player_cat.glb`.
 - **TokisanGames/Terrain3D** (GDExtension) — heightmap terrain with
   texture splatting to replace `ProceduralTerrain` meshes for hero areas.
-- An HDRI sky pack (polyhaven.com, CC0) — drop into `assets/environments/`
-  and point `DayNightSky` at it for photoreal skies.
+
+### Web export budget (read before adding more)
+
+`godot/assets` is **~200 MB**. That is fine for the repo and for desktop,
+but it is the number to watch for a Web build. Three known reductions, none
+of them done:
+
+- `player_human.glb` is **23 MB**, the largest file here, and it is the
+  TPS-demo *mech* — cylinder head, weapon hardpoints, not a human. Since
+  the resolver now prefers PeriHuman for any known race, it only ever
+  serves as a race-less fallback.
+- The Poly Haven props embed their textures as base64 data URIs, which
+  costs ~33% over the raw bytes. Shipping `.gltf` + an external
+  `textures/` folder would recover roughly 20 MB; Godot imports that fine.
+- Several photoscans carry two full material sets (e.g. `fire_hydrant`
+  ships clean *and* weathered, which is why it is 6.4 MB) where only one
+  is used.
+
+All three are reversible — `scripts/fetch_polyhaven_*.{sh,py}` re-fetch
+everything from scratch.
 
 ## 4. Before the store page
 

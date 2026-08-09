@@ -23,6 +23,13 @@ var _dialogue_id: String = ""
 var _start_node: String = "greeting"
 var _opening_line: String = ""
 var _typewriter_tween: Tween = null
+## The NPC's canon race + its procedural voice, so lines are seasoned with
+## race mannerisms and spoken in a race-pitched blip as they type out.
+var _canon: String = ""
+var _voice: PersonaVoice = null
+## The player's own voice, so social moves (be kind/mean/flirt) sound like the
+## player's race, distinct from the NPC they're speaking to.
+var _player_voice: PersonaVoice = null
 
 func open_for_npc(npc_id: String) -> void:
 	_npc = WorldLoader.get_npc(npc_id)
@@ -35,9 +42,18 @@ func open_for_npc(npc_id: String) -> void:
 	_start_node = str(dlg.get("start_node", "greeting"))
 	portrait_label.text = str(_npc.get("emoji", "?"))
 	npc_name_label.text = str(_npc.get("name", "NPC"))
+	# Resolve this NPC's race and tune the voice to it, so mannerisms and the
+	# spoken blip both read as the same race.
+	_canon = RacePersona.canon_for_npc(_npc)
+	if _voice != null:
+		_voice.configure(RacePersona.voice(_canon))
 	# Word of mouth, not a hive mind: this NPC's opening is based on
 	# firsthand memory first, then rumors that have plausibly reached them.
+	# When there's no rumor, fall back to a greeting in their race's voice, so
+	# the first line still reads as this particular kind of person.
 	_opening_line = WordOfMouth.greeting_line(npc_id)
+	if _opening_line == "" and not _canon.is_empty():
+		_opening_line = RacePersona.greeting_line(_canon, npc_id.hash())
 	_update_disposition_row()
 	_show_node(_start_node)
 	show()
@@ -51,10 +67,26 @@ func _show_node(node_id: String) -> void:
 		_close()
 		return
 	var line := _line_for_disposition(node)
+	# Season with a race mannerism cue (deterministic per NPC+node, so it's
+	# stable but varies line to line, and only on ~2 of every 3 nodes so it
+	# doesn't nag). This is how the race "acts" while it talks.
+	var cue := _mannerism_cue(node_id)
+	if cue != "":
+		line = "[i]*%s*[/i]\n\n%s" % [cue, line]
 	if node_id == _start_node and _opening_line != "":
 		line = "[i]%s[/i]\n\n%s" % [_opening_line, line]
 	_set_dialogue_text(line)
 	_build_options(node.get("options", []))
+
+## A stage-direction mannerism for this node, or "" — seeded by NPC+node so it
+## stays put, gated so it appears on most but not all lines.
+func _mannerism_cue(node_id: String) -> String:
+	if _canon.is_empty():
+		return ""
+	var seed_value := (_npc_id + "|" + node_id).hash()
+	if seed_value % 3 == 0:  # skip roughly a third of lines
+		return ""
+	return RacePersona.mannerism_cue(_canon, seed_value)
 
 func _build_options(options: Array) -> void:
 	for child in options_container.get_children():
@@ -97,6 +129,10 @@ func _social_btn(label: String, tone: String, reaction: String) -> void:
 	btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	btn.modulate = Color(1, 1, 1, 0.75)
 	btn.pressed.connect(func():
+		# The player "speaks" their move in their own race voice, then the NPC
+		# reacts (that line is voiced by the NPC via _set_dialogue_text).
+		if _player_voice != null:
+			_player_voice.blip()
 		WordOfMouth.record_interaction(_npc_id, tone)
 		_update_disposition_row()
 		_set_dialogue_text("[i]%s[/i]" % reaction)
@@ -123,11 +159,19 @@ func _handle_action(action: String) -> void:
 		NotificationUI.notify_win("Received %s Cat Coins!" % action.substr("give_coins:".length()))
 
 func _close() -> void:
+	if _voice != null:
+		_voice.stop_speaking()
 	hide()
 	closed.emit()
 
 func _ready() -> void:
 	hide()
+	_voice = PersonaVoice.new()
+	add_child(_voice)
+	_player_voice = PersonaVoice.new()
+	add_child(_player_voice)
+	if PlayerProfile:
+		_player_voice.configure(RacePersona.voice(RacePersona.canon_for_id(str(PlayerProfile.selected_race_id))))
 	if dialogue_text:
 		dialogue_text.bbcode_enabled = true # word-of-mouth lines use [i]…[/i]
 		dialogue_text.visible_characters = -1
@@ -155,13 +199,20 @@ func _set_dialogue_text(text: String) -> void:
 		var duration := clampf(float(character_count) / 45.0, 0.25, 4.0)
 		_typewriter_tween = create_tween()
 		_typewriter_tween.tween_property(dialogue_text, "visible_characters", character_count, duration)
+		# Voice runs exactly as long as the line types out.
+		if _voice != null:
+			_voice.start_speaking(character_count, duration)
 	else:
 		dialogue_text.visible_characters = -1
+		if _voice != null:
+			_voice.blip()
 
 func _on_typewriter_toggled(enabled: bool) -> void:
 	if not enabled:
 		if _typewriter_tween != null and _typewriter_tween.is_running():
 			_typewriter_tween.kill()
+		if _voice != null:
+			_voice.stop_speaking()
 		dialogue_text.visible_characters = -1
 
 func _record_choice_interaction(opt: Dictionary) -> void:
@@ -208,7 +259,24 @@ func _current_disposition() -> int:
 			"mean":
 				score -= 25
 	score += _faction_disposition_modifier()
+	# A race's temperament colours first impressions — warm ones start a little
+	# open, haughty/cold ones make you earn it.
+	if not _canon.is_empty():
+		score += RacePersona.disposition_bias(_canon)
+		score += _origin_relation_bias()
 	return clampi(score, -100, 100)
+
+## History colours a first meeting: an NPC whose people are ALLIED with the
+## player's race origin starts a touch warmer; one from an ENEMY origin starts
+## cooler — before either of them has said a word. Small and additive, same
+## spirit as the temperament bias above.
+func _origin_relation_bias() -> int:
+	if not PlayerProfile or str(PlayerProfile.selected_race_id).is_empty():
+		return 0
+	var player_canon := RacePersona.canon_for_id(str(PlayerProfile.selected_race_id))
+	if player_canon.is_empty() or player_canon == _canon:
+		return 0
+	return PersonaBuckets.relation_bias(player_canon, _canon)
 
 func _faction_disposition_modifier() -> int:
 	var npc_faction := str(_npc.get("faction", "Factionless"))

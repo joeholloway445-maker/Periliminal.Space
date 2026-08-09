@@ -1,0 +1,490 @@
+#!/usr/bin/env python3
+"""Compose prompts from parts: <subject> doing <action> at <location>.
+
+The authored set in godot/data/entity_image_prompts/ gives one canonical
+image per entity stage. That is the right thing for a sprite, but a game
+needs the same subject in many poses and places — an attack frame, a dex
+portrait, a creature standing in the Liminal, key art of a race in the
+Metroplex. Writing those by hand is 600 x poses x places.
+
+So subjects come from the game's own data (every race and every entity
+stage), actions and locations are small authored vocabularies, and this
+composes the matrix.
+
+Two modes, because they have opposite requirements:
+
+  sprite  Obeys STYLE_BIBLE.md exactly — locked preamble, neutral dark
+          studio fog, no environment. Location is deliberately IGNORED,
+          because a background breaks sprite extraction. Use for anything
+          that becomes a game asset.
+
+  scene   Subject in a real place, doing a real thing. Use for key art, dex
+          illustrations, layer establishing shots — and as the input image
+          for lingbot-world, which needs a scene to animate.
+
+    python3 scripts/prompt_templates.py --list
+    python3 scripts/prompt_templates.py --subject SC-EN1 --action attacking \\
+        --location periliminal --mode scene
+    python3 scripts/prompt_templates.py --matrix --kind race \\
+        --actions idle,attacking --locations metroplex,liminal --out build/keyart.jsonl
+"""
+
+import argparse
+import csv
+import json
+import os
+import re
+
+REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+PROMPTS_CSV = os.path.join(REPO, "godot", "data", "entity_image_prompts",
+                           "all_600_entities.csv")
+
+# The style bible's locked preamble. Reproduced verbatim because that file
+# says any prompt missing it is invalid — do not paraphrase or reorder.
+LOCKED_PREAMBLE = (
+    "Photorealistic dark-fantasy creature/deity concept art. Cinematic "
+    "lighting: strong key light, controlled rim light, deep shadow falloff, "
+    "volumetric atmosphere. Physically-based materials — real skin with "
+    "pores and subsurface scattering, real metal with accurate reflectance "
+    "and wear, real fire with emissive bloom, real stone with granular "
+    "texture. Absolutely no cel shading, no anime, no cartoon, no "
+    "illustration line-art, no painterly stylization. Grounded, "
+    "anatomically plausible construction even for supernatural beings — as "
+    "realistic as the deity it derives from can be: muscles, weight, joint "
+    "articulation, and material physics must read as real."
+)
+SPRITE_FRAMING = (
+    "Neutral dark studio-fog background (charcoal gradient with low-lying "
+    "fog, no environment, no props, no other figures) for clean sprite "
+    "extraction. Single subject, full body visible head to toe, centered in "
+    "frame, 3/4 view."
+)
+
+FACTION_PALETTE = {
+    "SovereignCrown": "Imperial palette of burnished gold, ivory white, and "
+        "polished marble; regal ornament, halo-warm key light, celestial-court grandeur.",
+    "VeiledCurrent": "Ink black, deep violet, and cold moonlit blue; "
+        "yokai-realism — Japanese folklore horror rendered with documentary "
+        "photorealism, wet ink sheen, lantern and moonlight accents.",
+    "WildlandsAscendant": "Mud brown, wet moss green, and sun-bleached bone; "
+        "primal naturalism — earth, hide, ochre, gold-circuitry relic accents "
+        "weathered into organic matter.",
+    "Factionless": "Weathered ancient-pantheon materials — eroded stone, "
+        "oxidized bronze, verdigris, aged patina; museum-relic gravitas, "
+        "timeless and faction-neutral.",
+}
+
+STAGE_SCALE = [
+    "Stage 1 (juvenile): roughly human scale (5-7 ft), lean and unproven; "
+    "emerging powers only hinted at in surface detail; camera at eye level.",
+    "Stage 2 (elite): 8-12 ft, battle-worn and hardened; scars, layered "
+    "armor-growth, visibly active power channels; slightly low camera angle "
+    "conveying threat.",
+    "Stage 3 (apex): 20 ft and beyond, cinematic god-scale; overwhelming "
+    "presence, atmosphere reacting to the body (fog displacement, ground "
+    "stress); dramatic low-angle hero shot while keeping full body in frame.",
+]
+
+# --- the vocabularies ------------------------------------------------------
+
+ACTIONS = {
+    "idle": "standing at rest, weight settled on one leg, alert but unthreatened",
+    "attacking": "mid-attack, weight driving forward, weapon or limb committed, "
+                 "muscle and cloth reacting to the motion",
+    "defending": "braced defensively, guard raised, body angled away from an "
+                 "incoming blow",
+    "channeling": "channeling power, arms raised, energy visibly gathering at "
+                  "the hands and eyes, air distorting around the body",
+    "wounded": "wounded and still standing, favouring one side, visible damage "
+               "to armour and skin, breath heavy",
+    "stalking": "stalking low and silent, head level, deliberately placed steps",
+    "emerging": "emerging from cover or shadow, half-revealed, only partly lit",
+    "portrait": "head and shoulders portrait, direct eye contact with the "
+                "viewer, shallow depth of field",
+    "triumphant": "standing over a defeated foe, chest open, head raised",
+}
+
+# Locations are the game's own places. Reality layers first, then the hubs.
+LOCATIONS = {
+    "hyperliminal": "inside a neon casino floor at night, slot-machine glow, "
+                    "cigarette haze, deep carpet, mirrored ceiling",
+    "liminal": "in a liminal in-between space — empty fluorescent corridor, "
+               "damp carpet, doors that do not line up, no visible exit",
+    "periliminal": "in the Periliminal — a space that is wrong at a structural "
+                   "level, impossible geometry, light arriving from no source, "
+                   "deep colour bleed at the edges of vision",
+    "subliminal": "in a small lived-in apartment, warm lamps, personal clutter, "
+                  "rain on the window",
+    "supraliminal": "on a rain-slick Dallas street at night, wet asphalt, neon "
+                    "reflections, traffic light bloom, distant skyline",
+    "extraliminal": "in an overlay of the real world — the city visible but "
+                    "translucent, territory boundaries drawn in light across "
+                    "the ground",
+    "metroplex": "in the DFW Metroplex at dusk, concrete overpasses, glass "
+                 "towers, heat shimmer off the road",
+    "stockyards": "in the Fort Worth Stockyards, weathered timber pens, dust, "
+                  "low sun through slatted fences",
+    "arena": "in a floodlit combat arena, packed dark stands, churned ground, "
+             "dust hanging in the light",
+    "dungeon": "in a sealed Periliminal descent — a service stairwell that "
+               "goes further down than the building is tall, emergency "
+               "lighting, condensation on concrete",
+}
+
+SCENE_FRAMING = (
+    "Cinematic wide shot, subject full body and clearly readable against the "
+    "environment, natural interaction between subject and place, atmospheric "
+    "depth. No text, no watermark, no UI."
+)
+NEGATIVE = (
+    "anime, cartoon, cel shading, illustration, flat colors, chibi, low poly, "
+    "text, watermark, multiple subjects, blurry, "
+    # Anatomy failures are the usual way a generated character is unusable,
+    # and they need naming individually — "deformed anatomy" alone does not
+    # stop six fingers or a backwards knee.
+    "deformed anatomy, extra limbs beyond described, extra fingers, missing "
+    "fingers, fused fingers, malformed hands, mangled hands, extra arms, "
+    "extra legs, backwards joints, broken knees, twisted spine, asymmetric "
+    "eyes, misaligned eyes, extra eyes beyond described, floating limbs, "
+    "disconnected body parts, melted face, duplicate head, cropped limbs"
+)
+
+ANATOMY = (
+    "Anatomically correct: five fingers per hand unless the description says "
+    "otherwise, joints bending the way real joints bend, limbs attached and "
+    "proportioned, eyes level and matched, hands fully rendered and "
+    "unobscured."
+)
+
+# 2. Appeal axis. A roster where everything is a horror is as monotonous as
+#    one where everything is beautiful — the lore has both, so this is
+#    explicit rather than left to the model's mood.
+ASPECTS = {
+    "noble": "Striking and dignified — a being you would want to look at. "
+             "Clean silhouette, deliberate ornament, composed posture, "
+             "features that read as beautiful rather than threatening.",
+    "fearsome": "Genuinely frightening — wrong in a way that reads at a "
+                "glance. Predatory proportions, unsettling stillness, "
+                "features that suggest it does not think like you do.",
+    "grotesque": "Body horror — asymmetric growth, things where things should "
+                 "not be, visible strain in the flesh holding itself together.",
+    "neutral": "",
+}
+
+# 3. Sex. Both, because the roster is populated by people.
+SEXES = {
+    "male": "Male build — broader shoulders, heavier jaw and brow, flatter "
+            "chest, denser musculature.",
+    "female": "Female build — narrower shoulders and wider hips, softer jaw, "
+              "breast and waist definition, lighter musculature.",
+    "": "",
+}
+
+# Distinct individuals WITHIN a race. The race's substance, faction palette
+# and material stay fixed; these vary the person — physique, age, face,
+# distinguishing marks — so a starting-race gallery reads as many different
+# beings, not one body recoloured. Each carries its own seed so it is
+# reproducible and stable across runs.
+VARIANTS = {
+    "v1": ("lean and youthful, wiry build, sharp unlined features, "
+           "close-cropped hair, quick alert eyes", 101),
+    "v2": ("powerfully built and broad, heavy muscle and thick neck, a wide "
+           "scarred jaw, close beard, weathered older skin", 202),
+    "v3": ("tall and gaunt, long-limbed and narrow, hollow cheeks, deep-set "
+           "eyes, long lank hair, an ascetic severity", 303),
+    "v4": ("compact and dense, low centre of gravity, rounded heavy features, "
+           "a shaved head, calm and immovable", 404),
+    "v5": ("middle-aged and hard-worn, sinewy, grey at the temples, a broken "
+           "nose, tired knowing eyes", 505),
+    "v6": ("striking and unusually beautiful for the race, fine symmetrical "
+           "features, elaborate hair, composed authority", 606),
+    "v7": ("young and unproven, softer unfinished features, restless posture, "
+           "not yet settled into the race's full form", 707),
+    "v8": ("ancient and formidable, deeply lined and marked by a long life, "
+           "ritual scars and ornament, a presence that stills a room", 808),
+}
+
+
+# --- subjects, from the game's own data ------------------------------------
+
+def load_subjects():
+    """{id: {name, kind, description, faction, stage}} for races and entities."""
+    subjects = {}
+
+    dex_path = os.path.join(REPO, "godot", "src", "data", "entity_dex_data.gd")
+    dex = {}
+    if os.path.exists(dex_path):
+        src = open(dex_path, encoding="utf-8").read()
+        for block in re.split(r"\n\s*\{id=", src)[1:]:
+            m = re.match(r'"([A-Z0-9\-]+)"', block)
+            if m:
+                dex[m.group(1)] = (re.search(r'faction="(\w+)"', block)
+                                   or [None, "Factionless"])[1]
+
+    if os.path.exists(PROMPTS_CSV):
+        with open(PROMPTS_CSV, newline="", encoding="utf-8") as fh:
+            for row in csv.DictReader(fh):
+                stage = max(int(row.get("stage", 1)) - 1, 0)
+                key = row["entity_id"] if stage == 0 else "%s_s%d" % (row["entity_id"], stage)
+                # Strip the authored preamble/palette/scale back off so the
+                # entity's own description can be recomposed with new parts.
+                body = row["prompt"]
+                if LOCKED_PREAMBLE[:60] in body:
+                    body = body.split(SPRITE_FRAMING)[-1]
+                for pal in FACTION_PALETTE.values():
+                    body = body.replace(pal, "")
+                for sc in STAGE_SCALE:
+                    body = body.replace(sc, "")
+                subjects[key] = {
+                    "name": row.get("stage_name", row["entity_id"]),
+                    "kind": "entity",
+                    "description": body.strip(),
+                    "faction": dex.get(row["entity_id"], "Factionless"),
+                    "stage": stage,
+                    "seed": row.get("seed"),
+                }
+
+    # Frames and morph rigs are subjects too — a frame is worn armour and a
+    # morph rig is a body plan, both of which are drawable.
+    reg = os.path.join(REPO, "godot", "src", "data", "omni_dex_registry.gd")
+    if os.path.exists(reg):
+        rsrc = open(reg, encoding="utf-8").read()
+        blk = re.search(r"const FRAMES: Array\[Dictionary\] = \[(.*?)\n\]", rsrc, re.S)
+        if blk:
+            for fid, fname, ftype, frole in re.findall(
+                    r'\{id="(\w+)", name="([^"]*)", type="(\w+)", role="([^"]*)"\}',
+                    blk.group(1)):
+                subjects["frame_" + fid] = {
+                    "name": "%s frame" % fname, "kind": "frame",
+                    "description": ("A %s-class %s combat frame — worn powered "
+                                    "armour built for the %s role, fitted to a "
+                                    "humanoid wearer." % (ftype, fname, frole)),
+                    "faction": "Factionless", "stage": 0, "seed": None,
+                }
+
+    rigs = os.path.join(REPO, "godot", "src", "data", "morph_rig_data.gd")
+    if os.path.exists(rigs):
+        msrc = open(rigs, encoding="utf-8").read()
+        for mid, mname in re.findall(r'\{id="(\w+)", name="([^"]*)"', msrc):
+            desc = re.search(r'id="%s".*?desc="([^"]*)"' % mid, msrc, re.S)
+            bonus = re.search(r'id="%s".*?bonus="([^"]*)"' % mid, msrc, re.S)
+            subjects["morph_" + mid] = {
+                "name": "%s rig" % mname, "kind": "morph_rig",
+                "description": ("A %s morphological rig — %s%s" % (
+                    mname, desc.group(1) if desc else "an altered body plan.",
+                    (" Grants %s." % bonus.group(1)) if bonus else "")),
+                "faction": "Factionless", "stage": 0, "seed": None,
+            }
+
+    omni = os.path.join(REPO, "godot", "src", "data", "omni_dex.gd")
+    if os.path.exists(omni):
+        src = open(omni, encoding="utf-8").read()
+        m = re.search(r"const RACES: Dictionary = \{(.*?)\n\}", src, re.S)
+        if m:
+            for entry in re.split(r'\n\t"', m.group(1))[1:]:
+                rid = entry.split('"', 1)[0]
+                desc = (re.search(r'"description": "([^"]*)"', entry) or [None, ""])[1]
+                lore = (re.search(r'"lore": "([^"]*)"', entry) or [None, ""])[1]
+                fac = (re.search(r'"faction": "([^"]*)"', entry) or [None, ""])[1]
+                fac_key = {"sovereign_crown": "SovereignCrown",
+                           "veiled_current": "VeiledCurrent",
+                           "wildlands_ascendants": "WildlandsAscendant"}.get(fac, "Factionless")
+                if desc:
+                    subjects[rid] = {
+                        "name": (re.search(r'"name": "([^"]*)"', entry) or [None, rid])[1],
+                        "kind": "race",
+                        "description": "%s %s" % (desc, lore),
+                        "faction": fac_key,
+                        "stage": 0,
+                        "seed": None,
+                    }
+    return subjects
+
+
+# --- composition -----------------------------------------------------------
+
+def compose(subject, action=None, location=None, mode="sprite",
+            frame=None, morph=None, sex="", aspect="", variant=""):
+    """<subject> doing <action> at <location>, in style-bible order.
+
+    Frames and morph rigs STACK onto a race rather than standing alone: a
+    frame is powered armour worn by a body, and a morph rig reshapes the body
+    already wearing it. So a frame view is race+frame and a mod view is
+    race+frame+mod — the same layering HumanIdentity does in engine, which is
+    where the 20x20x20 identity space comes from.
+
+    `variant` picks an individual within the race (VARIANTS), so a starting
+    gallery shows many different people of the same species rather than one
+    repeated body.
+    """
+    parts = [LOCKED_PREAMBLE]
+
+    if mode == "sprite":
+        # Style bible rule 3: background stays neutral regardless of lore.
+        parts.append(SPRITE_FRAMING)
+    parts.append("%s — %s" % (subject["name"], subject["description"]))
+    if SEXES.get(sex):
+        parts.append(SEXES[sex])
+    if variant and variant in VARIANTS:
+        parts.append("This individual: %s." % VARIANTS[variant][0])
+    if ASPECTS.get(aspect):
+        parts.append(ASPECTS[aspect])
+
+    # Worn over the body, described after it so the base reads first.
+    if frame:
+        parts.append("Wearing the %s: %s" % (frame["name"], frame["description"]))
+    if morph:
+        parts.append("Body reshaped by the %s: %s" % (morph["name"], morph["description"]))
+    if frame or morph:
+        parts.append("The underlying species must stay recognisable through "
+                     "the armour and the reshaping — this is the same being, "
+                     "equipped and altered, not a different creature.")
+
+    if action:
+        parts.append("Pose: %s." % ACTIONS.get(action, action))
+    if location and mode != "sprite":
+        parts.append("Setting: %s." % LOCATIONS.get(location, location))
+        parts.append(SCENE_FRAMING)
+
+    parts.append(ANATOMY)
+    parts.append(FACTION_PALETTE.get(subject.get("faction", ""), FACTION_PALETTE["Factionless"]))
+    parts.append(STAGE_SCALE[min(int(subject.get("stage", 0)), 2)])
+    return " ".join(p.strip() for p in parts if p and p.strip())
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--list", action="store_true", help="show subjects, actions, locations")
+    ap.add_argument("--subject")
+    ap.add_argument("--action")
+    ap.add_argument("--location")
+    ap.add_argument("--mode", choices=["sprite", "scene"], default="sprite")
+    ap.add_argument("--frame", help="stack a frame onto the subject race")
+    ap.add_argument("--morph", help="stack a morph rig onto the subject race")
+    ap.add_argument("--frames", help="comma-separated, or 'all', for --matrix")
+    ap.add_argument("--morphs", help="comma-separated, or 'all', for --matrix")
+    ap.add_argument("--sex", choices=sorted(k for k in SEXES if k), help="single subject")
+    ap.add_argument("--aspect", choices=sorted(ASPECTS), help="single subject")
+    ap.add_argument("--sexes", help="comma-separated for --matrix, e.g. male,female")
+    ap.add_argument("--aspects", help="comma-separated for --matrix, "
+                    "e.g. noble,fearsome. Omit for an automatic mix.")
+    ap.add_argument("--matrix", action="store_true", help="every combination")
+    ap.add_argument("--kind",
+                    choices=["race", "entity", "frame", "morph_rig", "all"],
+                    default="all")
+    ap.add_argument("--actions", help="comma-separated, for --matrix")
+    ap.add_argument("--locations", help="comma-separated, for --matrix")
+    ap.add_argument("--variants",
+                    help="comma-separated variant ids, or 'all', to generate "
+                         "multiple distinct individuals per race (see VARIANTS)")
+    ap.add_argument("--limit", type=int)
+    ap.add_argument("--out", default=os.path.join(REPO, "build", "composed_prompts.jsonl"))
+    args = ap.parse_args()
+
+    subjects = load_subjects()
+
+    if args.list:
+        from collections import Counter
+        counts = Counter(v["kind"] for v in subjects.values())
+        races = [k for k, v in subjects.items() if v["kind"] == "race"]
+        ents = [k for k, v in subjects.items() if v["kind"] == "entity"]
+        print("subjects: " + ", ".join("%d %s" % (n, k) for k, n in sorted(counts.items())))
+        print("  races  :", ", ".join(sorted(races)))
+        print("  entities: %s ..." % ", ".join(sorted(ents)[:8]))
+        print("\nactions  :", ", ".join(ACTIONS))
+        print("locations:", ", ".join(LOCATIONS))
+        return 0
+
+    if args.subject:
+        s = subjects.get(args.subject)
+        if not s:
+            print("no such subject: %s (try --list)" % args.subject)
+            return 1
+        fr = subjects.get("frame_" + args.frame) if args.frame else None
+        mo = subjects.get("morph_" + args.morph) if args.morph else None
+        print(compose(s, args.action, args.location, args.mode, fr, mo,
+                      args.sex or "", args.aspect or ""))
+        return 0
+
+    if not args.matrix:
+        print("nothing to do — pass --list, --subject, or --matrix")
+        return 1
+
+    actions = (args.actions or "idle").split(",")
+    locations = (args.locations or "").split(",") if args.locations else [None]
+    picked = {k: v for k, v in subjects.items()
+              if args.kind == "all" or v["kind"] == args.kind}
+
+    def _pick(prefix, arg):
+        if not arg:
+            return [None]
+        keys = [k for k in subjects if k.startswith(prefix)]
+        if arg == "all":
+            return sorted(keys)
+        return [prefix + x.strip() for x in arg.split(",")
+                if prefix + x.strip() in subjects]
+
+    frames = _pick("frame_", args.frames)
+    morphs = _pick("morph_", args.morphs)
+    sexes = [x.strip() for x in args.sexes.split(",")] if args.sexes else [""]
+    # With no explicit list, spread the roster across the appeal axis by a
+    # stable hash of the subject id — so the set has beauties and horrors
+    # without anyone choosing per entry, and the same id always lands the
+    # same way.
+    aspects = [x.strip() for x in args.aspects.split(",")] if args.aspects else None
+    if args.variants == "all":
+        variants = list(VARIANTS.keys())
+    elif args.variants:
+        variants = [v.strip() for v in args.variants.split(",") if v.strip() in VARIANTS]
+    else:
+        variants = [""]
+
+    rows = []
+    for sid, s in sorted(picked.items()):
+      for var in variants:
+       for sex in sexes:
+        for fk in frames:
+         for mk in morphs:
+          fr = subjects.get(fk) if fk else None
+          mo = subjects.get(mk) if mk else None
+          asp = (aspects[hash(sid) % len(aspects)] if aspects
+                 else ["noble", "fearsome", "grotesque"][abs(hash(sid)) % 3])
+          suffix = (("_" + var) if var else "") + \
+                   (("_" + sex[0]) if sex else "") + \
+                   ("_" + fk[6:] if fk else "") + ("_" + mk[6:] if mk else "")
+          # A per-variant seed makes each individual distinct and reproducible.
+          seed = VARIANTS[var][1] if var else (
+              int(s["seed"]) if str(s.get("seed") or "").isdigit() else None)
+          for a in actions:
+            for loc in locations:
+                rows.append({
+                    "subject": sid, "kind": s["kind"], "name": s["name"],
+                    "action": a, "location": loc, "mode": args.mode,
+                    "frame": fk[6:] if fk else "", "morph": mk[6:] if mk else "",
+                    "sex": sex, "aspect": asp, "variant": var,
+                    "sprite_target": "godot/assets/entities/%s%s%s%s.png" % (
+                        sid.lower(), suffix, "_" + a if a != "idle" else "",
+                        "_" + loc if loc else ""),
+                    "prompt": compose(s, a, loc, args.mode, fr, mo, sex, asp, var),
+                    "sprite_prompt": compose(s, a, loc, args.mode, fr, mo, sex, asp, var),
+                    "negative_prompt": NEGATIVE,
+                    "seed": seed,
+                    "target": "",
+                    "truncated_source": False,
+                })
+                if args.limit and len(rows) >= args.limit:
+                    break
+            if args.limit and len(rows) >= args.limit:
+                break
+
+    os.makedirs(os.path.dirname(args.out), exist_ok=True)
+    with open(args.out, "w", encoding="utf-8") as fh:
+        for r in rows:
+            fh.write(json.dumps(r, ensure_ascii=False) + "\n")
+    print("%d prompts (%d subjects x %d actions x %d locations) -> %s"
+          % (len(rows), len(picked), len(actions), len(locations), args.out))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

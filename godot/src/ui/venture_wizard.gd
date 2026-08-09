@@ -9,7 +9,7 @@ extends Control
 
 signal venture_started()
 
-const STEPS := ["race", "faction", "frame", "mod", "name"]
+const STEPS := ["race", "look", "faction", "frame", "mod", "name"]
 const FACTIONS := ["Factionless", "SovereignCrown", "WildlandsAscendant", "VeiledCurrent"]
 const FACTION_COLORS := {
 	"Factionless": Color(0.6, 0.6, 0.65), "SovereignCrown": Color(0.85, 0.7, 0.25),
@@ -30,6 +30,10 @@ var _title: Label
 var _roster_row: HBoxContainer
 var _roster_scroll: ScrollContainer
 var _portrait: ColorRect
+## Generated illustration layered over the colour block. The ColorRect stays
+## as the backing plate, so a race with no art yet still reads as its colour
+## instead of leaving a hole.
+var _portrait_art: TextureRect
 var _portrait_label: Label
 var _detail: RichTextLabel
 var _name_edit: LineEdit
@@ -37,10 +41,15 @@ var _confirm_btn: Button
 var _back_btn: Button
 var _tiles: Array[Button] = []
 var _entries: Array = []
+## Hear the race you're browsing — a short greeting blip in its voice as you
+## move the cursor over the roster, and the new fighter's first words on FIGHT.
+var _voice: PersonaVoice
 
 func _ready() -> void:
 	MusicManager.play_context("theme")
 	_build_ui()
+	_voice = PersonaVoice.new()
+	add_child(_voice)
 	_render_step()
 
 func _build_ui() -> void:
@@ -71,6 +80,12 @@ func _build_ui() -> void:
 	_portrait = ColorRect.new()
 	_portrait.custom_minimum_size = Vector2(340, 340)
 	left.add_child(_portrait)
+	_portrait_art = TextureRect.new()
+	_portrait_art.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_portrait_art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_portrait_art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	_portrait_art.visible = false
+	_portrait.add_child(_portrait_art)
 	_portrait_label = Label.new()
 	_portrait_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_portrait_label.add_theme_font_size_override("font_size", 26)
@@ -150,12 +165,32 @@ func _render_step() -> void:
 			_title.text = "CHOOSE YOUR RACE"
 			_entries = RaceDataCharacter.RACES.map(func(r): return {
 				"id": r.id, "name": OmniDexRegistry.race_display_name(str(r.id)), "color": r.primary_color,
-				"blurb": r.lore, "stats": "POW %d  RES %d  SPD %d  LCK %d  STY %d" % [r.pow, r.res, r.spd, r.lck, r.sty],
+				"blurb": _race_blurb(r), "stats": "POW %d  RES %d  SPD %d  LCK %d  STY %d" % [r.pow, r.res, r.spd, r.lck, r.sty],
+			})
+		"look":
+			_title.text = "CHOOSE YOUR STARTING LOOK"
+			# Eight distinct individuals of the chosen race. The pick reshapes
+			# the PeriHuman rig (build/age/features via VariantPresets), and its
+			# portrait — when generated — previews that body. Every race offers
+			# all eight even before its full gallery is generated, because the
+			# variant drives the actual skeleton, not just the picture.
+			_entries = VariantPresets.IDS.map(func(v): return {
+				"id": v, "name": VariantPresets.label(v), "color": _hash_color(v),
+				"blurb": VariantPresets.blurb(v), "stats": "",
 			})
 		"faction":
 			_title.text = "PLEDGE YOUR BANNER"
+			# Most races were historically claimed by one of the three human
+			# factions (the factions ARE that claim — humanity's ego, fighting
+			# over layers no one could really own). By default your faction
+			# choice is your race's tie, or Factionless (always open — it needs
+			# no unbinding). An Unbound Writ lifts the limit entirely.
+			var tied := _tied_faction()
+			var unbound := bool(PlayerProfile and PlayerProfile.has_unbound_writ)
 			_entries = FACTIONS.map(func(f): return {
-				"id": f, "name": f, "color": FACTION_COLORS[f], "blurb": FACTION_LORE[f], "stats": "",
+				"id": f, "name": f, "color": FACTION_COLORS[f],
+				"blurb": _faction_blurb(f, tied, unbound),
+				"stats": "", "locked": f != "Factionless" and f != tied and not unbound,
 			})
 		"frame":
 			_title.text = "CHOOSE YOUR FRAME"
@@ -177,9 +212,40 @@ func _render_step() -> void:
 			_title.text = "NAME YOUR FIGHTER"
 			_render_final_preview()
 			return
+	# Land on the recommended pick where there is one (the faction step lands
+	# on the race's tie), rather than always starting the roster at index 0.
 	_cursor = 0
+	if step == "faction":
+		for i in _entries.size():
+			if not bool(_entries[i].get("locked", false)) and str(_entries[i].id) == _tied_faction():
+				_cursor = i
+				break
 	_build_roster()
 	_update_portrait()
+
+## The faction the currently picked race is historically tied to, or "" if no
+## race has been picked yet (nothing to gate on — every faction is open).
+func _tied_faction() -> String:
+	var race_id := str(_picked.get("race", ""))
+	if race_id.is_empty():
+		return ""
+	return RacePersona.race_faction(RacePersona.canon_for_id(race_id))
+
+func _faction_blurb(faction_id: String, tied: String, unbound: bool) -> String:
+	var base := str(FACTION_LORE[faction_id])
+	if faction_id == "Factionless" or unbound or faction_id == tied or tied.is_empty():
+		if faction_id == tied and tied != "":
+			return "%s\n\n[color=#8fe0a0]Your people's claim. Recommended.[/color]" % base
+		return base
+	return "%s\n\n[color=#e0a06a]🔒 Your race was claimed by another banner. Requires an Unbound Writ to pledge elsewhere.[/color]" % base
+
+## Race lore plus its persona tag, so the pick reads as a kind of person —
+## how they carry themselves, not just their stats.
+func _race_blurb(r) -> String:
+	var persona := RacePersona.short(str(r.id))
+	if persona.is_empty():
+		return str(r.lore)
+	return "%s\n\n[color=#9fd0ff]%s[/color]" % [str(r.lore), persona]
 
 func _hash_color(seed_str: String) -> Color:
 	var h := hash(seed_str)
@@ -191,12 +257,14 @@ func _build_roster() -> void:
 	_tiles.clear()
 	for i in _entries.size():
 		var e: Dictionary = _entries[i]
+		var locked := bool(e.get("locked", false))
 		var tile := Button.new()
 		tile.custom_minimum_size = Vector2(96, 96)
-		tile.text = str(e.name)
+		tile.text = ("🔒 " + str(e.name)) if locked else str(e.name)
 		tile.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		tile.disabled = locked  # locked tiles can still be viewed via keyboard, just not selected
 		var mat := StyleBoxFlat.new()
-		mat.bg_color = e.color
+		mat.bg_color = e.color.darkened(0.5) if locked else e.color
 		mat.set_corner_radius_all(6)
 		tile.add_theme_stylebox_override("normal", mat)
 		tile.pressed.connect(func():
@@ -206,24 +274,38 @@ func _build_roster() -> void:
 			tile.modulate = Color.WHITE)
 		_roster_row.add_child(tile)
 		_tiles.append(tile)
-	if not _tiles.is_empty():
-		_tiles[0].modulate = Color.WHITE
+	if not _tiles.is_empty() and _cursor < _tiles.size():
+		_tiles[_cursor].modulate = Color.WHITE
 
 func _update_portrait() -> void:
 	if _entries.is_empty():
 		return
 	var e: Dictionary = _entries[_cursor]
 	_portrait.color = e.color
+	if STEPS[_step] == "look":
+		# Preview this variant on the race already chosen, so the panel shows
+		# the individual the pick produces (or the plain race art as fallback).
+		_show_variant_art(str(_picked.get("race", "")), str(e.get("id", "")))
+	else:
+		_show_art(str(e.get("id", "")))
 	_portrait_label.text = str(e.name).to_upper()
 	_detail.text = "%s\n\n[color=#ffd88a]%s[/color]" % [e.get("blurb", ""), e.get("stats", "")]
+	# Hear the race as you browse it.
+	if STEPS[_step] == "race" and _voice != null:
+		_voice.configure(RacePersona.voice(RacePersona.canon_for_id(str(e.get("id", "")))))
+		_voice.start_speaking(8, 0.32)
 
 func _render_final_preview() -> void:
 	var stats := CharacterCreatorLogic.build_starting_stats(_picked.race, _picked.faction, _picked.frame)
 	var sensorium := FrameSensorium.of(_picked.frame)
 	_portrait.color = RaceDataCharacter.get_race(_picked.race).get("primary_color", Color.WHITE)
+	# Final preview knows the whole build, so it can ask for the exact stack.
+	_show_art(str(_picked.race), str(_picked.get("frame", "")), str(_picked.get("mod", "")))
 	_portrait_label.text = str(_picked.get("race_name", "?")).to_upper()
-	_detail.text = "%s | %s | %s\n\nPOW %d  RES %d  SPD %d  LCK %d  STY %d\n\n%s" % [
-		_picked.get("race_name", "?"), _picked.faction, _picked.get("frame_name", "?"),
+	var look := str(_picked.get("variant", ""))
+	var look_line := " (%s)" % VariantPresets.label(look) if not look.is_empty() else ""
+	_detail.text = "%s%s | %s | %s\n\nPOW %d  RES %d  SPD %d  LCK %d  STY %d\n\n%s" % [
+		_picked.get("race_name", "?"), look_line, _picked.faction, _picked.get("frame_name", "?"),
 		stats.pow, stats.res, stats.spd, stats.lck, stats.sty, sensorium.desc,
 	]
 
@@ -236,6 +318,13 @@ func _confirm_step() -> void:
 			return
 		CharacterCreatorLogic.apply_creation(_picked.race, _picked.faction, _picked.frame, cat_name)
 		PlayerProfile.set_mod(_picked.mod)
+		PlayerProfile.set_variant(str(_picked.get("variant", "")))
+		# The new fighter's first words, in their race's voice.
+		if _voice != null:
+			var canon := RacePersona.canon_for_id(str(_picked.race))
+			_voice.configure(RacePersona.voice(canon))
+			var hello := RacePersona.greeting_line(canon, cat_name.hash())
+			_voice.start_speaking(maxi(hello.length(), 8), 0.6)
 		venture_started.emit()
 		# A new venture starts in the wilds, not the safety of the
 		# Subliminal — thrown straight into the Liminal.
@@ -245,10 +334,18 @@ func _confirm_step() -> void:
 	if _entries.is_empty():
 		return
 	var e: Dictionary = _entries[_cursor]
+	if step == "faction" and bool(e.get("locked", false)):
+		# Keyboard SELECT can still land on a locked tile even though the
+		# button itself is disabled — refuse the same way an invalid name is
+		# refused, instead of silently letting it through.
+		_detail.text += "\n\n[color=#ff6666]🔒 Requires an Unbound Writ to pledge to this banner.[/color]"
+		return
 	match step:
 		"race":
 			_picked["race"] = e.id
 			_picked["race_name"] = e.name
+		"look":
+			_picked["variant"] = e.id
 		"faction":
 			_picked["faction"] = e.id
 		"frame":
@@ -264,3 +361,26 @@ func _go_back() -> void:
 		return
 	_step -= 1
 	_render_step()
+
+## Layers generated art over the colour plate when any exists for this
+## build. Anything without art (frames and mods chosen before a race, say)
+## simply keeps the colour block.
+func _show_art(race_id: String, frame_id: String = "", mod_id: String = "") -> void:
+	if _portrait_art == null:
+		return
+	var tex := IdentityArt.portrait(race_id, frame_id, mod_id)
+	_portrait_art.texture = tex
+	_portrait_art.visible = tex != null
+	# Label is hard to read over a busy illustration; dim the plate instead
+	# of hiding the name.
+	_portrait_label.modulate = Color(1, 1, 1, 0.85) if tex != null else Color.WHITE
+
+## Same as _show_art but for a specific starting-look variant, falling back to
+## the plain race illustration when that variant was not generated.
+func _show_variant_art(race_id: String, variant_id: String) -> void:
+	if _portrait_art == null:
+		return
+	var tex := IdentityArt.variant_portrait(race_id, variant_id)
+	_portrait_art.texture = tex
+	_portrait_art.visible = tex != null
+	_portrait_label.modulate = Color(1, 1, 1, 0.85) if tex != null else Color.WHITE

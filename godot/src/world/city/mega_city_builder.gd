@@ -61,6 +61,9 @@ static func build(hub_id: String, origin: Vector3, sky: DayNightSky,
 	DungeonEntrance.place_for_hub(root, hub_id, city_base_y)
 	if player != null:
 		CityVenues.place_all(root, accent, city_base_y, player, hub_id)
+		# Sealed Periliminal descents hidden inside this hub's buildings.
+		# Each reads "Rank ?" until a party proves it (DungeonManager).
+		_place_dungeons(root, hub_id, city_base_y, player)
 		# SEVERAL claimable hideout sites per city (HideoutRegistry owns the
 		# guild-exclusion radii, banners, and defender garrisons). Seeded, so
 		# the same sites stand in the same places every visit.
@@ -544,3 +547,14 @@ static func _sample(height_at: Callable, x: float, z: float) -> float:
 	if height_at.is_valid():
 		return float(height_at.call(x, z))
 	return 0.0
+
+## One sealed door per DungeonData entry for this hub, on the same city-cell
+## convention CityVenues uses so a dungeon sits inside a specific building.
+static func _place_dungeons(root: Node3D, hub_id: String, base_y: float,
+		player: Node3D) -> void:
+	for d in DungeonData.in_hub(hub_id):
+		var cell: Vector2 = d.get("cell", Vector2.ZERO)
+		var door := DungeonEntrance.new()
+		door.setup(str(d.id), player)
+		door.position = Vector3(cell.x * CityData.CELL, base_y, cell.y * CityData.CELL)
+		root.add_child(door)

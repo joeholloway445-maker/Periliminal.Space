@@ -1,5 +1,32 @@
 # Periliminal.Space: The Universe
 
+> **Status: early concept doc, partially superseded.** The six reality
+> layers below match current canon (see `LAYER_ARCS` in
+> `src/data/persona_buckets.gd` and `docs/STORY_SINGULARITY.md`) and are
+> still good. Two things below are NOT current canon and should be read as
+> historical brainstorming, not source of truth:
+>
+> 1. **"Four Ideologies" (factions), including Factionless as a peer.**
+>    There are three real factions — SovereignCrown, WildlandsAscendant,
+>    VeiledCurrent. Factionless is the unjoined starting status every
+>    character begins in, not a fourth ideology with its own leader and
+>    questline; see `docs/STORY_SINGULARITY.md` and
+>    `src/character/player_profile.gd` (`set_faction()` is permanent once
+>    left). The rich Factionless material below (the Oracle, the Wanderer,
+>    the Thief) is still usable — just as flavor for what an unpledged
+>    character encounters, not as a fourth faction's leadership.
+> 2. **The 20-race "Light/Heavy, perceptual-lens" roster below** (Luminant,
+>    Kinetic, Chronal, …) is a third, unreconciled race system, distinct
+>    from both the in-engine canon races (`Keth`, `Lumari`, `Vex`, … in
+>    `src/data/canon_races.gd`) and the Omni Dex roster (`lumenari`,
+>    `gutterkin`, … in `src/data/omni_dex.gd` — see `docs/OMNIDEX.md` for
+>    that pair's own reconciliation status). No code currently reads this
+>    third roster. It's preserved here as a design source, but needs a
+>    human decision before it drives anything: merge into the canon races,
+>    repurpose as a different axis (frame flavor? a perception-mechanic
+>    layer distinct from race?), or retire in favor of the two rosters
+>    already being reconciled.
+
 ## The Canonical Universe: Superposition
 
 Periliminal.Space is set in **Dallas-Fort Worth, 2087** — but not THE Dallas-Fort Worth. At some point in history (intentionally vague; hidden in quest rewards for Sash/Oracle factions), reality **fractured** into six simultaneous, overlapping layers of existence. No apocalypse, no visible cataclysm — just a *spreading inconsistency* that no one can quite explain. By 2087, the layering is complete and permanent.
@@ -22,7 +49,9 @@ Each layer is internally coherent but distinct. A street exists in all six, but 
 
 ---
 
-## The Factions: Four Ideologies, One Fractured Reality
+## The Factions: Three Ideologies, One Fractured Reality
+(plus Factionless — the unaligned status every character starts in, not a
+fourth ideology; see the status note at the top of this doc)
 
 Each faction emerged to *explain and control* the layering. They don't just disagree about policy—they disagree about whether the layers are a *feature* or a *bug*, and who should govern them.
 

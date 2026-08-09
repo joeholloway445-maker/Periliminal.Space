@@ -12,19 +12,43 @@ var level: int = 1
 var xp: int = 0
 var faction: String = "Factionless"
 var selected_race_id: String = "tabby"
+## The starting-look variant picked from the gallery ("v1".."v8", or ""
+## for none). It shapes the PeriHuman rig's build/age/features on top of the
+## race, so the pick a player makes at creation is the body they actually
+## walk around in — not just the portrait shown beside it. See VariantPresets.
+var selected_variant: String = ""
 var selected_frame: String = "veil"
 ## Second frame, chosen at Champion ascension (level 50+). Empty until then.
 var ascended_frame: String = ""
 var selected_mod: String = ""
+## True once this player holds an Unbound Writ — the in-fiction answer to
+## "any race, any faction": most races were historically claimed by one of the
+## three human factions (RacePersona.race_faction), and by default a new
+## character's faction choice is limited to their race's tie or Factionless
+## (Factionless is always open — "bound by nothing" needs no unbinding). The
+## Writ lifts that limit. It's earned, not purchased, and it's thematically
+## the Solution of Nothing in miniature: refusing to be reduced to the one
+## label your race was assigned.
+var has_unbound_writ: bool = false
 ## True once CharacterCreatorLogic.apply_creation has actually run — the
 ## title screen's "Continue Expedition" only lights up once this is true;
 ## a fresh install always starts at "Start New Venture" no matter what
 ## selected_race_id's default happens to be.
 var has_expedition: bool = false
 var active_companion_ids: Array[String] = []
+## The player's PeriHuman genome (HumanDNA.to_dict()). Empty means "no
+## custom human yet" — MetahumanCharacter then falls back down its chain.
+var perihuman_dna: Dictionary = {}
 var titles: Array[String] = []
 var active_title: String = ""
 var playtime_seconds: float = 0.0
+## How the identity-lens/RPS perception distortion renders for this player
+## — "glitchy" / "holographic" / "shadowy" / "off". Opt-in by default (see
+## ViewScale.DEFAULT_STYLE). "off" isn't just a local preference: any
+## OTHER client rendering this player, or this player's companions/tied
+## entities, also renders them undistorted — the opt-out travels with you.
+var view_scale_style: String = ""
+
 ## Soft state for TitleEffects / dialogue gates (not all persisted yet).
 var _stat_modifiers: Dictionary = {}
 var _unlocked_abilities: Array[String] = []
@@ -65,12 +89,17 @@ func _load() -> void:
 	xp = data.get("xp", 0)
 	faction = data.get("faction", "Factionless")
 	selected_race_id = data.get("selected_race_id", "tabby")
+	selected_variant = str(data.get("selected_variant", ""))
 	selected_frame = data.get("selected_frame", "veil")
 	ascended_frame = data.get("ascended_frame", "")
 	selected_mod = data.get("selected_mod", "")
+	has_unbound_writ = bool(data.get("has_unbound_writ", false))
 	active_companion_ids = Array(data.get("active_companions", []), TYPE_STRING, "", null)
+	var dna = data.get("perihuman_dna", {})
+	perihuman_dna = dna if dna is Dictionary else {}
 	titles = Array(data.get("titles", []), TYPE_STRING, "", null)
 	active_title = data.get("active_title", "")
+	view_scale_style = str(data.get("view_scale_style", ""))
 	# Migration: saves from before this flag existed still have a real
 	# character if they've clearly played (leveled up, left the default
 	# frame/mod, or picked up a companion) — don't lock returning players
@@ -87,14 +116,18 @@ func _save() -> void:
 		"xp": xp,
 		"faction": faction,
 		"selected_race_id": selected_race_id,
+		"selected_variant": selected_variant,
 		"selected_frame": selected_frame,
 		"ascended_frame": ascended_frame,
 		"selected_mod": selected_mod,
+		"has_unbound_writ": has_unbound_writ,
 		"has_expedition": has_expedition,
 		"active_companions": active_companion_ids,
+		"perihuman_dna": perihuman_dna,
 		"titles": titles,
 		"active_title": active_title,
 		"playtime_seconds": playtime_seconds,
+		"view_scale_style": view_scale_style,
 	}))
 	f.close()
 
@@ -119,7 +152,15 @@ func xp_progress() -> float:
 	if span <= 0: return 1.0
 	return clampf(float(xp - current_thresh) / float(span), 0.0, 1.0)
 
+## Sets the character's faction — but only once. Factionless is a status,
+## not a fourth faction: it's what every character starts as, and the first
+## real faction picked (SovereignCrown / WildlandsAscendant / VeiledCurrent)
+## is permanent for that character, no swapping or returning to Factionless.
+## Calling this again after a real faction is already set is a no-op.
 func set_faction(new_faction: String) -> void:
+	if faction != "Factionless" and faction != new_faction:
+		push_warning("PlayerProfile: faction is permanent once set (%s), ignoring set_faction(%s)" % [faction, new_faction])
+		return
 	faction = new_faction
 	_save()
 	profile_updated.emit()
@@ -134,6 +175,17 @@ func set_frame(frame_id: String) -> void:
 	_save()
 	profile_updated.emit()
 
+## The gallery starting-look pick ("v1".."v8"). Clearing it ("") drops back
+## to the race's default body. Also clears any authored PeriHuman genome so
+## the new pick actually takes effect — a stored custom DNA would otherwise
+## win in MetahumanCharacter's fallback chain.
+func set_variant(variant_id: String) -> void:
+	selected_variant = variant_id
+	if not perihuman_dna.is_empty():
+		perihuman_dna = {}
+	_save()
+	profile_updated.emit()
+
 ## Ascension frame: only choosable once Champion (level 50+); multiplies
 ## the build space x20 and blends the frame sensorium into a duet.
 func set_ascended_frame(frame_id: String) -> bool:
@@ -145,10 +197,33 @@ func set_ascended_frame(frame_id: String) -> bool:
 	profile_updated.emit()
 	return true
 
+func set_perihuman_dna(dna: Dictionary) -> void:
+	perihuman_dna = dna
+	_save()
+	profile_updated.emit()
+
 func set_mod(mod_id: String) -> void:
 	selected_mod = mod_id
 	_save()
 	profile_updated.emit()
+
+## Grant (or, in principle, revoke) the Unbound Writ. See has_unbound_writ.
+func set_unbound_writ(granted: bool) -> void:
+	has_unbound_writ = granted
+	_save()
+	profile_updated.emit()
+
+## "" resolves to ViewScale.DEFAULT_STYLE (opt-in); "off" opts out —
+## everywhere this player, and anything tied to them, gets rendered.
+func set_view_scale_style(style: String) -> void:
+	view_scale_style = style if (style.is_empty() or ViewScale.is_valid(style)) else ""
+	_save()
+	profile_updated.emit()
+
+## True once this player has opted the "view scale" perception distortion
+## off — companions/entities tied to them should render undistorted too.
+func view_scale_opted_out() -> bool:
+	return view_scale_style == "off"
 
 func add_title(title: String) -> void:
 	if title not in titles:

@@ -6,13 +6,12 @@ extends CharacterBody3D
 
 signal chunk_changed(coord: Vector2i)
 
-const MAX_SPEED := 6.0
-const SPRINT_SPEED := 10.5
-const CROUCH_SPEED := 2.6
-const ACCEL := 14.0
-const DEACCEL := 14.0
+const BASE_MAX_SPEED := 6.0
+const BASE_SPRINT_SPEED := 10.5
+const BASE_ACCEL := 14.0
+const BASE_DEACCEL := 14.0
 const AIR_ACCEL_FACTOR := 0.5
-const JUMP_VELOCITY := 9.0
+const BASE_JUMP_VELOCITY := 9.0
 const CAM_DISTANCE := 5.0
 const CAM_HEIGHT := 2.2
 const MOUSE_SENSITIVITY := 0.004
@@ -30,66 +29,67 @@ var _body_mesh: MeshInstance3D
 ## Catsino house skin when player_cat.glb is present.
 var visual_mode := "identity"
 var _visual_root: Node3D
+## The PeriHuman body inside _visual_root, if this build produced one — cached
+## so _physics_process can feed it walk/run speed without searching each frame.
+var _peri_rig: PeriHumanRig
+## Player emote voice/text (PersonaBarker with auto off) — see _build_emoter.
+var _emoter: PersonaBarker
 var _collision: CollisionShape3D
-var _crouched := false
 
-## actor_id used for combat-system lookups; target_id is set by whatever
-## puts this controller into an encounter (lock-on, trigger volume).
-@export var actor_id: String = "player"
-var _ability_kit: Array[String] = []
-var _target_id: String = "target_dummy"
+## The mod actually worn shapes how it feels to move — a turbo_injector
+## sprints noticeably faster and jumps higher, a shield_matrix trades a
+## little of both for its defensive bonus. See ModMechanics.mobility_for().
+var _max_speed := BASE_MAX_SPEED
+var _sprint_speed := BASE_SPRINT_SPEED
+var _accel := BASE_ACCEL
+var _deaccel := BASE_DEACCEL
+var _jump_velocity := BASE_JUMP_VELOCITY
 
 func _ready() -> void:
-	add_to_group("player")
 	_ensure_collision()
 	_build_body()
 	_build_camera()
-	_refresh_ability_kit()
-	if has_node("/root/PlayerProfile"):
-		var profile := get_node("/root/PlayerProfile")
-		# PlayerProfile has no dedicated faction-changed signal — set_faction()
-		# emits the general profile_updated, so re-resolve on every update.
-		if profile.has_signal("profile_updated") and not profile.profile_updated.is_connected(_refresh_ability_kit):
-			profile.profile_updated.connect(_refresh_ability_kit)
+	_refresh_mobility()
+	_build_emoter()
+	if PlayerProfile:
+		PlayerProfile.profile_updated.connect(_refresh_mobility)
+		PlayerProfile.profile_updated.connect(_build_emoter)
 
-## Faction ability kit (slots 1-8, matching the combat UI hotbar and the
-## ability_1..ability_8 input actions). Kits currently hold 4 abilities
-## each (see CombatSystemRealtime.ABILITY_DATABASE), so slots 5-8 are
-## empty until multi-kit loadouts (companion/skill unlocks) land.
-func _refresh_ability_kit() -> void:
-	var faction := "Factionless"
-	if has_node("/root/PlayerProfile"):
-		faction = str(get_node("/root/PlayerProfile").get("faction"))
-	if faction == "":
-		faction = "Factionless"
-	_ability_kit = CombatSystemRealtime.abilities_for_faction(faction)
-	if _ability_kit.is_empty():
-		_ability_kit = CombatSystemRealtime.abilities_for_faction("Factionless")
-
-func _ability_id_for_slot(slot: int) -> String:
-	var index := slot - 1
-	if index < 0 or index >= _ability_kit.size():
-		return ""
-	return _ability_kit[index]
-
-## Set by whatever spawns/targets this controller in a real encounter.
-func set_target(target_id: String) -> void:
-	_target_id = target_id if target_id != "" else "target_dummy"
-
-func _use_ability_slot(slot: int) -> void:
-	var combat := get_node_or_null("/root/CombatRealtime")
-	if combat == null:
+## The player's own persona barker: silent on a timer (auto = false), it only
+## speaks when the player emotes — in the player's race voice, floating the
+## line above their head. Rebuilt when the profile (race) changes.
+func _build_emoter() -> void:
+	var canon := RacePersona.canon_for_id(str(PlayerProfile.selected_race_id)) if PlayerProfile else ""
+	if canon.is_empty():
 		return
-	var ability_id := _ability_id_for_slot(slot)
-	if ability_id == "":
-		return
-	# CombatSystemRealtime models position abstractly as Vector2 (range/
-	# distance only, not physics) — project our forward-aim point onto the
-	# XZ plane rather than changing that system's type.
-	var aim_point := global_transform.origin + (-global_transform.basis.z * 3.0)
-	var target_pos_2d := Vector2(aim_point.x, aim_point.z)
-	combat.player_positions[actor_id] = Vector2(global_transform.origin.x, global_transform.origin.z)
-	combat.use_ability(actor_id, ability_id, _target_id, target_pos_2d)
+	if _emoter == null or not is_instance_valid(_emoter):
+		_emoter = PersonaBarker.new()
+		add_child(_emoter)
+	_emoter.setup(canon, 1.9)
+	_emoter.auto = false
+
+## Recomputes the mod-scaled movement constants. Called on ready and again
+## whenever the player's mod (or anything else on their profile) changes.
+func _refresh_mobility() -> void:
+	var mod_id := str(PlayerProfile.selected_mod) if PlayerProfile else ""
+	var mob := ModMechanics.mobility_for(mod_id)
+	_max_speed = BASE_MAX_SPEED * float(mob.move_mult)
+	_sprint_speed = BASE_SPRINT_SPEED * float(mob.move_mult)
+	_accel = BASE_ACCEL * float(mob.accel_mult)
+	_deaccel = BASE_DEACCEL * float(mob.accel_mult)
+	_jump_velocity = BASE_JUMP_VELOCITY * float(mob.jump_mult)
+	_apply_body_scale(mod_id)
+
+## Scales the visible body and its collision shape together, so a bulky mod
+## is both bigger on screen and bigger to hit, and a lean one is smaller on
+## both — what you see is what you get hit on.
+func _apply_body_scale(mod_id: String) -> void:
+	var body := ModMechanics.body_for(mod_id)
+	var s := float(body.get("body_scale", 1.0))
+	if _visual_root != null and is_instance_valid(_visual_root):
+		_visual_root.scale = Vector3.ONE * s
+	if _collision != null and is_instance_valid(_collision):
+		_collision.scale = Vector3.ONE * float(body.get("hitbox_mult", s))
 
 ## Swap between house-cat presentation and the player's true identity form.
 ## Used by the PVXC 15-minute PvE ↔ PvP rotation.
@@ -107,6 +107,7 @@ func _clear_visual() -> void:
 	if _visual_root != null and is_instance_valid(_visual_root):
 		_visual_root.queue_free()
 	_visual_root = null
+	_peri_rig = null
 	_body_mesh = null
 	# Drop leftover ear/mesh children from older builds (keep camera + collider).
 	for c in get_children():
@@ -133,9 +134,22 @@ func _build_body() -> void:
 		return
 	_build_cat_body()
 
+## The PeriHumanRig somewhere in a freshly built visual (it may be wrapped in
+## a plain Node3D root by MetahumanCharacter), or null if this build is a
+## capsule/CharacterRig/GLB with no procedural gait to drive.
+func _find_peri_rig(node: Node) -> PeriHumanRig:
+	if node is PeriHumanRig:
+		return node
+	for child in node.get_children():
+		var found := _find_peri_rig(child)
+		if found != null:
+			return found
+	return null
+
 func _build_identity_body() -> void:
 	var body := MetahumanCharacter.build_player("identity")
 	_visual_root = body
+	_peri_rig = _find_peri_rig(body)
 	add_child(body)
 	# Humanoid collider
 	if _collision != null and _collision.shape is CapsuleShape3D:
@@ -147,6 +161,7 @@ func _build_identity_body() -> void:
 func _build_cat_body() -> void:
 	var body := MetahumanCharacter.build_player("cat")
 	_visual_root = body
+	_peri_rig = _find_peri_rig(body)
 	add_child(body)
 	var humanoid := body is CharacterRig or AssetLibrary.has_asset("player_human") \
 		or AssetLibrary.has_asset("metahuman_player")
@@ -161,6 +176,7 @@ func _build_cat_body() -> void:
 			cap.radius = 0.4
 			_collision.position.y = 0.6
 
+
 func _build_camera() -> void:
 	_spring = SpringArm3D.new()
 	_spring.spring_length = CAM_DISTANCE
@@ -173,12 +189,6 @@ func _build_camera() -> void:
 	_spring.add_child(_camera)
 	_update_camera_rotation()
 
-## Public accessor so external systems (e.g. VehicleSeat handing camera
-## control back on exit) don't need to guess this controller's internal
-## node structure/paths.
-func get_camera() -> Camera3D:
-	return _camera
-
 const TOUCH_LOOK_SENSITIVITY := 0.006
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -190,10 +200,36 @@ func _unhandled_input(event: InputEvent) -> void:
 		_cam_yaw -= event.relative.x * MOUSE_SENSITIVITY
 		_cam_pitch = clampf(_cam_pitch - event.relative.y * MOUSE_SENSITIVITY, -1.2, 0.4)
 		_update_camera_rotation()
+	elif event is InputEventKey and event.pressed and not event.echo:
+		match event.keycode:
+			KEY_V:
+				_emote("greet")
+			KEY_B:
+				_emote("taunt")
 
-	for i in range(1, 9):
-		if event.is_action_pressed("ability_%d" % i):
-			_use_ability_slot(i)
+## Player emote: speak a race-appropriate line in the player's own voice and
+## flash a matching face. "greet" is a friendly hello + smile; "taunt" is a
+## mood bark with a smirk. Runs off the same persona the body already moves by.
+func _emote(kind: String) -> void:
+	if _emoter == null or not is_instance_valid(_emoter):
+		return
+	if kind == "greet":
+		_emoter.say(RacePersona.greeting_line(_emoter.canon, randi()))
+		_flash_expression("smile", 0.9)
+	else:
+		_emoter.say(RacePersona.line("taunts", _emoter.canon, randi()))
+		_flash_expression("smile", 0.4)
+
+## Pulse a facial morph on the player's rig, then let it relax — a quick emote
+## beat without fighting the procedural idle/gait that owns the skeleton.
+func _flash_expression(morph: String, value: float) -> void:
+	if _peri_rig == null or not is_instance_valid(_peri_rig):
+		return
+	_peri_rig.set_expression(morph, value)
+	var t := get_tree().create_timer(1.1)
+	t.timeout.connect(func():
+		if _peri_rig != null and is_instance_valid(_peri_rig):
+			_peri_rig.set_expression(morph, 0.0))
 
 ## Touch look — read once a frame from TouchControls.look_delta, so mobile
 ## can pan the camera with a right-thumb drag without ever needing mouse
@@ -222,20 +258,9 @@ func _physics_process(delta: float) -> void:
 	var cam_basis := Basis(Vector3.UP, _cam_yaw)
 	var dir := (cam_basis * Vector3(input_2d.x, 0.0, input_2d.y)).normalized()
 
-	# Crouch: hold Ctrl/C (or the touch posture button). Slower, lower.
-	var want_crouch := Input.is_key_pressed(KEY_CTRL) or Input.is_key_pressed(KEY_C) \
-		or TouchControls.crouch_held
-	if want_crouch != _crouched:
-		_crouched = want_crouch
-		if is_instance_valid(_visual_root):
-			var tw := create_tween()
-			tw.tween_property(_visual_root, "scale:y", 0.55 if _crouched else 1.0, 0.12)
-
 	var sprinting := Input.is_key_pressed(KEY_SHIFT) or TouchControls.sprint_held
-	var target_speed := SPRINT_SPEED if sprinting else MAX_SPEED
-	if _crouched:
-		target_speed = CROUCH_SPEED
-	var accel := (ACCEL if dir.dot(Vector3(velocity.x, 0, velocity.z)) > 0.0 else DEACCEL)
+	var target_speed := _sprint_speed if sprinting else _max_speed
+	var accel := (_accel if dir.dot(Vector3(velocity.x, 0, velocity.z)) > 0.0 else _deaccel)
 	if not is_on_floor():
 		accel *= AIR_ACCEL_FACTOR
 
@@ -244,13 +269,15 @@ func _physics_process(delta: float) -> void:
 	velocity.x = flat.x
 	velocity.z = flat.z
 
-	if is_on_floor() and not _crouched \
-			and (Input.is_action_just_pressed("ui_accept") or TouchControls.consume_jump()):
-		velocity.y = JUMP_VELOCITY
-	# Touch E replay moved to TouchControls._process() itself (always
-	# running regardless of whether this controller's _physics_process is
-	# enabled — it gets disabled while piloting a vehicle, which would
-	# otherwise silently break the touch exit-vehicle button).
+	if is_on_floor() and (Input.is_action_just_pressed("ui_accept") or TouchControls.consume_jump()):
+		velocity.y = _jump_velocity
+	# Touch E: replay as a real key event so every venue/door/hideout
+	# interaction hears it without knowing about touch.
+	if TouchControls.consume_interact():
+		var ev := InputEventKey.new()
+		ev.keycode = KEY_E
+		ev.pressed = true
+		Input.parse_input_event(ev)
 
 	if dir.length() > 0.1 and is_instance_valid(_body_mesh):
 		var target_yaw := atan2(dir.x, dir.z)
@@ -259,11 +286,12 @@ func _physics_process(delta: float) -> void:
 
 	move_and_slide()
 
-	# Body memory: gait, turns and posture feed Proprioception every frame.
-	Proprioception.feed(delta, _cam_yaw,
-		Vector2(velocity.x, velocity.z).length(),
-		input_2d.y > 0.5, input_2d.y < -0.5,
-		_crouched, is_on_floor())
+	# Feed horizontal speed to the PeriHuman gait: 0 standing, ~0.45 at a
+	# walk, 1 at a sprint. The rig eases between poses, so the raw ratio is
+	# fine to hand over every frame.
+	if _peri_rig != null and is_instance_valid(_peri_rig):
+		var planar := Vector2(velocity.x, velocity.z).length()
+		_peri_rig.set_locomotion(planar / _sprint_speed if _sprint_speed > 0.0 else 0.0)
 
 	var coord := DiscoveryManager.world_pos_to_chunk(global_position)
 	if coord != _last_chunk:
