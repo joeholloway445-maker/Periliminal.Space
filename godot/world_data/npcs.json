@@ -1,5 +1,5 @@
 {
-  "_comment": "CATSINO.CASINO NPCs — add new NPCs by copying any block and changing the id. Save and reload!",
+  "_comment": "CATSINO.CASINO NPCs \u2014 add new NPCs by copying any block and changing the id. Save and reload!",
   "_guide": "Fields: id, name, district (must match a district id above), role, faction, emoji, greeting, position {x,y,z}, shop_id (optional), quest_ids (list), dialogue_id",
   "npcs": [
     {
@@ -8,11 +8,17 @@
       "district": "paw_vegas",
       "role": "shopkeeper",
       "faction": "SovereignCrown",
-      "emoji": "🎰",
+      "emoji": "\ud83c\udfb0",
       "greeting": "Welcome, high roller! My wares are the finest in Paws Vegas!",
-      "position": {"x": 5.0, "y": 0.0, "z": 3.0},
+      "position": {
+        "x": 5.0,
+        "y": 0.0,
+        "z": 3.0
+      },
       "shop_id": "paw_vegas_consumables",
-      "quest_ids": ["main_001"],
+      "quest_ids": [
+        "main_001"
+      ],
       "dialogue_id": "slot_sam_dialogue"
     },
     {
@@ -21,11 +27,17 @@
       "district": "paw_vegas",
       "role": "quest_giver",
       "faction": "Factionless",
-      "emoji": "🐾",
+      "emoji": "\ud83d\udc3e",
       "greeting": "Psst! I've got a tip for you, if you're willing to earn it...",
-      "position": {"x": -3.0, "y": 0.0, "z": 8.0},
+      "position": {
+        "x": -3.0,
+        "y": 0.0,
+        "z": 8.0
+      },
       "shop_id": "",
-      "quest_ids": ["side_001"],
+      "quest_ids": [
+        "side_001"
+      ],
       "dialogue_id": "lucky_paws_dialogue"
     },
     {
@@ -34,9 +46,13 @@
       "district": "paw_vegas",
       "role": "dealer",
       "faction": "SovereignCrown",
-      "emoji": "🃏",
+      "emoji": "\ud83c\udccf",
       "greeting": "The cards never lie. Step up and test your luck!",
-      "position": {"x": 0.0, "y": 0.0, "z": 0.0},
+      "position": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
       "shop_id": "",
       "quest_ids": [],
       "dialogue_id": "dealer_dev_dialogue"
@@ -47,9 +63,13 @@
       "district": "paw_vegas",
       "role": "shopkeeper",
       "faction": "VeiledCurrent",
-      "emoji": "💎",
+      "emoji": "\ud83d\udc8e",
       "greeting": "Rare frames and mods, fresh from the deep currents.",
-      "position": {"x": 8.0, "y": 0.0, "z": -2.0},
+      "position": {
+        "x": 8.0,
+        "y": 0.0,
+        "z": -2.0
+      },
       "shop_id": "paw_vegas_frames",
       "quest_ids": [],
       "dialogue_id": "aqua_merchant_dialogue"
@@ -60,11 +80,17 @@
       "district": "neon_alley",
       "role": "race_coordinator",
       "faction": "VeiledCurrent",
-      "emoji": "⚡",
+      "emoji": "\u26a1",
       "greeting": "You think you've got what it takes? Prove it on the track.",
-      "position": {"x": 0.0, "y": 0.0, "z": 0.0},
+      "position": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
       "shop_id": "",
-      "quest_ids": ["side_002"],
+      "quest_ids": [
+        "side_002"
+      ],
       "dialogue_id": "zira_dialogue"
     },
     {
@@ -73,9 +99,13 @@
       "district": "neon_alley",
       "role": "shopkeeper",
       "faction": "Factionless",
-      "emoji": "🔧",
-      "greeting": "Mods, parts, upgrades — name it and I'll fix it!",
-      "position": {"x": 4.0, "y": 0.0, "z": 5.0},
+      "emoji": "\ud83d\udd27",
+      "greeting": "Mods, parts, upgrades \u2014 name it and I'll fix it!",
+      "position": {
+        "x": 4.0,
+        "y": 0.0,
+        "z": 5.0
+      },
       "shop_id": "neon_alley_mods",
       "quest_ids": [],
       "dialogue_id": "wrench_dialogue"
@@ -86,11 +116,17 @@
       "district": "cat_coliseum",
       "role": "tournament_master",
       "faction": "WildlandsAscendant",
-      "emoji": "⚔️",
+      "emoji": "\u2694\ufe0f",
       "greeting": "Only the strong survive the Coliseum. Are you ready, challenger?",
-      "position": {"x": 0.0, "y": 0.0, "z": 0.0},
+      "position": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
       "shop_id": "cat_coliseum_mods",
-      "quest_ids": ["main_002"],
+      "quest_ids": [
+        "main_002"
+      ],
       "dialogue_id": "krix_dialogue"
     },
     {
@@ -99,9 +135,13 @@
       "district": "cat_coliseum",
       "role": "healer",
       "faction": "VeiledCurrent",
-      "emoji": "💊",
+      "emoji": "\ud83d\udc8a",
       "greeting": "Battle-worn? I can help you recover for the next fight.",
-      "position": {"x": 6.0, "y": 0.0, "z": 2.0},
+      "position": {
+        "x": 6.0,
+        "y": 0.0,
+        "z": 2.0
+      },
       "shop_id": "cat_coliseum_consumables",
       "quest_ids": [],
       "dialogue_id": "mira_dialogue"
@@ -112,11 +152,17 @@
       "district": "cat_forest",
       "role": "quest_giver",
       "faction": "WildlandsAscendant",
-      "emoji": "🌿",
+      "emoji": "\ud83c\udf3f",
       "greeting": "The forest holds many secrets. Tread carefully, traveler.",
-      "position": {"x": 0.0, "y": 0.0, "z": 0.0},
+      "position": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
       "shop_id": "",
-      "quest_ids": ["main_003"],
+      "quest_ids": [
+        "main_003"
+      ],
       "dialogue_id": "bloom_dialogue"
     },
     {
@@ -125,9 +171,13 @@
       "district": "cat_forest",
       "role": "shopkeeper",
       "faction": "WildlandsAscendant",
-      "emoji": "🐾",
+      "emoji": "\ud83d\udc3e",
       "greeting": "Every companion has a story. Which one will you write?",
-      "position": {"x": -5.0, "y": 0.0, "z": 3.0},
+      "position": {
+        "x": -5.0,
+        "y": 0.0,
+        "z": 3.0
+      },
       "shop_id": "cat_forest_companions",
       "quest_ids": [],
       "dialogue_id": "sylva_dialogue"
@@ -138,11 +188,17 @@
       "district": "cat_forest",
       "role": "lore_keeper",
       "faction": "Factionless",
-      "emoji": "📜",
+      "emoji": "\ud83d\udcdc",
       "greeting": "I have lived long enough to know that the forest remembers everything.",
-      "position": {"x": 10.0, "y": 0.0, "z": -8.0},
+      "position": {
+        "x": 10.0,
+        "y": 0.0,
+        "z": -8.0
+      },
       "shop_id": "",
-      "quest_ids": ["faction_001"],
+      "quest_ids": [
+        "faction_001"
+      ],
       "dialogue_id": "mosswhisker_dialogue"
     },
     {
@@ -151,11 +207,17 @@
       "district": "arcade_galaxy",
       "role": "quest_giver",
       "faction": "SovereignCrown",
-      "emoji": "🚀",
+      "emoji": "\ud83d\ude80",
       "greeting": "Welcome to Arcade Galaxy! The highest scores earn legendary rewards!",
-      "position": {"x": 0.0, "y": 0.0, "z": 0.0},
+      "position": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
       "shop_id": "",
-      "quest_ids": ["main_004"],
+      "quest_ids": [
+        "main_004"
+      ],
       "dialogue_id": "starwhisker_dialogue"
     },
     {
@@ -164,9 +226,13 @@
       "district": "arcade_galaxy",
       "role": "shopkeeper",
       "faction": "Factionless",
-      "emoji": "✨",
+      "emoji": "\u2728",
       "greeting": "The spirits of luck favor the bold. Summon today!",
-      "position": {"x": 5.0, "y": 0.0, "z": -3.0},
+      "position": {
+        "x": 5.0,
+        "y": 0.0,
+        "z": -3.0
+      },
       "shop_id": "arcade_galaxy_gacha",
       "quest_ids": [],
       "dialogue_id": "luminos_dialogue"
@@ -177,9 +243,13 @@
       "district": "arlington",
       "role": "quest_giver",
       "faction": "Factionless",
-      "emoji": "⛵",
-      "greeting": "Hub to hub, layer to layer — don't fall in.",
-      "position": {"x": 18.0, "y": 0.0, "z": 18.0},
+      "emoji": "\u26f5",
+      "greeting": "Hub to hub, layer to layer \u2014 don't fall in.",
+      "position": {
+        "x": 18.0,
+        "y": 0.0,
+        "z": 18.0
+      },
       "shop_id": "",
       "quest_ids": [],
       "dialogue_id": "ferryman_dialogue"
@@ -190,9 +260,13 @@
       "district": "dallas",
       "role": "quest_giver",
       "faction": "Factionless",
-      "emoji": "⛵",
-      "greeting": "Hub to hub, layer to layer — don't fall in.",
-      "position": {"x": 22.0, "y": 0.0, "z": 20.0},
+      "emoji": "\u26f5",
+      "greeting": "Hub to hub, layer to layer \u2014 don't fall in.",
+      "position": {
+        "x": 22.0,
+        "y": 0.0,
+        "z": 20.0
+      },
       "shop_id": "",
       "quest_ids": [],
       "dialogue_id": "ferryman_dialogue"
@@ -203,9 +277,13 @@
       "district": "fort_worth",
       "role": "quest_giver",
       "faction": "Factionless",
-      "emoji": "⛵",
-      "greeting": "Hub to hub, layer to layer — don't fall in.",
-      "position": {"x": 16.0, "y": 0.0, "z": 16.0},
+      "emoji": "\u26f5",
+      "greeting": "Hub to hub, layer to layer \u2014 don't fall in.",
+      "position": {
+        "x": 16.0,
+        "y": 0.0,
+        "z": 16.0
+      },
       "shop_id": "",
       "quest_ids": [],
       "dialogue_id": "ferryman_dialogue"
@@ -216,9 +294,13 @@
       "district": "denton",
       "role": "quest_giver",
       "faction": "Factionless",
-      "emoji": "⛵",
-      "greeting": "Hub to hub, layer to layer — don't fall in.",
-      "position": {"x": 14.0, "y": 0.0, "z": 14.0},
+      "emoji": "\u26f5",
+      "greeting": "Hub to hub, layer to layer \u2014 don't fall in.",
+      "position": {
+        "x": 14.0,
+        "y": 0.0,
+        "z": 14.0
+      },
       "shop_id": "",
       "quest_ids": [],
       "dialogue_id": "ferryman_dialogue"
@@ -229,11 +311,17 @@
       "district": "arlington",
       "role": "quest_giver",
       "faction": "Factionless",
-      "emoji": "🔭",
-      "greeting": "That glow on the landmark isn't neon — it's a claim.",
-      "position": {"x": -12.0, "y": 0.0, "z": 8.0},
+      "emoji": "\ud83d\udd2d",
+      "greeting": "That glow on the landmark isn't neon \u2014 it's a claim.",
+      "position": {
+        "x": -12.0,
+        "y": 0.0,
+        "z": 8.0
+      },
       "shop_id": "",
-      "quest_ids": ["pvp_campaign_01"],
+      "quest_ids": [
+        "pvp_campaign_01"
+      ],
       "dialogue_id": "warden_scout_dialogue"
     },
     {
@@ -242,12 +330,426 @@
       "district": "dallas",
       "role": "quest_giver",
       "faction": "Factionless",
-      "emoji": "🔭",
-      "greeting": "That glow on the landmark isn't neon — it's a claim.",
-      "position": {"x": -14.0, "y": 0.0, "z": 10.0},
+      "emoji": "\ud83d\udd2d",
+      "greeting": "That glow on the landmark isn't neon \u2014 it's a claim.",
+      "position": {
+        "x": -14.0,
+        "y": 0.0,
+        "z": 10.0
+      },
       "shop_id": "",
-      "quest_ids": ["pvp_campaign_01"],
+      "quest_ids": [
+        "pvp_campaign_01"
+      ],
       "dialogue_id": "warden_scout_dialogue"
+    },
+    {
+      "id": "npc_banker_arlington",
+      "name": "Vaultkeeper",
+      "district": "arlington",
+      "role": "shopkeeper",
+      "faction": "Factionless",
+      "emoji": "\ud83d\udcb0",
+      "greeting": "Interest compounds. So does worry. Lock something in while you can.",
+      "position": {
+        "x": 8.0,
+        "y": 0.0,
+        "z": 8.0
+      },
+      "shop_id": "",
+      "quest_ids": [],
+      "dialogue_id": "banker_dialogue"
+    },
+    {
+      "id": "npc_armorer_arlington",
+      "name": "Armsmistress",
+      "district": "arlington",
+      "role": "shopkeeper",
+      "faction": "Factionless",
+      "emoji": "\ud83d\udee1\ufe0f",
+      "greeting": "Steel remembers every fight it survives. Buy well, bleed less.",
+      "position": {
+        "x": -10.0,
+        "y": 0.0,
+        "z": 14.0
+      },
+      "shop_id": "",
+      "quest_ids": [],
+      "dialogue_id": "armorer_dialogue"
+    },
+    {
+      "id": "npc_blacksmith_arlington",
+      "name": "Forgewright",
+      "district": "arlington",
+      "role": "shopkeeper",
+      "faction": "Factionless",
+      "emoji": "\ud83d\udd28",
+      "greeting": "The forge wants only patience and coin; it answers in edge.",
+      "position": {
+        "x": 12.0,
+        "y": 0.0,
+        "z": -10.0
+      },
+      "shop_id": "",
+      "quest_ids": [],
+      "dialogue_id": "blacksmith_dialogue"
+    },
+    {
+      "id": "npc_market_arlington",
+      "name": "Stallkeeper",
+      "district": "arlington",
+      "role": "shopkeeper",
+      "faction": "Factionless",
+      "emoji": "\ud83e\uddfa",
+      "greeting": "Prices turn at dawn. Best bargain on the block is mine today.",
+      "position": {
+        "x": 22.0,
+        "y": 0.0,
+        "z": 5.0
+      },
+      "shop_id": "",
+      "quest_ids": [],
+      "dialogue_id": "market_trader_dialogue"
+    },
+    {
+      "id": "npc_stockyard_arlington",
+      "name": "Wrangler",
+      "district": "arlington",
+      "role": "quest_giver",
+      "faction": "Factionless",
+      "emoji": "\ud83d\udc04",
+      "greeting": "The stock reads the weather quicker than any forecast.",
+      "position": {
+        "x": -18.0,
+        "y": 0.0,
+        "z": -14.0
+      },
+      "shop_id": "",
+      "quest_ids": [],
+      "dialogue_id": "stockyard_herder_dialogue"
+    },
+    {
+      "id": "npc_wagerhall_arlington",
+      "name": "Oddsmaster",
+      "district": "arlington",
+      "role": "shopkeeper",
+      "faction": "Factionless",
+      "emoji": "\ud83c\udfb2",
+      "greeting": "Odds are a mirror that holds up on its own.",
+      "position": {
+        "x": -6.0,
+        "y": 0.0,
+        "z": 20.0
+      },
+      "shop_id": "",
+      "quest_ids": [],
+      "dialogue_id": "wager_hall_dialogue"
+    },
+    {
+      "id": "npc_banker_dallas",
+      "name": "Vaultkeeper",
+      "district": "dallas",
+      "role": "shopkeeper",
+      "faction": "Factionless",
+      "emoji": "\ud83d\udcb0",
+      "greeting": "Interest compounds. So does worry. Lock something in while you can.",
+      "position": {
+        "x": 8.0,
+        "y": 0.0,
+        "z": 8.0
+      },
+      "shop_id": "",
+      "quest_ids": [],
+      "dialogue_id": "banker_dialogue"
+    },
+    {
+      "id": "npc_armorer_dallas",
+      "name": "Armsmistress",
+      "district": "dallas",
+      "role": "shopkeeper",
+      "faction": "Factionless",
+      "emoji": "\ud83d\udee1\ufe0f",
+      "greeting": "Steel remembers every fight it survives. Buy well, bleed less.",
+      "position": {
+        "x": -10.0,
+        "y": 0.0,
+        "z": 14.0
+      },
+      "shop_id": "",
+      "quest_ids": [],
+      "dialogue_id": "armorer_dialogue"
+    },
+    {
+      "id": "npc_blacksmith_dallas",
+      "name": "Forgewright",
+      "district": "dallas",
+      "role": "shopkeeper",
+      "faction": "Factionless",
+      "emoji": "\ud83d\udd28",
+      "greeting": "The forge wants only patience and coin; it answers in edge.",
+      "position": {
+        "x": 12.0,
+        "y": 0.0,
+        "z": -10.0
+      },
+      "shop_id": "",
+      "quest_ids": [],
+      "dialogue_id": "blacksmith_dialogue"
+    },
+    {
+      "id": "npc_market_dallas",
+      "name": "Stallkeeper",
+      "district": "dallas",
+      "role": "shopkeeper",
+      "faction": "Factionless",
+      "emoji": "\ud83e\uddfa",
+      "greeting": "Prices turn at dawn. Best bargain on the block is mine today.",
+      "position": {
+        "x": 22.0,
+        "y": 0.0,
+        "z": 5.0
+      },
+      "shop_id": "",
+      "quest_ids": [],
+      "dialogue_id": "market_trader_dialogue"
+    },
+    {
+      "id": "npc_stockyard_dallas",
+      "name": "Wrangler",
+      "district": "dallas",
+      "role": "quest_giver",
+      "faction": "Factionless",
+      "emoji": "\ud83d\udc04",
+      "greeting": "The stock reads the weather quicker than any forecast.",
+      "position": {
+        "x": -18.0,
+        "y": 0.0,
+        "z": -14.0
+      },
+      "shop_id": "",
+      "quest_ids": [],
+      "dialogue_id": "stockyard_herder_dialogue"
+    },
+    {
+      "id": "npc_wagerhall_dallas",
+      "name": "Oddsmaster",
+      "district": "dallas",
+      "role": "shopkeeper",
+      "faction": "Factionless",
+      "emoji": "\ud83c\udfb2",
+      "greeting": "Odds are a mirror that holds up on its own.",
+      "position": {
+        "x": -6.0,
+        "y": 0.0,
+        "z": 20.0
+      },
+      "shop_id": "",
+      "quest_ids": [],
+      "dialogue_id": "wager_hall_dialogue"
+    },
+    {
+      "id": "npc_banker_fort_worth",
+      "name": "Vaultkeeper",
+      "district": "fort_worth",
+      "role": "shopkeeper",
+      "faction": "Factionless",
+      "emoji": "\ud83d\udcb0",
+      "greeting": "Interest compounds. So does worry. Lock something in while you can.",
+      "position": {
+        "x": 8.0,
+        "y": 0.0,
+        "z": 8.0
+      },
+      "shop_id": "",
+      "quest_ids": [],
+      "dialogue_id": "banker_dialogue"
+    },
+    {
+      "id": "npc_armorer_fort_worth",
+      "name": "Armsmistress",
+      "district": "fort_worth",
+      "role": "shopkeeper",
+      "faction": "Factionless",
+      "emoji": "\ud83d\udee1\ufe0f",
+      "greeting": "Steel remembers every fight it survives. Buy well, bleed less.",
+      "position": {
+        "x": -10.0,
+        "y": 0.0,
+        "z": 14.0
+      },
+      "shop_id": "",
+      "quest_ids": [],
+      "dialogue_id": "armorer_dialogue"
+    },
+    {
+      "id": "npc_blacksmith_fort_worth",
+      "name": "Forgewright",
+      "district": "fort_worth",
+      "role": "shopkeeper",
+      "faction": "Factionless",
+      "emoji": "\ud83d\udd28",
+      "greeting": "The forge wants only patience and coin; it answers in edge.",
+      "position": {
+        "x": 12.0,
+        "y": 0.0,
+        "z": -10.0
+      },
+      "shop_id": "",
+      "quest_ids": [],
+      "dialogue_id": "blacksmith_dialogue"
+    },
+    {
+      "id": "npc_market_fort_worth",
+      "name": "Stallkeeper",
+      "district": "fort_worth",
+      "role": "shopkeeper",
+      "faction": "Factionless",
+      "emoji": "\ud83e\uddfa",
+      "greeting": "Prices turn at dawn. Best bargain on the block is mine today.",
+      "position": {
+        "x": 22.0,
+        "y": 0.0,
+        "z": 5.0
+      },
+      "shop_id": "",
+      "quest_ids": [],
+      "dialogue_id": "market_trader_dialogue"
+    },
+    {
+      "id": "npc_stockyard_fort_worth",
+      "name": "Wrangler",
+      "district": "fort_worth",
+      "role": "quest_giver",
+      "faction": "Factionless",
+      "emoji": "\ud83d\udc04",
+      "greeting": "The stock reads the weather quicker than any forecast.",
+      "position": {
+        "x": -18.0,
+        "y": 0.0,
+        "z": -14.0
+      },
+      "shop_id": "",
+      "quest_ids": [],
+      "dialogue_id": "stockyard_herder_dialogue"
+    },
+    {
+      "id": "npc_wagerhall_fort_worth",
+      "name": "Oddsmaster",
+      "district": "fort_worth",
+      "role": "shopkeeper",
+      "faction": "Factionless",
+      "emoji": "\ud83c\udfb2",
+      "greeting": "Odds are a mirror that holds up on its own.",
+      "position": {
+        "x": -6.0,
+        "y": 0.0,
+        "z": 20.0
+      },
+      "shop_id": "",
+      "quest_ids": [],
+      "dialogue_id": "wager_hall_dialogue"
+    },
+    {
+      "id": "npc_banker_denton",
+      "name": "Vaultkeeper",
+      "district": "denton",
+      "role": "shopkeeper",
+      "faction": "Factionless",
+      "emoji": "\ud83d\udcb0",
+      "greeting": "Interest compounds. So does worry. Lock something in while you can.",
+      "position": {
+        "x": 8.0,
+        "y": 0.0,
+        "z": 8.0
+      },
+      "shop_id": "",
+      "quest_ids": [],
+      "dialogue_id": "banker_dialogue"
+    },
+    {
+      "id": "npc_armorer_denton",
+      "name": "Armsmistress",
+      "district": "denton",
+      "role": "shopkeeper",
+      "faction": "Factionless",
+      "emoji": "\ud83d\udee1\ufe0f",
+      "greeting": "Steel remembers every fight it survives. Buy well, bleed less.",
+      "position": {
+        "x": -10.0,
+        "y": 0.0,
+        "z": 14.0
+      },
+      "shop_id": "",
+      "quest_ids": [],
+      "dialogue_id": "armorer_dialogue"
+    },
+    {
+      "id": "npc_blacksmith_denton",
+      "name": "Forgewright",
+      "district": "denton",
+      "role": "shopkeeper",
+      "faction": "Factionless",
+      "emoji": "\ud83d\udd28",
+      "greeting": "The forge wants only patience and coin; it answers in edge.",
+      "position": {
+        "x": 12.0,
+        "y": 0.0,
+        "z": -10.0
+      },
+      "shop_id": "",
+      "quest_ids": [],
+      "dialogue_id": "blacksmith_dialogue"
+    },
+    {
+      "id": "npc_market_denton",
+      "name": "Stallkeeper",
+      "district": "denton",
+      "role": "shopkeeper",
+      "faction": "Factionless",
+      "emoji": "\ud83e\uddfa",
+      "greeting": "Prices turn at dawn. Best bargain on the block is mine today.",
+      "position": {
+        "x": 22.0,
+        "y": 0.0,
+        "z": 5.0
+      },
+      "shop_id": "",
+      "quest_ids": [],
+      "dialogue_id": "market_trader_dialogue"
+    },
+    {
+      "id": "npc_stockyard_denton",
+      "name": "Wrangler",
+      "district": "denton",
+      "role": "quest_giver",
+      "faction": "Factionless",
+      "emoji": "\ud83d\udc04",
+      "greeting": "The stock reads the weather quicker than any forecast.",
+      "position": {
+        "x": -18.0,
+        "y": 0.0,
+        "z": -14.0
+      },
+      "shop_id": "",
+      "quest_ids": [],
+      "dialogue_id": "stockyard_herder_dialogue"
+    },
+    {
+      "id": "npc_wagerhall_denton",
+      "name": "Oddsmaster",
+      "district": "denton",
+      "role": "shopkeeper",
+      "faction": "Factionless",
+      "emoji": "\ud83c\udfb2",
+      "greeting": "Odds are a mirror that holds up on its own.",
+      "position": {
+        "x": -6.0,
+        "y": 0.0,
+        "z": 20.0
+      },
+      "shop_id": "",
+      "quest_ids": [],
+      "dialogue_id": "wager_hall_dialogue"
     }
   ]
 }
