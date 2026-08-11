@@ -20,8 +20,9 @@ static func build(bp: Dictionary) -> Node3D:
 ## so the SAME sword/creature is a different material on every client.
 static func _mat(base: Color, metallic: float, roughness: float,
 		emission: float, emit_color: Color = Color.WHITE) -> StandardMaterial3D:
-	var m := IdentityLens.world_material(base, 0.3) if IdentityLens else StandardMaterial3D.new()
-	if not IdentityLens:
+	var lens := AutoloadGate.get_node("IdentityLens")
+	var m: StandardMaterial3D = lens.world_material(base, 0.3) if lens else StandardMaterial3D.new()
+	if not lens:
 		m.albedo_color = base
 	# Blend the item's own authored physicality with the lens' — a "0.9
 	# metallic" sword should still read metallic even under a rough lens.

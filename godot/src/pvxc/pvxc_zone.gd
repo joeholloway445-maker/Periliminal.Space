@@ -400,7 +400,7 @@ func _on_cast(sk: Dictionary) -> void:
 				get_tree().create_timer(4.0).timeout.connect(func():
 					if is_instance_valid(c): c.speed *= 2.0)
 			SkillManager.gain_ultimate(5.0),
-		"skip_windup": OS.has_feature("headless"),
+		"skip_windup": DisplayServer.get_name() == "headless",
 	}
 	var result: Dictionary = await SkillCastResolver.resolve_async(self, _player, sk, opts)
 	if int(result.get("hits", 0)) == 0 and kind in ["damage", "chance"]:

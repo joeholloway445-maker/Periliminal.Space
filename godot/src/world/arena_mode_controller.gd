@@ -150,10 +150,10 @@ func _on_cast(sk: Dictionary) -> void:
 			_refresh_hud("buff up"),
 		"on_self_mobility": func(dist: float):
 			player.global_position += -player.global_transform.basis.z * dist,
-		"skip_windup": OS.has_feature("headless"), # smokes stay instant
+		"skip_windup": DisplayServer.get_name() == "headless", # smokes stay instant
 	}
 	var result: Dictionary
-	if OS.has_feature("headless") or bool(opts.get("skip_windup", false)):
+	if DisplayServer.get_name() == "headless" or bool(opts.get("skip_windup", false)):
 		opts["skip_windup"] = true
 		result = SkillCastResolver.resolve(self, player, sk, opts)
 	else:

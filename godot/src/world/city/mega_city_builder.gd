@@ -58,7 +58,7 @@ static func build(hub_id: String, origin: Vector3, sky: DayNightSky,
 	LandmarkBuilder.place_all(root, hub_id, accent, city_base_y)
 	# Gate 6: Stage-3 zone bosses at landmarks + dungeon door + world-boss hook.
 	ZoneBossSpawner.place_for_hub(root, hub_id, city_base_y, player)
-	DungeonEntrance.place_for_hub(root, hub_id, city_base_y)
+	DungeonPartyGate.place_for_hub(root, hub_id, city_base_y)
 	if player != null:
 		CityVenues.place_all(root, accent, city_base_y, player, hub_id)
 		# Sealed Periliminal descents hidden inside this hub's buildings.

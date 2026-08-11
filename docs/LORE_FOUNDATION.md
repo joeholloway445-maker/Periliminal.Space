@@ -15,17 +15,14 @@
 >    left). The rich Factionless material below (the Oracle, the Wanderer,
 >    the Thief) is still usable — just as flavor for what an unpledged
 >    character encounters, not as a fourth faction's leadership.
-> 2. **The 20-race "Light/Heavy, perceptual-lens" roster below** (Luminant,
->    Kinetic, Chronal, …) is a third, unreconciled race system, distinct
->    from both the in-engine canon races (`Keth`, `Lumari`, `Vex`, … in
+> 2. **A third, unreconciled "Light/Heavy, perceptual-lens" race roster**
+>    (Luminant, Kinetic, Chronal, …) used to live in this doc, distinct from
+>    both the in-engine canon races (`Keth`, `Lumari`, `Vex`, … in
 >    `src/data/canon_races.gd`) and the Omni Dex roster (`lumenari`,
 >    `gutterkin`, … in `src/data/omni_dex.gd` — see `docs/OMNIDEX.md` for
->    that pair's own reconciliation status). No code currently reads this
->    third roster. It's preserved here as a design source, but needs a
->    human decision before it drives anything: merge into the canon races,
->    repurpose as a different axis (frame flavor? a perception-mechanic
->    layer distinct from race?), or retire in favor of the two rosters
->    already being reconciled.
+>    that pair's own reconciliation status). No code ever read it, so it's
+>    been removed rather than carried forward as dead weight — see the
+>    "Race" section below.
 
 ## The Canonical Universe: Superposition
 
@@ -137,75 +134,13 @@ Each faction emerged to *explain and control* the layering. They don't just disa
 
 ---
 
-## Race (20 Options): What Reality Is Made Of
+## Race
 
-Your **race** is not biological ancestry—it's a *perceptual lens*. Each race perceives and interacts with the material substrate of reality differently. This is tied to texture and physics, as defined in `IdentityLens`.
-
-### Light Races (10): Sensory-First, Ethereal
-
-1. **Luminant**: Light-based. Your race sees matter as *translucent*, always aware of its internal structure. Light passes through obstacles for you. Entities appear as their "core essence" rather than surface. **Texture**: Luminous, semi-transparent. **Primary Color**: White/gold.
-   - *Lore*: You see the hidden frequencies. Luminants can perceive lies (words don't match internal intent) and hidden documents (written meaning glows). Associated with Vision/Intellect in Marvel, Ravenclaw in Potter, and Hacker/Info-broker in GTA.
-
-2. **Kinetic**: Motion-based. You see *trajectories* and *momentum*. Every object leaves a fading trail of where it's been and where it's going. Combat is predictive for you. **Texture**: Streaked, motion-blurred. **Primary Color**: Silver/cyan.
-   - *Lore*: You're always half a second ahead. Kinetics can predict NPC movements and entity attacks. They make natural duelists. Associated with Speed/Reflexes in Marvel, Seeker in Potter, and Getaway Driver in GTA.
-
-3. **Chronal**: Time-based. You perceive *causality* as visible threads. You can sense the "age" of objects, the time since a room was occupied, the *direction* time is moving locally. **Texture**: Weathered, with temporal scars visible. **Primary Color**: Bronze/copper.
-   - *Lore*: You read history off surfaces. Chronals are archaeologists of meaning. They can find quest hooks in abandoned places, decode degraded NPC memory loops, and navigate temporal traps in Periliminal. Associated with Wisdom in Marvel, Time-Turner mastery in Potter, Speedrunner in GTA.
-
-4. **Harmonic**: Sound/vibration-based. You perceive *resonance*. Everything vibrates; you hear it. NPCs broadcast their emotional state as overtones. Walls have "signatures." **Texture**: Ribbed, crystalline, resonant. **Primary Color**: Violet/iridescent.
-   - *Lore*: You read emotions and intentions through vibration. Harmonics are natural diplomats and can extract information from NPCs by listening to the *way* they speak, not just the words. Associated with Empathy in Marvel, Legilimency in Potter, Social Engineering in GTA.
-
-5. **Photic**: Color-based. You perceive *wavelength*. Different materials absorb/reflect light in ways others miss. Camouflaged objects, hidden texts, false surfaces—all visible to you. **Texture**: Prismatic, with color shifts. **Primary Color**: Rainbow (changes per context).
-   - *Lore*: You see what's hidden in plain sight. Photics can find secret doors, spot disguised NPCs, and navigate Supraliminal's "perfectly normal" facade. Associated with Perception/Awareness in Marvel, Revealer spells in Potter, Spotter in GTA.
-
-6. **Entangled**: Quantum-based. You perceive *superposition*. Multiple states of an object exist simultaneously for you; you navigate by choosing which state is "real" for this moment. **Texture**: Flickering, translucent overlays. **Primary Color**: Silver with unstable chromatic aberration.
-   - *Lore*: Reality is a choice you make. Entangled players are reality-warpers; they can pass through overlapping states, create temporary passages, and resolve quantum contradictions. Associated with Reality-warping in Marvel, Obscurus-adjacent in Potter, Speedrunner/Sequence-breaker in GTA.
-
-7. **Somatic**: Sensation-based. You perceive *texture, temperature, pressure*. Every surface tells a story through touch. You sense the emotional "temperature" of rooms and entities. **Texture**: Warm, organic, responsive. **Primary Color**: Terracotta/sienna.
-   - *Lore*: You read environments by feel. Somatics are natural explorers and can find hidden paths by literally *feeling* the right direction. They bond quickly with entities and NPCs. Associated with Intuition in Marvel, empathic magic in Potter, Parkour in GTA.
-
-8. **Aetheric**: Spirit-based. You perceive *intent and will*. The world is alive with intentional forces—entities, NPCs, even terrain are acting with purpose. Your lens reveals agency. **Texture**: Ethereal, semi-solid, flickering. **Primary Color**: Silver-white with shadowy undertones.
-   - *Lore*: You know when something *wants* something. Aetheric players can negotiate with spirits, convince entities to aid them, and navigate the will-based conflicts of Liminal and Periliminal. Associated with Magic/Spirit in Marvel, Parseltongue in Potter, Cult leader in GTA.
-
-9. **Umbral**: Shadow-based. You perceive *absence*. Darkness is not empty to you; it's full of information. You see what's *not* there, what's been removed, what's hidden by darkness. **Texture**: Dark, light-absorbing, but with hidden detail. **Primary Color**: Black with specular highlights.
-   - *Lore*: You navigate the hidden world. Umbrals excel in Liminal and Periliminal, where darkness is the default. They can hide perfectly and find things that have been obscured. Associated with Stealth/Darkness in Marvel, Invisibility in Potter, Hitman/Ghost in GTA.
-
-10. **Prismatic**: Refraction-based. You see *distortions and bends*. Illusions and lies are visible as "cracks" in the consistent light-field. You're immune to perception-based attacks. **Texture**: Mirror-like, refractive, sometimes showing multiple angles. **Primary Color**: Iridescent, context-dependent.
-    - *Lore*: You see through everything. Prismatic players are immune to deception and good at reading people. They're the faction's fact-checkers and lie-detectors. Associated with Truth/Perception in Marvel, Legilimency/Veritaserum in Potter, Detective/Analyst in GTA.
-
-### Heavy Races (10): Material-First, Grounded
-
-11. **Lithic**: Stone-based. Your race perceives matter as *solid and enduring*. You're drawn to heavy, durable things. Damage affects you less; you recover slowly but completely. **Texture**: Stone, ancient, weathered. **Primary Color**: Grey/brown.
-    - *Lore*: You are literally hard to break. Lithic players tank damage and can establish permanent structures (guild hideouts have better defenses). They're slow to trust but utterly loyal. Associated with Strength/Durability in Marvel, Troll/Metamorphmagus in Potter, Tank/Heavy in GTA.
-
-12. **Ferric**: Metal-based. Your race perceives matter as *conductive and exchangeable*. You're sensitive to magnetic forces and electrical flows. You can "conduct" energy through your body. **Texture**: Metal, polished, with visible circuitry-like patterns. **Primary Color**: Silver/copper.
-    - *Lore*: You bridge different systems. Ferric players can negotiate between factions, hack technological systems, and manipulate entity neural implants. Associated with Tech/Conductor in Marvel, Transfiguration in Potter, Hacker in GTA.
-
-13. **Ignic**: Fire-based. Your race perceives matter as *consumable and renewable*. Everything is fuel. You naturally resist heat and recover by consuming (food, experience, magical energy). **Texture**: Flickering, warm, with visible thermal shimmer. **Primary Color**: Orange/red.
-    - *Lore*: You never truly run out of gas. Ignic players have better resource regeneration and are hard to exhaust. They're passionate and quick to anger but quick to forgive. Associated with Passion/Drive in Marvel, Phoenix/Dragon in Potter, Drug Dealer/Hedonist in GTA.
-
-14. **Hydric**: Water-based. Your race perceives matter as *fluid and adaptive*. You're drawn to flow and flexibility. Damage washes off you; you adapt quickly to new situations. **Texture**: Flowing, wet, translucent. **Primary Color**: Blue/cyan.
-    - *Lore*: You are impossibly adaptable. Hydric players can switch tactics mid-combat, flow through tight spaces, and survive falls and pressure damage. They're changeable, sometimes seen as unreliable. Associated with Adaptation in Marvel, Selkie/Merperson in Potter, Drifter in GTA.
-
-15. **Sylvic**: Plant-based. Your race perceives matter as *growing and interconnected*. You're sensitive to life and cycles. You heal naturally; you can communicate with organic systems. **Texture**: Organic, with visible root systems or veins. **Primary Color**: Green/brown.
-    - *Lore*: You're part of a larger network. Sylvic players can communicate with environments, grow vines as tools, and heal allies. They're community-focused and view themselves as part of a larger whole. Associated with Growth/Connection in Marvel, Herbology mastery in Potter, Environmentalist/Cult in GTA.
-
-16. **Aeolic**: Air-based. Your race perceives matter as *dispersed and permeable*. Nothing is solid to you; boundaries are suggestions. You're fast and hard to pin down. **Texture**: Wispy, translucent, with visible air currents. **Primary Color**: White/grey.
-    - *Lore*: You're never trapped. Aeolic players are naturally faster, can pass through some barriers, and are excellent at hit-and-run tactics. They're unpredictable and don't like commitment. Associated with Freedom/Movement in Marvel, House-elf in Potter, Parkour/Escape artist in GTA.
-
-17. **Terrene**: Earth-based. Your race perceives matter as *grounded and stable*. You have deep roots in place. You take damage less easily; you're slow but heavy-hitting. **Texture**: Earthy, with visible soil and stone layers. **Primary Color**: Brown/tan.
-    - *Lore*: You are the land. Terrene players gain bonuses in their home territory and penalties in foreign lands. They're tied to places and can establish defenses there. Associated with Stability/Territory in Marvel, Parseltongue-adjacent in Potter, Territory control in GTA.
-
-18. **Abyssal**: Pressure-based. Your race perceives matter as *compressed and deep*. You're drawn to extreme environments. You're resistant to pressure and cold. **Texture**: Dark, with iridescent pressure-wave patterns. **Primary Color**: Dark blue/black.
-    - *Lore*: You thrive in extreme conditions. Abyssal players have bonuses in Periliminal's deepest layers, resist psychological pressure (Hope profile is harder to break), and can navigate crushing environments. Associated with Resilience/Depth in Marvel, Dark arts resistance in Potter, Hardcore survivor in GTA.
-
-19. **Magnetic**: Polarity-based. Your race perceives matter as *attracted and repelled*. You sense forces and can influence them. You're naturally drawn to poles and extremes. **Texture**: With visible magnetic field lines. **Primary Color**: Red/blue (opposite poles).
-    - *Lore*: You attract and repel. Magnetic players can pull distant objects, push enemies away, and naturally collect allies and resources (entities are drawn to them). But they also push people away unintentionally. Associated with Attraction/Force in Marvel, Imperius Curse in Potter, Gang leader in GTA.
-
-20. **Null**: Absence-based. Your race perceives matter as *contextual and erasable*. You see the "null state" underlying all matter—the void it came from and will return to. **Texture**: Blank, with subtle negative space visible. **Primary Color**: Void/colorless.
-    - *Lore*: You understand emptiness and can manipulate it. Null players are reality-warpers; they can unmake things temporarily, create voids, and exist in a neutral state. They're often misunderstood or feared. Associated with Void/Erasure in Marvel, Obliviation in Potter, Nobody/Ghost in GTA.
-
----
+Superseded — see `docs/STORY_SINGULARITY.md` and `src/data/canon_races.gd`
+for the real 20 canon races (Keth, Lumari, Vex, …). The "perceptual lens"
+roster (Luminant, Kinetic, Chronal, …) that used to live here was a third,
+unreconciled race system nothing in code ever read; removed rather than
+carried forward as dead weight.
 
 ## Frames (20 Options): Your Senses & Mood
 
