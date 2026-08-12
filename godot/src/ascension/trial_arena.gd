@@ -152,7 +152,7 @@ func _on_cast(sk: Dictionary) -> void:
 	var opts := {
 		"base_attack": _attack_damage,
 		"targets": targets,
-		"skip_windup": OS.has_feature("headless"),
+		"skip_windup": DisplayServer.get_name() == "headless",
 		"on_self_shield": func(amount: int):
 			_shield = maxi(_shield, amount)
 			SkillVFX.shield_bubble(self, _player),

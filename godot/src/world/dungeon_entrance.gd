@@ -1,7 +1,13 @@
-class_name DungeonEntrance
+class_name DungeonPartyGate
 extends Area3D
 ## Gate 6 — Instanced party dungeon door. Reuses a generated-then-static
 ## seed ledger (DungeonRuns) but WITHOUT the Periliminal wipe rule.
+##
+## Named distinctly from `src/world/city/dungeon_entrance.gd`'s
+## `DungeonEntrance` (the sealed Metroplex-building door with its own
+## `setup()`/rank-plate API) — the two are unrelated systems that used to
+## collide on one class_name, silently binding `DungeonEntrance.new()` to
+## whichever of the two the class cache scanned last.
 
 signal entered(dungeon_id: String, seed: int)
 
@@ -9,7 +15,7 @@ var dungeon_id := ""
 var hub_id := ""
 
 static func place_for_hub(city_root: Node3D, p_hub_id: String, base_y: float) -> void:
-	var door := DungeonEntrance.new()
+	var door := DungeonPartyGate.new()
 	door.hub_id = p_hub_id
 	door.dungeon_id = "dungeon_%s" % p_hub_id
 	var size := OsmCityLayout.size_of(p_hub_id)

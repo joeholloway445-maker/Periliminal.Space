@@ -17,6 +17,11 @@ extends Node3D
 const HDRI_DIR := "res://assets/environments/%s.hdr"
 const HDRI_SHADER := "res://assets/shaders/hdri_day_night_sky.gdshader"
 
+## Distance (meters) at which depth fog reads as near-opaque. Scaled the same
+## way as VehicleWorldWiring.BIGGER_FOG_DISTANCE: ~ProceduralTerrain's
+## DEFAULT_VIEW_RADIUS(2) * chunk size(64), minus margin.
+const DEFAULT_FOG_DISTANCE := 100.0
+
 @export var day_length_seconds := 300.0
 @export var start_hour := 10.0 # 0-24
 ## Swap these for any other panorama dropped into assets/environments/.
@@ -25,6 +30,9 @@ const HDRI_SHADER := "res://assets/shaders/hdri_day_night_sky.gdshader"
 ## Set by IdentityLens: the player's frame(s) tint every light this sky casts.
 var frame_tint := Color(1, 1, 1)
 var frame_energy_mult := 1.0
+## Set by callers (e.g. LayerWorld prototype mode) to stop the clock at
+## whatever `_time` currently is — sky keeps rendering, just stops advancing.
+var freeze_cycle := false
 
 var _sun: DirectionalLight3D
 var _env: WorldEnvironment
@@ -87,8 +95,21 @@ func _ready() -> void:
 
 	_apply(_day_fraction())
 
+## Push the depth-fog cutoff out (or back). Compatibility-renderer-safe,
+## unlike volumetric fog above — used by vehicle streaming to widen the
+## world's readable distance while a player is moving fast.
+func set_fog_distance(dist: float) -> void:
+	if _env == null or _env.environment == null:
+		return
+	var env := _env.environment
+	env.fog_enabled = dist > 0.0
+	if dist > 0.0:
+		# Exponential falloff: density tuned so `dist` reads ~95% opaque.
+		env.fog_density = clampf(3.0 / maxf(dist, 1.0), 0.001, 1.0)
+
 func _process(delta: float) -> void:
-	_time = fmod(_time + delta, day_length_seconds)
+	if not freeze_cycle:
+		_time = fmod(_time + delta, day_length_seconds)
 	_apply(_day_fraction())
 
 func _day_fraction() -> float:

@@ -38,13 +38,12 @@ func build(npc: Dictionary) -> void:
 	var appearance: Dictionary = npc.get("appearance", {})
 
 	# MetahumanCharacter.build_npc tries the peri_human_npc / metahuman_npc /
-	# npc_human variant pools itself (in that priority order) when given an
-	# rng, so a single call here covers both the MakeHuman-generated
+	# npc_human variant pools itself (in that priority order) when given a
+	# seed, so a single call here covers both the MakeHuman-generated
 	# "npc_human" pool and any peri_human/metahuman assets dropped in later.
 	# Seeded by npc id so the same person always has the same body.
-	var rng := RandomNumberGenerator.new()
-	rng.seed = hash("npc_body_" + str(npc.get("id", npc.get("name", "npc"))))
-	_mesh_root = MetahumanCharacter.build_npc("identity", str(npc.get("race_id", "")), rng)
+	var body_seed: int = hash("npc_body_" + str(npc.get("id", npc.get("name", "npc"))))
+	_mesh_root = MetahumanCharacter.build_npc("identity", str(npc.get("race_id", "")), body_seed)
 	add_child(_mesh_root)
 	# Belt-and-suspenders: whatever GLB we got, force upright human proportions.
 	_force_upright_human(_mesh_root)

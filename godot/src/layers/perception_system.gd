@@ -72,7 +72,8 @@ static func perceive(viewer: Dictionary, target: Dictionary) -> Dictionary:
 		# read a strong player's exact loadout, only the silhouette.
 		"loadout_visible": ratio < 1.5,
 	}
-	var viewer_style := str(PlayerProfile.view_scale_style) if PlayerProfile else ""
+	var profile := AutoloadGate.get_node("PlayerProfile")
+	var viewer_style := str(profile.view_scale_style) if profile else ""
 	var style := ViewScale.resolve(viewer_style, bool(target.get("opted_out", false)))
 	return ViewScale.apply(raw, style)
 

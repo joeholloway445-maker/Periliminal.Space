@@ -82,10 +82,10 @@ func known_lines() -> Array[Dictionary]:
 
 func find_skill(skill_id: String) -> Dictionary:
 	for line in known_lines():
-		for a in line.actives:
-			if a.id == skill_id:
+		for a in line.get("actives", []):
+			if a.get("id", "") == skill_id:
 				return a
-		if line.ultimate.id == skill_id:
+		if line.get("ultimate", {}).get("id", "") == skill_id:
 			return line.ultimate
 	return {}
 

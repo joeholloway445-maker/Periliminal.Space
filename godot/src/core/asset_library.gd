@@ -149,12 +149,14 @@ static func instance_or(slot: String, fallback: Callable, lens_color: Color = Co
 static func _apply_lens(node: Node, color: Color, strength: float) -> void:
 	if node is MeshInstance3D:
 		var mi := node as MeshInstance3D
-		var mat := IdentityLens.world_material(color, strength)
-		# Keep the imported albedo texture; only pull physics/hue.
-		var existing := mi.get_active_material(0)
-		if existing is StandardMaterial3D and existing.albedo_texture:
-			mat.albedo_texture = existing.albedo_texture
-		mi.material_override = mat
+		var lens := AutoloadGate.get_node("IdentityLens")
+		if lens != null:
+			var mat = lens.world_material(color, strength)
+			# Keep the imported albedo texture; only pull physics/hue.
+			var existing := mi.get_active_material(0)
+			if existing is StandardMaterial3D and existing.albedo_texture:
+				mat.albedo_texture = existing.albedo_texture
+			mi.material_override = mat
 	for child in node.get_children():
 		_apply_lens(child, color, strength)
 
@@ -266,7 +268,8 @@ static func has_sound(slot: String) -> bool:
 ## client. This is the "interchangeable textures on all hard mesh" contract.
 static func material(slot: String, base_color: Color, lens_strength: float = 0.25,
 		metallic: float = 0.0, roughness: float = 0.8) -> StandardMaterial3D:
-	var mat := IdentityLens.world_material(base_color, lens_strength) if IdentityLens else StandardMaterial3D.new()
+	var lens := AutoloadGate.get_node("IdentityLens")
+	var mat: StandardMaterial3D = lens.world_material(base_color, lens_strength) if lens else StandardMaterial3D.new()
 	mat.metallic = metallic
 	mat.roughness = roughness
 	# Per-race surfaces when installed; the lens tints on top either way.
@@ -329,8 +332,9 @@ static func _texture_maps(slot: String, race_id: String = "") -> Dictionary:
 
 ## The race whose surfaces the local player sees everything through.
 static func _viewer_race() -> String:
-	if PlayerProfile:
-		return str(PlayerProfile.selected_race_id)
+	var profile := AutoloadGate.get_node("PlayerProfile")
+	if profile:
+		return str(profile.selected_race_id)
 	return ""
 
 static func has_texture(slot: String) -> bool:
