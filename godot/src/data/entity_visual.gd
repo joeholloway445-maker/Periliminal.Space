@@ -44,7 +44,9 @@ const CATEGORY_SURFACE := {
 ## ~810 collectible forms: they are viewed at creature distance in a
 ## collection game, generating 2D costs a fraction of generating 3D, and a
 ## painted sprite beats a procedural mesh at every budget worth spending.
-const SPRITE_PATH := "res://assets/entities/%s.png"
+## .jpg, not .png — see IdentityArt.DIR: the same generator produces this
+## whole directory, and it outputs JPEG bytes regardless of extension.
+const SPRITE_PATH := "res://assets/entities/%s.jpg"
 
 ## Builds the visual for `entity_id` at `stage`, best medium first:
 ##   1. `entity_<id>` GLB          — authored 3D, if anyone ever makes it

@@ -6,9 +6,9 @@ class_name IdentityArt
 ## Generated files live in `assets/entities/` and are named by how they were
 ## composed (see scripts/prompt_templates.py):
 ##
-##   crownless.png                 race alone
-##   crownless_m.png               race, male
-##   crownless_f_bastion.png       race, female, wearing the Bastion frame
+##   crownless.jpg                 race alone
+##   crownless_m.jpg               race, male
+##   crownless_f_bastion.jpg       race, female, wearing the Bastion frame
 ##   crownless_m_bastion_towering  …and reshaped by the Towering rig
 ##
 ## Lookup walks from most specific to least, so a build always resolves to
@@ -16,8 +16,13 @@ class_name IdentityArt
 ## race+frame, then the sexed race, then the plain race, then nothing. That
 ## means the creator fills in as generation progresses rather than needing
 ## the whole 8,000-image matrix before it shows anything.
+##
+## Files are `.jpg` content despite historically being written with a `.png`
+## extension — the generator's output is JPEG, and Godot's PNG importer
+## silently rejects a JPEG byte stream (valid=false, no error), so every
+## portrait failed to load until the extension was corrected to match.
 
-const DIR := "res://assets/entities/%s.png"
+const DIR := "res://assets/entities/%s.jpg"
 
 static var _cache: Dictionary = {}
 
