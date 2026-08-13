@@ -153,7 +153,7 @@ func _move_cursor(dir: int) -> void:
 # ---------------------------------------------------------------- steps
 
 func _render_step() -> void:
-	var step := STEPS[_step]
+	var step: String = STEPS[_step]
 	_back_btn.visible = _step > 0
 	_name_edit.visible = step == "name"
 	_confirm_btn.text = "FIGHT ⚔️" if step == "name" else "SELECT ▶"
@@ -310,7 +310,7 @@ func _render_final_preview() -> void:
 	]
 
 func _confirm_step() -> void:
-	var step := STEPS[_step]
+	var step: String = STEPS[_step]
 	if step == "name":
 		var cat_name := _name_edit.text.strip_edges()
 		if not CharacterCreatorLogic.validate_name(cat_name):

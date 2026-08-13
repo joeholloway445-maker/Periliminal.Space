@@ -462,7 +462,7 @@ def main():
                     "action": a, "location": loc, "mode": args.mode,
                     "frame": fk[6:] if fk else "", "morph": mk[6:] if mk else "",
                     "sex": sex, "aspect": asp, "variant": var,
-                    "sprite_target": "godot/assets/entities/%s%s%s%s.png" % (
+                    "sprite_target": "godot/assets/entities/%s%s%s%s.jpg" % (
                         sid.lower(), suffix, "_" + a if a != "idle" else "",
                         "_" + loc if loc else ""),
                     "prompt": compose(s, a, loc, args.mode, fr, mo, sex, asp, var),
