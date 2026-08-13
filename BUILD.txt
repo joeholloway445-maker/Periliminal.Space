@@ -1,2 +1,3 @@
-Phone UI scale fix from PR #73 (periliminal-space-html5, 2026-07-20).
-Boosted login/title/touch controls for canvas_items stretch on phones.
+Fresh Web export, 2026-08-13 (prototype_web_v0.4).
+Includes civic venue NPC dialogue (banker/armorer/blacksmith/market/
+stockyard/wager-hall) + Blueprint Forge presets + audio one-shots.
