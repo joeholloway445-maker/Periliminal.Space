@@ -25,6 +25,14 @@ extends Node3D
 ## When true, distance to the current camera picks the LOD tier.
 @export var auto_lod := false
 
+## Arm rotation (Z, from the T-pose bind rest) for a relaxed standing
+## character — arms hanging at the sides, not the raw bind-pose T-pose.
+## The skeleton's rest pose is deliberately a T-pose (retarget-ready, see
+## HumanSkeletonBuilder), but that's a rigging convention, never meant to
+## be the pose shown to a player — every visible state (idle and walking)
+## must rotate away from it by at least this much.
+const REST_ARM_DROOP := 1.35
+
 var dna: HumanDNA
 
 var _skeleton: Skeleton3D
@@ -54,7 +62,11 @@ var _hips_rest := Vector3.ZERO
 var locomotion_target := 0.0
 var _loco := 0.0
 var _gait := 0.0
-var _loco_active := false
+## Starts true (not false) so the first idle frame is treated as a
+## just-stopped transition and actually runs _reset_walk_limbs() once —
+## otherwise a rig that's never walked sits in the raw T-pose bind pose
+## forever, since the reset only fires on an active->idle transition.
+var _loco_active := true
 ## Persona movement modifiers (RacePersona.movement()). Neutral by default so
 ## a rig with no persona moves like an average person; a race stamps these to
 ## read as jittery/ponderous/haughty/etc. through motion alone.
@@ -293,7 +305,9 @@ func _walk_pose(delta: float) -> void:
 	var leg_amp := lerpf(0.16, 0.62, _loco)
 	var arm_amp := lerpf(0.06, 0.34, _loco)
 	var knee_amp := lerpf(0.26, 0.98, _loco)
-	var droop := lerpf(0.0, 0.55, _loco)  # T-pose arms fall to the sides at speed
+	# Arms lift a little off the resting droop as pace picks up, but never
+	# back toward the bind-pose T-pose — see REST_ARM_DROOP.
+	var droop := lerpf(REST_ARM_DROOP, REST_ARM_DROOP - 0.45, _loco)
 	var arm_roll := swagger * 0.12 * _loco  # a wide, rolling gait carries the arms out
 
 	# Thighs swing opposite each other about the sideways (X) axis.
@@ -336,11 +350,20 @@ func _apply_spine(extra_lean: float, twist: float) -> void:
 
 ## Settle the swinging limbs (legs/arms/hips) back to rest in one pass when the
 ## character stops, so it doesn't freeze holding a step. Spine is handled by
-## _apply_spine so the resting posture survives.
+## _apply_spine so the resting posture survives. Legs reset to the bind pose
+## (a straight standing leg, which the T-pose bind already is); arms do not
+## — their bind pose is held straight out to the sides, so they reset to
+## REST_ARM_DROOP instead, or an idle character stands in a T-pose.
 func _reset_walk_limbs() -> void:
-	for b in [_l_leg, _r_leg, _l_calf, _r_calf, _l_arm, _r_arm]:
+	for b in [_l_leg, _r_leg, _l_calf, _r_calf]:
 		if b >= 0:
 			_skeleton.set_bone_pose_rotation(b, Quaternion.IDENTITY)
+	if _l_arm >= 0:
+		_skeleton.set_bone_pose_rotation(_l_arm,
+			Quaternion(Basis.from_euler(Vector3(0.0, 0.0, -REST_ARM_DROOP))))
+	if _r_arm >= 0:
+		_skeleton.set_bone_pose_rotation(_r_arm,
+			Quaternion(Basis.from_euler(Vector3(0.0, 0.0, REST_ARM_DROOP))))
 	if _hips_idx >= 0:
 		_skeleton.set_bone_pose_rotation(_hips_idx, Quaternion.IDENTITY)
 		_skeleton.set_bone_pose_position(_hips_idx, _hips_rest)
