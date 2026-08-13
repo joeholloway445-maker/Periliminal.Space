@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/wa-q1_s2.jpg-426005a2473064252e4279fd5410d84b
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

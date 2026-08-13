@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/morph_compact.jpg-965e4d6212aa7c3a2ebeafc959d
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

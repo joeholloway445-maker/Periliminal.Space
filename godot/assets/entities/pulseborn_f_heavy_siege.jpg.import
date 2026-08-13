@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/pulseborn_f_heavy_siege.jpg-32943355404d47a51
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

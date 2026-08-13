@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/sunspun_m_inverted_spine.jpg-d2e3e664b4c81577
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

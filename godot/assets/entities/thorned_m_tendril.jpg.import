@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/thorned_m_tendril.jpg-0b2588231f8375449a2e4bf
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

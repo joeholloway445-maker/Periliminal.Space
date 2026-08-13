@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/lumenari_v5_m.jpg-b4aaedc0d6c7c35fe3e9e1b0a3b
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

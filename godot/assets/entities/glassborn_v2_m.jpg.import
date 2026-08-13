@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/glassborn_v2_m.jpg-19befc74b238c3dbb596766273
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

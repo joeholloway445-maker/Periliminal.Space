@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/echoes.jpg-99e54e88dd9d3cb576764cf75d6a9ca2.c
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

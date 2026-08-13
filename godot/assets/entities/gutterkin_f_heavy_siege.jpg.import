@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/gutterkin_f_heavy_siege.jpg-bea16b049f2f66b19
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

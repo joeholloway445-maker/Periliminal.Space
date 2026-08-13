@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/glassborn_m_modular.jpg-d4e78f0f3e9c5cee48e79
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

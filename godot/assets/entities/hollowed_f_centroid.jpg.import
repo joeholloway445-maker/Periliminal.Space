@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/hollowed_f_centroid.jpg-50d9ff0584be899a49845
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

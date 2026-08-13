@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/deepborne_m_bastion.jpg-b50d4fe26816e6801a891
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

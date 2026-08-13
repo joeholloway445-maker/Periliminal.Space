@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/sunspun_v4_m.jpg-7e10731f2eec21359201ac6dedfd
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

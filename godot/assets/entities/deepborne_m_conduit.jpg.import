@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/deepborne_m_conduit.jpg-4c848b0edfb36e2b0a38a
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

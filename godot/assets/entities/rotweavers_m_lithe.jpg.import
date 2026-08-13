@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/rotweavers_m_lithe.jpg-30b34323d4aa1c3ef9fa9d
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

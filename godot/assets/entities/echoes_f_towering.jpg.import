@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/echoes_f_towering.jpg-371298b450a4d139e3a0a71
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

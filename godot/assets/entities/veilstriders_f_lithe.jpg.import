@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/veilstriders_f_lithe.jpg-b5b4b39ea77def302179
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

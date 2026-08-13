@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/gutterkin_f_compact.jpg-a50a2ba3e7098596d0f23
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

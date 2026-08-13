@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/deepborne_f_split_form.jpg-6df6c8d7e03e9b21a4
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/glassborn_m_sovereign.jpg-f500c0f26ae0647c7dd
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

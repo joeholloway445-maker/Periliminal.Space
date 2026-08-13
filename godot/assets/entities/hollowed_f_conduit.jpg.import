@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/hollowed_f_conduit.jpg-5442b0d2de0980a2695089
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

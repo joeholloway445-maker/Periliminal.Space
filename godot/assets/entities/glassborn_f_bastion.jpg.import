@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/glassborn_f_bastion.jpg-75b733e368517eef8982d
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

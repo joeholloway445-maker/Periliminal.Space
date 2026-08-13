@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/gutterkin_m_rewind.jpg-41f433b444c2a89bd4a11d
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/crownless_v4_f.jpg-30e2269874adccc63a2325acaf
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

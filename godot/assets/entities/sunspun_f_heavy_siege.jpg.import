@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/sunspun_f_heavy_siege.jpg-17d3bd66ac8a4335f1d
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

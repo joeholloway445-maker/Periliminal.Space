@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/frame_epoch.jpg-3d66aed859085f5dda2860a9a0bda
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

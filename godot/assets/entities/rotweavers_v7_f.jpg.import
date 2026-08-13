@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/rotweavers_v7_f.jpg-82b6a71284fdfe9cc75e2eb5f
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

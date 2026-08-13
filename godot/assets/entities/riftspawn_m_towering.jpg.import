@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/riftspawn_m_towering.jpg-b1d9253f86d29a1420a4
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

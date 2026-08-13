@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/starfall_v1_f.jpg-3ba44b3cdd510818b20173e695e
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

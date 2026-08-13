@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/coldmarrow_m_conduit.jpg-37fbe0b74f1af3154b02
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

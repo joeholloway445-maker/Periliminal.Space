@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/vc-en5_s1.jpg-d1f6a63c550067420764629ab39d224
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

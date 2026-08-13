@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/thorned_m_lithe.jpg-a63f50aa76c33231469be81bc
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

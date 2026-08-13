@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/mirekin_f_sovereign.jpg-6bd8137496568feb86de9
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

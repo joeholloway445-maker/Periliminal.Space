@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/echoes_m_shardform.jpg-0efa91db8a520b8530d5c8
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

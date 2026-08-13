@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/pulseborn.jpg-14ad80541afa233f05673bbb123d843
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

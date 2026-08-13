@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/coldmarrow_v3_f.jpg-dec42b77ed9b7f1da150cbf4c
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

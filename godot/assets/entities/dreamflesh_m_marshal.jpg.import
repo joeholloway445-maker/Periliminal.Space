@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/dreamflesh_m_marshal.jpg-93d7106ca42ed7dd6da0
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/ashen_choir_flicker.jpg-417a926f8c41ef9d7ebbb
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/echoes_f_serpentine.jpg-0f28411e21c2d35485edb
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

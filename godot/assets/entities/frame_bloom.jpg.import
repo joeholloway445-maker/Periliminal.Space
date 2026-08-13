@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/frame_bloom.jpg-23a47e89ac7873b583df6a99a3082
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

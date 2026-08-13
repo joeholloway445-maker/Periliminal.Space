@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/sunspun_f_flicker.jpg-242e0b2a38114124283c7ca
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

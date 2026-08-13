@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/deepborne_f_elastic.jpg-9c5210a3768392c2f6bb2
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

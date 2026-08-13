@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/pulseborn_f_skybound.jpg-e6a21938cbf9a5cd3c48
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

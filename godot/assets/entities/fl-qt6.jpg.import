@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/fl-qt6.jpg-1f086c00567fdbd97f747fac7dbf130f.c
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

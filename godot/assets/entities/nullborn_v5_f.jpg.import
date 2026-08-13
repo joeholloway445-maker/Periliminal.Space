@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/nullborn_v5_f.jpg-3427ec1facd75a283ed0226441f
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

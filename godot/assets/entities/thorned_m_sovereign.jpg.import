@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/thorned_m_sovereign.jpg-36ac6f1c58d01e3f30640
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

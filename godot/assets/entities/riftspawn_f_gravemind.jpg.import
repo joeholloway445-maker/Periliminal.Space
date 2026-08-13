@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/riftspawn_f_gravemind.jpg-9787e1e57bb44c5a3ca
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

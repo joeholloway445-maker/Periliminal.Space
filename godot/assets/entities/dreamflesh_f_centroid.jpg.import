@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/dreamflesh_f_centroid.jpg-80156bf5582b73fbeac
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/sunspun_f_hover_strider.jpg-915327204a7e6cb66
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

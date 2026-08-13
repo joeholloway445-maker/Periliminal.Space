@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/dreamflesh_f_conduit.jpg-2ea76e3c48a601e115c3
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

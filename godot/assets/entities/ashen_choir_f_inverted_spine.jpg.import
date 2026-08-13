@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/ashen_choir_f_inverted_spine.jpg-26c0a41c9cf5
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

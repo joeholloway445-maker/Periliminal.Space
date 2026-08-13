@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/mirekin_f_hover_strider.jpg-3509248e7895cbc13
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/starfall_m_skirmisher.jpg-df6042f708d4c880884
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

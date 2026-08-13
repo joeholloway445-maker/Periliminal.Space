@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/thorned_v5_m.jpg-444fdd2539723cb7c62f02620afe
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

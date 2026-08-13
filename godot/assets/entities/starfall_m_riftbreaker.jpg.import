@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/starfall_m_riftbreaker.jpg-0b948024e4ff407eb3
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

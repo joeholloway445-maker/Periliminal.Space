@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/riftspawn_f_split_form.jpg-b074e96c08aa051b70
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

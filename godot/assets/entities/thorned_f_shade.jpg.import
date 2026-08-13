@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/thorned_f_shade.jpg-a46054ed446399a6ff1d999f7
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

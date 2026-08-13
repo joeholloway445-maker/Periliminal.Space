@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/crownless_f_heavy_siege.jpg-7cf2be968a8e4adc7
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

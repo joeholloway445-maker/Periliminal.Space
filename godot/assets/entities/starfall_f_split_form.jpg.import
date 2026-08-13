@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/starfall_f_split_form.jpg-28a1e06bd792b3c276e
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

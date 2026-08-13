@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/sc-m3.jpg-2c617b3bf17b3fbbf3b9fe37ef0fc4ba.ct
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

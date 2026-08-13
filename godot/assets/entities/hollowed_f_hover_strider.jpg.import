@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/hollowed_f_hover_strider.jpg-1166e3152d80210a
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

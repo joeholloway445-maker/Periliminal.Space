@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/hollowed_f_flicker.jpg-3ee30a23ac4c7bb4728126
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

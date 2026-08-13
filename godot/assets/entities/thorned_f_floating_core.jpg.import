@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/thorned_f_floating_core.jpg-0ea1874fe733ffa21
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

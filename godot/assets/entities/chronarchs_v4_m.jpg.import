@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/chronarchs_v4_m.jpg-8d648895f62277e181674e0a0
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

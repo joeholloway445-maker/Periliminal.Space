@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/thorned_f_swiftburner.jpg-6ed5d27c2c742cc6601
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

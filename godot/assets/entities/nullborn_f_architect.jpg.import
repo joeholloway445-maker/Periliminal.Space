@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/nullborn_f_architect.jpg-9db54922e5a8b9f93b5a
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

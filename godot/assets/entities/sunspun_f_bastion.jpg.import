@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/sunspun_f_bastion.jpg-0435a8cab2b45bd025298b3
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

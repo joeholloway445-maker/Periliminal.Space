@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/pulseborn_m_architect.jpg-cb011bb2c17651f1238
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/mirekin_f_rewind.jpg-a321fb24c26249b89c8ca6eb
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/mirekin_f_heavy_siege.jpg-78d7336fea2ac4c12f2
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

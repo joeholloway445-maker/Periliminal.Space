@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/mirekin_m_juggernaut.jpg-ac1bac66b3a09c9d1758
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/chronarchs_m_riftbreaker.jpg-68ac1088ec54f5bc
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

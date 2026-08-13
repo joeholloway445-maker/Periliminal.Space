@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/lumenari_m_sovereign.jpg-f8400561775fb26d6ef2
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

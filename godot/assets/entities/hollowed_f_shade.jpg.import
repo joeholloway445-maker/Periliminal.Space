@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/hollowed_f_shade.jpg-6fad4d45c4da6053c2c3cc6f
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

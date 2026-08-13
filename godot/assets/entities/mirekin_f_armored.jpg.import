@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/mirekin_f_armored.jpg-9d6df03ebd605b3dd6e1db4
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

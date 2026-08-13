@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/deepborne_m_centroid.jpg-f1e20e7f5e69f9e31509
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

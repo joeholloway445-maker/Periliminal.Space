@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/chronarchs_gravemind.jpg-3203122987bbe91d2ef8
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

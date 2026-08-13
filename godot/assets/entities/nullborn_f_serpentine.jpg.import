@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/nullborn_f_serpentine.jpg-a2b3bd0a1b6e73bb81e
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

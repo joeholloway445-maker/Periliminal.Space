@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/gutterkin_f_gravemind.jpg-58288186682dd0b66b9
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

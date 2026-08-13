@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/starfall_f_strider.jpg-3727ec223c3fbe88084d52
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

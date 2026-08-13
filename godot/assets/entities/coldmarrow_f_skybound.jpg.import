@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/coldmarrow_f_skybound.jpg-c02171d12f6c2822058
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

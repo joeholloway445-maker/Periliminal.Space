@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/deepborne_f_worldroot.jpg-6cc4c315b0cff310e4d
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

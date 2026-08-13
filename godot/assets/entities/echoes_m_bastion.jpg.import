@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/echoes_m_bastion.jpg-bb4a5cc92f1aba7f9fbe5323
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

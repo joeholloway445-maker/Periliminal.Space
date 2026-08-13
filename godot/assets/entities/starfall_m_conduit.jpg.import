@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/starfall_m_conduit.jpg-3c7de9d6d512a13c747953
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

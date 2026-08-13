@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/pulseborn_f_sovereign.jpg-163db1d25d0b07d16fb
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

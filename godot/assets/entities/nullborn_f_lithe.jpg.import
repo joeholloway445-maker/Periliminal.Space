@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/nullborn_f_lithe.jpg-927067f1d54d0c871c729ab2
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

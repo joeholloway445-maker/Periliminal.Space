@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/crownless_f_swiftburner.jpg-9f9fe029dc82a6726
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

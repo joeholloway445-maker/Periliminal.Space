@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/sunspun_m_skirmisher.jpg-4a19cf416e03263d650d
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

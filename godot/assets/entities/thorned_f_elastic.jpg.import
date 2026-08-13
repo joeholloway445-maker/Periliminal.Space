@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/thorned_f_elastic.jpg-45d5e68f8d6ee1799d11303
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

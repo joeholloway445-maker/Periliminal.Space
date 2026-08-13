@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/veilstriders.jpg-5c2901e61c8f20caf8328880600d
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

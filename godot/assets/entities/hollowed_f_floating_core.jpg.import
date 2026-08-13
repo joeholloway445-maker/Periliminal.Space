@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/hollowed_f_floating_core.jpg-514b73c5db272ddf
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/rotweavers_m_sovereign.jpg-9e4e74b6ccc7f13c60
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

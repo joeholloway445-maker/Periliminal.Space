@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/crownless_f_worldroot.jpg-964a5e1fb0e82c7b9f4
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/mirekin_f_shade.jpg-9903f402dd4ea5db4666754a3
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

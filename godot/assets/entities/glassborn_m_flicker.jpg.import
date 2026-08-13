@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/glassborn_m_flicker.jpg-7ae0e833eb7e5ed1bcbf3
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

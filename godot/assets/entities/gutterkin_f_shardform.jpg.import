@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/gutterkin_f_shardform.jpg-4bcbbf96e82cab95fe0
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

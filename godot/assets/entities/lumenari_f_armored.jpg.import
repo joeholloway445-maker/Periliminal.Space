@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/lumenari_f_armored.jpg-5d0b7bf6636358dd214aab
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/coldmarrow_f_architect.jpg-2a78a261511bfb7505
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

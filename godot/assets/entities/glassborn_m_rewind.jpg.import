@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/glassborn_m_rewind.jpg-4a22cec16cb49650227342
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

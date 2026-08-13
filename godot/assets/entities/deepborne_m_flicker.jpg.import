@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/deepborne_m_flicker.jpg-6a27327f2d608dcfe49ae
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

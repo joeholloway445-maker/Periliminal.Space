@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/starfall_m_fabricator.jpg-fc1a04012b134af9725
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

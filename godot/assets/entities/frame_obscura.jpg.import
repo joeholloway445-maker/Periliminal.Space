@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/frame_obscura.jpg-4a053d3b1bc630eb89b4e9d64e8
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

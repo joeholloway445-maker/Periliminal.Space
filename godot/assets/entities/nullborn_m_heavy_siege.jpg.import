@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/nullborn_m_heavy_siege.jpg-1fd2bc0b31b56da2f8
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/coldmarrow_f_flicker.jpg-aa52ebec8ca272bc1ed1
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

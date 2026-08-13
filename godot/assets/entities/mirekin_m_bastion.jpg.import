@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/mirekin_m_bastion.jpg-451d5b5b769af1e5fd92fd6
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

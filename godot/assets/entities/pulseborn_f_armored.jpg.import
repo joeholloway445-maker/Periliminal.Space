@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/pulseborn_f_armored.jpg-e1c690f5da56db8453631
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

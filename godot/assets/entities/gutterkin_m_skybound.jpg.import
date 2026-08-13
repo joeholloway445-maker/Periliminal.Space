@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/gutterkin_m_skybound.jpg-640b7639b0622ce2819f
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

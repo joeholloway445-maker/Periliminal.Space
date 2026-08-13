@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/ashen_choir_v7_m.jpg-6fa265abc90f3536f7f17394
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

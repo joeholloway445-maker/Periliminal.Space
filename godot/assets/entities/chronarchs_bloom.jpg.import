@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/chronarchs_bloom.jpg-96a450b7c01a9a75f86bf488
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

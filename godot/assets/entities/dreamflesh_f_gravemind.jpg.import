@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/dreamflesh_f_gravemind.jpg-8ef2d9ea9e98d0dab1
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

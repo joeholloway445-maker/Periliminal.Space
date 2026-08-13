@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/coldmarrow_m_obscura.jpg-39688c316d0d793d17d7
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

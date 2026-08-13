@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/lumenari_m_lithe.jpg-579a61023093e99242f0384e
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

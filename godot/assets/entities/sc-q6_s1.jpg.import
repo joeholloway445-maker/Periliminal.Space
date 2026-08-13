@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/sc-q6_s1.jpg-439b7f2faea61ca60ee5e11356d43f1e
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

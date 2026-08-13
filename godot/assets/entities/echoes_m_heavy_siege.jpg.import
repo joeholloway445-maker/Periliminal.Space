@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/echoes_m_heavy_siege.jpg-ae32394471197a912efe
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

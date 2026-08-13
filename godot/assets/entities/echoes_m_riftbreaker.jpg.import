@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/echoes_m_riftbreaker.jpg-96d5b07c2f6ca2822597
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1
