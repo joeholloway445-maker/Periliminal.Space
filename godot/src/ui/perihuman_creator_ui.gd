@@ -336,7 +336,7 @@ func _build_presets_tab(tabs: TabContainer) -> void:
 		slider.max_value = 1.0
 		slider.step = 0.01
 		slider.custom_minimum_size = Vector2(200, 0)
-		var morph_id := morph
+		var morph_id: String = morph
 		slider.value_changed.connect(func(v: float): _rig.set_expression(morph_id, v))
 		row.add_child(slider)
 
