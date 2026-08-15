@@ -1,5 +1,63 @@
 # Pinned — circle back when asked “what’s left”
 
+## Session 2026-08-15 — phone UI, T-pose, portraits, web export size
+
+**Done this session** (PRs #77, #78, merged):
+- Phone/mobile UI fix (the thing Ziva/Cursor couldn't land) — verified, merged.
+- T-pose bug: idle/standing PeriHumans were stuck in raw bind pose instead of
+  a natural stance. Root cause was in `peri_human_rig.gd`'s pose-application
+  logic, not the skeleton build — `human_skeleton_builder.gd`'s T-pose is the
+  correct rigging convention (SkeletonProfileHumanoid retarget bind pose),
+  it was just never being posed away from at runtime. Fixed, screenshot-verified.
+- Race portraits (2D UI face art, `assets/entities/*`): two-part root cause —
+  (1) 2321 files were real JPEG data mislabeled `.png` (`identity_art.gd` /
+  `entity_visual.gd` / `scripts/prompt_templates.py` now all reference
+  `.jpg`), (2) their `.import` sidecars were never committed, so a fresh
+  checkout silently failed to import the whole folder. Both fixed; switched
+  compression to Lossy (mode=1) since Lossless blew the web export up to
+  907MB once the portraits actually started loading.
+- Two silent full-script compile failures fixed (`venture_wizard.gd`,
+  `perihuman_creator_ui.gd`) — Godot 4.3's `:=` type inference silently kills
+  the *entire* script when indexing an untyped `const Array`. This is a
+  recurring bug class in this codebase (also hit AutoloadGate classes
+  earlier) — **when adding new GDScript, type array-indexing results
+  explicitly (`var x: String = arr[i]`), don't rely on `:=`.**
+- Web export (`export_presets.cfg` preset.3) excluded `assets/models/polyhaven/*`
+  (515MB, desktop-only furniture props — `venue_interior.gd` already has a
+  null-fallback so rooms read fine without them). Down to 311MB.
+
+**Still open / blocked on you:**
+- GitHub Pages hosting for the web build. Pages can't serve Git LFS content,
+  and 311MB blows GitHub's 100MB single-push limit either way. Landed on:
+  host `index.pck`/`index.wasm` as GitHub Release assets on the
+  `prototype_web_v0.4` release (you created it, still 0 assets), then point
+  `builds/html5/index.html`'s `GODOT_CONFIG.executable` at the release asset
+  URL prefix — the Godot web loader fetches `${executable}.pck`/`.wasm` from
+  wherever that string points, so this is a one-line change once the URLs
+  exist. I can't upload the files myself (>30MB transfer cap on my end,
+  direct GitHub Release API calls blocked by this environment's egress
+  policy) — needs you to export+upload locally. Once done, ping me with the
+  asset URLs and I'll wire `index.html` and push `gh-pages`.
+- "Capsule bodies" — you reported seeing primitive capsule/sphere bodies
+  (the `character_rig.gd` fallback) somewhere in actual play instead of the
+  real procedural PeriHuman mesh (`human_mesh_builder.gd`, fully skinned,
+  no external art, "always works" per its own design). Investigated this
+  session: `metahuman_character.gd`'s resolver puts PeriHumanRig ahead of
+  the capsule rig for every real gameplay caller I could find
+  (`third_person_controller.gd`, `npc_body.gd`, `remote_player.gd`) — those
+  all look correct. Found and fixed one real bug along the way:
+  `arena_npc_spawner.gd` was passing a `RandomNumberGenerator` where
+  `MetahumanCharacter.build_npc()` expects an `int` seed, which is a
+  parse-time type error that kills that whole script (same bug class as
+  above) — but that spawner only runs in the standalone `playtest_arena.tscn`
+  test scene, not normal play. Also fixed the same stale-signature bug in
+  the `humanoid_pose_smoke.gd` dev smoke test so it can actually run as a
+  regression check. Have NOT yet reproduced capsule bodies in a normal play
+  path — need to know exactly which screen/menu you're seeing them in
+  (Character Studio? in-world? multiplayer?) to keep digging.
+- The "64%" you mentioned is unclarified — no context yet on what that number
+  refers to.
+
 **Owner trials: STARTED** (you asked). Agent kickoff shipped — see
 `docs/OWNER_TRIALS.md`. Cloud cannot finish CC4/UE/DAZ exports, GPU sculpt,
 or real prod secrets; those still need your machine.
@@ -54,3 +112,7 @@ Local proofs that already exist:
 - **Presence OP_CAST** — online skill VFX broadcast on layer matches
 - **Nakama RPC double-wrap fix** — live Gate 8 callbacks no longer time out
 - OfflineCasino world-boss cadence mirror when live RPC soft-fails
+- Phone/mobile UI fix, T-pose idle-stance fix, race portrait JPEG/.import fix,
+  web export size fix (907MB → 311MB) — see session log above (PRs #77, #78)
+- `arena_npc_spawner.gd` / `humanoid_pose_smoke.gd` stale `build_npc()` arg
+  type fix (RNG object → int seed) — playtest-arena-only compile bug

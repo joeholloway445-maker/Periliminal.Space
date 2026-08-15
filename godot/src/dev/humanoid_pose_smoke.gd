@@ -70,15 +70,13 @@ func _run() -> void:
 		return
 	if not _check("build_player", player):
 		return
-	var rng := RandomNumberGenerator.new()
-	rng.seed = 42
-	var npc := MetahumanCharacter.build_npc("identity", "", rng)
+	var npc := MetahumanCharacter.build_npc("identity", "", 42)
 	if npc == null:
 		_fail("build_npc null")
 		return
 	if not _check("build_npc_variant", npc):
 		return
-	var npc_ship := MetahumanCharacter.build_npc("identity", "", null)
+	var npc_ship := MetahumanCharacter.build_npc("identity", "", 0)
 	if npc_ship == null:
 		_fail("build_npc ship null")
 		return
