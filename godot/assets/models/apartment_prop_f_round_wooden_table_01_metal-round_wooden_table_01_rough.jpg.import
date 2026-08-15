@@ -1,0 +1,37 @@
+[remap]
+
+importer="texture"
+type="CompressedTexture2D"
+uid="uid://mnmgalclxf2b"
+path="res://.godot/imported/apartment_prop_f_round_wooden_table_01_metal-round_wooden_table_01_rough.jpg-da6b6546a5542a144c301e9b9af66dcc.ctex"
+metadata={
+"vram_texture": false
+}
+generator_parameters={
+"md5": "373aedc4fe680721697d6e8a4cb18bd2"
+}
+
+[deps]
+
+source_file="res://assets/models/apartment_prop_f_round_wooden_table_01_metal-round_wooden_table_01_rough.jpg"
+dest_files=["res://.godot/imported/apartment_prop_f_round_wooden_table_01_metal-round_wooden_table_01_rough.jpg-da6b6546a5542a144c301e9b9af66dcc.ctex"]
+
+[params]
+
+compress/mode=0
+compress/high_quality=false
+compress/lossy_quality=0.7
+compress/hdr_compression=1
+compress/normal_map=0
+compress/channel_pack=0
+mipmaps/generate=true
+mipmaps/limit=-1
+roughness/mode=0
+roughness/src_normal=""
+process/fix_alpha_border=true
+process/premult_alpha=false
+process/normal_map_invert_y=false
+process/hdr_as_srgb=false
+process/hdr_clamp_exposure=false
+process/size_limit=0
+detect_3d/compress_to=1

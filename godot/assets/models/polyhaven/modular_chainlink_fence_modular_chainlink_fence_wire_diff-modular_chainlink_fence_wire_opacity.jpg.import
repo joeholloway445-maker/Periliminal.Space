@@ -1,0 +1,37 @@
+[remap]
+
+importer="texture"
+type="CompressedTexture2D"
+uid="uid://btk7v8irgak5a"
+path="res://.godot/imported/modular_chainlink_fence_modular_chainlink_fence_wire_diff-modular_chainlink_fence_wire_opacity.jpg-4bbe032cd11b88be37a0b44906d78eca.ctex"
+metadata={
+"vram_texture": false
+}
+generator_parameters={
+"md5": "0781d1c2adf9a3b1609638c81b2b768b"
+}
+
+[deps]
+
+source_file="res://assets/models/polyhaven/modular_chainlink_fence_modular_chainlink_fence_wire_diff-modular_chainlink_fence_wire_opacity.jpg"
+dest_files=["res://.godot/imported/modular_chainlink_fence_modular_chainlink_fence_wire_diff-modular_chainlink_fence_wire_opacity.jpg-4bbe032cd11b88be37a0b44906d78eca.ctex"]
+
+[params]
+
+compress/mode=0
+compress/high_quality=false
+compress/lossy_quality=0.7
+compress/hdr_compression=1
+compress/normal_map=0
+compress/channel_pack=0
+mipmaps/generate=true
+mipmaps/limit=-1
+roughness/mode=0
+roughness/src_normal=""
+process/fix_alpha_border=true
+process/premult_alpha=false
+process/normal_map_invert_y=false
+process/hdr_as_srgb=false
+process/hdr_clamp_exposure=false
+process/size_limit=0
+detect_3d/compress_to=1

@@ -1,0 +1,37 @@
+[remap]
+
+importer="texture"
+type="CompressedTexture2D"
+uid="uid://1qk8t61vjnhr"
+path="res://.godot/imported/portable_welding_cart_portable_welding_cart_metal-portable_welding_cart_rough.jpg-6f9e3a3ec4668150f4fd97591045322f.ctex"
+metadata={
+"vram_texture": false
+}
+generator_parameters={
+"md5": "79f0dcac9169bd57a51c0f4e836b7d97"
+}
+
+[deps]
+
+source_file="res://assets/models/polyhaven/portable_welding_cart_portable_welding_cart_metal-portable_welding_cart_rough.jpg"
+dest_files=["res://.godot/imported/portable_welding_cart_portable_welding_cart_metal-portable_welding_cart_rough.jpg-6f9e3a3ec4668150f4fd97591045322f.ctex"]
+
+[params]
+
+compress/mode=0
+compress/high_quality=false
+compress/lossy_quality=0.7
+compress/hdr_compression=1
+compress/normal_map=0
+compress/channel_pack=0
+mipmaps/generate=true
+mipmaps/limit=-1
+roughness/mode=0
+roughness/src_normal=""
+process/fix_alpha_border=true
+process/premult_alpha=false
+process/normal_map_invert_y=false
+process/hdr_as_srgb=false
+process/hdr_clamp_exposure=false
+process/size_limit=0
+detect_3d/compress_to=1

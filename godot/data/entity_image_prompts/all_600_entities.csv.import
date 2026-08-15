@@ -1,0 +1,17 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://boooapngn3fn4"
+
+[deps]
+
+files=["res://data/entity_image_prompts/all_600_entities.stage.translation", "res://data/entity_image_prompts/all_600_entities.stage.translation", "res://data/entity_image_prompts/all_600_entities.prompt.translation", "res://data/entity_image_prompts/all_600_entities.negative.translation", "res://data/entity_image_prompts/all_600_entities.seed.translation", "res://data/entity_image_prompts/all_600_entities.realism.translation", "res://data/entity_image_prompts/all_600_entities.adjustment.translation", "res://data/entity_image_prompts/all_600_entities.source.translation"]
+
+source_file="res://data/entity_image_prompts/all_600_entities.csv"
+dest_files=["res://data/entity_image_prompts/all_600_entities.stage.translation", "res://data/entity_image_prompts/all_600_entities.stage.translation", "res://data/entity_image_prompts/all_600_entities.prompt.translation", "res://data/entity_image_prompts/all_600_entities.negative.translation", "res://data/entity_image_prompts/all_600_entities.seed.translation", "res://data/entity_image_prompts/all_600_entities.realism.translation", "res://data/entity_image_prompts/all_600_entities.adjustment.translation", "res://data/entity_image_prompts/all_600_entities.source.translation"]
+
+[params]
+
+compress=true
+delimiter=0

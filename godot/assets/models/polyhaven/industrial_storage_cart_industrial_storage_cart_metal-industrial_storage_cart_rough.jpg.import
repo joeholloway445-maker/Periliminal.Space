@@ -1,0 +1,37 @@
+[remap]
+
+importer="texture"
+type="CompressedTexture2D"
+uid="uid://dm4pr84kw34py"
+path="res://.godot/imported/industrial_storage_cart_industrial_storage_cart_metal-industrial_storage_cart_rough.jpg-1d81f83de32c14e5d850a19398b85f5f.ctex"
+metadata={
+"vram_texture": false
+}
+generator_parameters={
+"md5": "b91ab8f9159501f4eef7627e066863c0"
+}
+
+[deps]
+
+source_file="res://assets/models/polyhaven/industrial_storage_cart_industrial_storage_cart_metal-industrial_storage_cart_rough.jpg"
+dest_files=["res://.godot/imported/industrial_storage_cart_industrial_storage_cart_metal-industrial_storage_cart_rough.jpg-1d81f83de32c14e5d850a19398b85f5f.ctex"]
+
+[params]
+
+compress/mode=0
+compress/high_quality=false
+compress/lossy_quality=0.7
+compress/hdr_compression=1
+compress/normal_map=0
+compress/channel_pack=0
+mipmaps/generate=true
+mipmaps/limit=-1
+roughness/mode=0
+roughness/src_normal=""
+process/fix_alpha_border=true
+process/premult_alpha=false
+process/normal_map_invert_y=false
+process/hdr_as_srgb=false
+process/hdr_clamp_exposure=false
+process/size_limit=0
+detect_3d/compress_to=1

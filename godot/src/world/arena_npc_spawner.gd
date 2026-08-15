@@ -56,11 +56,10 @@ func _create_npc(data: Dictionary) -> void:
 	# export -> interim humanoid -> Catsino cat GLB -> procedural rig
 	# fallback), respecting the cat-vs-identity rule: mandatory cat in the
 	# Catsino, identity by default elsewhere — never hardcoded to cat.
-	# Pass a per-NPC RNG so variant pools (upright ~1.8m humans) win over
+	# Pass a per-NPC seed so variant pools (upright ~1.8m humans) win over
 	# any leftover broken ship-slot GLB.
-	var body_rng := RandomNumberGenerator.new()
-	body_rng.seed = hash("arena_body_" + npc_id)
-	var body := MetahumanCharacter.build_npc(visual_mode, "", body_rng)
+	var body_seed: int = hash("arena_body_" + npc_id)
+	var body := MetahumanCharacter.build_npc(visual_mode, "", body_seed)
 	root.add_child(body)
 
 	var area := Area3D.new()

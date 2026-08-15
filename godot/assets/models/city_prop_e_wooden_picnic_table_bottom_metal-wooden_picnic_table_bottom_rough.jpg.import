@@ -1,0 +1,37 @@
+[remap]
+
+importer="texture"
+type="CompressedTexture2D"
+uid="uid://cs3ygnv0el5r2"
+path="res://.godot/imported/city_prop_e_wooden_picnic_table_bottom_metal-wooden_picnic_table_bottom_rough.jpg-ee5bc716e2a0399ab0df933d07e2f269.ctex"
+metadata={
+"vram_texture": false
+}
+generator_parameters={
+"md5": "c8d0575e80e53f8af10ad42ef636f09a"
+}
+
+[deps]
+
+source_file="res://assets/models/city_prop_e_wooden_picnic_table_bottom_metal-wooden_picnic_table_bottom_rough.jpg"
+dest_files=["res://.godot/imported/city_prop_e_wooden_picnic_table_bottom_metal-wooden_picnic_table_bottom_rough.jpg-ee5bc716e2a0399ab0df933d07e2f269.ctex"]
+
+[params]
+
+compress/mode=0
+compress/high_quality=false
+compress/lossy_quality=0.7
+compress/hdr_compression=1
+compress/normal_map=0
+compress/channel_pack=0
+mipmaps/generate=true
+mipmaps/limit=-1
+roughness/mode=0
+roughness/src_normal=""
+process/fix_alpha_border=true
+process/premult_alpha=false
+process/normal_map_invert_y=false
+process/hdr_as_srgb=false
+process/hdr_clamp_exposure=false
+process/size_limit=0
+detect_3d/compress_to=1

@@ -1,0 +1,37 @@
+[remap]
+
+importer="texture"
+type="CompressedTexture2D"
+uid="uid://bf6jgurp5l5q1"
+path="res://.godot/imported/modern_wooden_cabinet_modern_wooden_cabinet_diff.jpg-fe6b1ee623bea61f9dee58a976b2e45a.ctex"
+metadata={
+"vram_texture": false
+}
+generator_parameters={
+"md5": "c48468fb3f2ff48c6e9096318784f12e"
+}
+
+[deps]
+
+source_file="res://assets/models/polyhaven/modern_wooden_cabinet_modern_wooden_cabinet_diff.jpg"
+dest_files=["res://.godot/imported/modern_wooden_cabinet_modern_wooden_cabinet_diff.jpg-fe6b1ee623bea61f9dee58a976b2e45a.ctex"]
+
+[params]
+
+compress/mode=0
+compress/high_quality=false
+compress/lossy_quality=0.7
+compress/hdr_compression=1
+compress/normal_map=0
+compress/channel_pack=0
+mipmaps/generate=true
+mipmaps/limit=-1
+roughness/mode=0
+roughness/src_normal=""
+process/fix_alpha_border=true
+process/premult_alpha=false
+process/normal_map_invert_y=false
+process/hdr_as_srgb=false
+process/hdr_clamp_exposure=false
+process/size_limit=0
+detect_3d/compress_to=1

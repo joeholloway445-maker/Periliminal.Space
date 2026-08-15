@@ -1,0 +1,37 @@
+[remap]
+
+importer="texture"
+type="CompressedTexture2D"
+uid="uid://b0v54vkcvgtcf"
+path="res://.godot/imported/gothic_coffee_table_gothic_coffee_table_rough.jpg-0f34fa28146eff6d8c2f7b854a146fb4.ctex"
+metadata={
+"vram_texture": false
+}
+generator_parameters={
+"md5": "fb1e0dfa8caf5ed046968eed945571ce"
+}
+
+[deps]
+
+source_file="res://assets/models/polyhaven/gothic_coffee_table_gothic_coffee_table_rough.jpg"
+dest_files=["res://.godot/imported/gothic_coffee_table_gothic_coffee_table_rough.jpg-0f34fa28146eff6d8c2f7b854a146fb4.ctex"]
+
+[params]
+
+compress/mode=0
+compress/high_quality=false
+compress/lossy_quality=0.7
+compress/hdr_compression=1
+compress/normal_map=0
+compress/channel_pack=0
+mipmaps/generate=true
+mipmaps/limit=-1
+roughness/mode=0
+roughness/src_normal=""
+process/fix_alpha_border=true
+process/premult_alpha=false
+process/normal_map_invert_y=false
+process/hdr_as_srgb=false
+process/hdr_clamp_exposure=false
+process/size_limit=0
+detect_3d/compress_to=1
