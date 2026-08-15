@@ -58,6 +58,20 @@
 - The "64%" you mentioned is unclarified — no context yet on what that number
   refers to.
 
+**Bonus find while investigating (this was the stop-hook flagging 1492
+uncommitted files, not something I went looking for):** ~829MB of real
+texture assets for already-committed GLB props (polyhaven furniture/interior
+set, city props, apartment props, kenney character skins, creature atlases,
+vehicle textures) existed only on local disk and had never actually been
+committed — so every fresh checkout (CI, Vercel preview, a brand-new clone)
+was missing textures for every prop those GLBs reference. Also found 104
+more pre-existing assets (SFX, HDR skyboxes, PBR texture sets, beehave
+icons) whose `.import` sidecar specifically was never committed — the exact
+same class of bug as the portrait fix, just silent until now because those
+assets happened to already exist in every prior checkout's local cache.
+Both committed and pushed. Worth an actual fresh-clone test to confirm props
+now render textured end to end.
+
 **Owner trials: STARTED** (you asked). Agent kickoff shipped — see
 `docs/OWNER_TRIALS.md`. Cloud cannot finish CC4/UE/DAZ exports, GPU sculpt,
 or real prod secrets; those still need your machine.
