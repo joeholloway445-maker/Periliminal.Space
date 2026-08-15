@@ -1,0 +1,37 @@
+[remap]
+
+importer="texture"
+type="CompressedTexture2D"
+uid="uid://b0n01d5x1e1jw"
+path="res://.godot/imported/wooden_picnic_table_wooden_picnic_table_top_diff.jpg-20e063f49d493518a6d5ded35399ad1c.ctex"
+metadata={
+"vram_texture": false
+}
+generator_parameters={
+"md5": "d6e21eb5767fd1499f40b88199d02bc1"
+}
+
+[deps]
+
+source_file="res://assets/models/polyhaven/wooden_picnic_table_wooden_picnic_table_top_diff.jpg"
+dest_files=["res://.godot/imported/wooden_picnic_table_wooden_picnic_table_top_diff.jpg-20e063f49d493518a6d5ded35399ad1c.ctex"]
+
+[params]
+
+compress/mode=0
+compress/high_quality=false
+compress/lossy_quality=0.7
+compress/hdr_compression=1
+compress/normal_map=0
+compress/channel_pack=0
+mipmaps/generate=true
+mipmaps/limit=-1
+roughness/mode=0
+roughness/src_normal=""
+process/fix_alpha_border=true
+process/premult_alpha=false
+process/normal_map_invert_y=false
+process/hdr_as_srgb=false
+process/hdr_clamp_exposure=false
+process/size_limit=0
+detect_3d/compress_to=1

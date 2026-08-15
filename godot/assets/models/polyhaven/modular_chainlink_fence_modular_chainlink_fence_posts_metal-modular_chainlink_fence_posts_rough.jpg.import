@@ -1,0 +1,37 @@
+[remap]
+
+importer="texture"
+type="CompressedTexture2D"
+uid="uid://d3bx14b4e7mr1"
+path="res://.godot/imported/modular_chainlink_fence_modular_chainlink_fence_posts_metal-modular_chainlink_fence_posts_rough.jpg-f2856958816edc51e0c0099086b9e5d7.ctex"
+metadata={
+"vram_texture": false
+}
+generator_parameters={
+"md5": "3598b7601f9cf7795d320d161e429c6e"
+}
+
+[deps]
+
+source_file="res://assets/models/polyhaven/modular_chainlink_fence_modular_chainlink_fence_posts_metal-modular_chainlink_fence_posts_rough.jpg"
+dest_files=["res://.godot/imported/modular_chainlink_fence_modular_chainlink_fence_posts_metal-modular_chainlink_fence_posts_rough.jpg-f2856958816edc51e0c0099086b9e5d7.ctex"]
+
+[params]
+
+compress/mode=0
+compress/high_quality=false
+compress/lossy_quality=0.7
+compress/hdr_compression=1
+compress/normal_map=0
+compress/channel_pack=0
+mipmaps/generate=true
+mipmaps/limit=-1
+roughness/mode=0
+roughness/src_normal=""
+process/fix_alpha_border=true
+process/premult_alpha=false
+process/normal_map_invert_y=false
+process/hdr_as_srgb=false
+process/hdr_clamp_exposure=false
+process/size_limit=0
+detect_3d/compress_to=1
