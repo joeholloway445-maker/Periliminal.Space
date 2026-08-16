@@ -20,7 +20,11 @@ class_name HumanMeshBuilder
 const MORPHS := ["blink", "jaw_open", "smile", "brow_raise"]
 const LOD_COUNT := 3
 const RADIAL := [16, 10, 7]              # ring segments for torso/limbs per LOD
-const HEAD_GRID := [[26, 34], [16, 20], [10, 12]]  # [lat rows, lon columns] per LOD
+## [lat rows, lon columns] per LOD. LOD0 is high enough to resolve the
+## tightest facial bumps in head_point() (the lip philtrum crease is only
+## ~0.022 rad wide) without visible faceting on a close-up "Frame Face" view;
+## LOD1/2 stay coarse since those only render at NPC-crowd viewing distance.
+const HEAD_GRID := [[44, 58], [16, 20], [10, 12]]
 
 const SKIN := Color(1, 1, 1)
 const CLOTH := Color(0.20, 0.21, 0.24)
