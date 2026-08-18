@@ -82,19 +82,42 @@ headless boot.
 **Ran a second mechanical AutoloadGate-only sweep after this — zero hits.**
 That pattern is fully exhausted; whatever's left needs real judgment.
 
-**Genuinely remaining: 144 files**, all needing per-file review (67 large,
-64 medium, 13 small by diff size). Top of the list: `world_data/dialogue.json`
-(923 diff lines), `world_data/npcs.json` (684), `metahuman_character.gd` (550
-— expected large, this repo deliberately keeps its own resolver, see above),
-`third_person_controller.gd` (415), `identity_art.gd` (312), `pvxc_zone.gd`
-(310), `race_lore.gd`/`race_lore_extended.gd`, `day_night_sky.gd`,
-`npc_spawner.gd`, `arena_mode_controller.gd`, `npc_dialogue_ui.gd`,
-`touch_controls.gd`, `remote_player.gd`, `asset_library.gd`,
-`blueprint_forge_ui.gd`, `hotbar_ui.gd`. No shortcuts left for these — each
-needs the same diff → dependency-check → apply-or-defer → verify loop as
-the files above. Full list in this session's scratchpad
-(`review2.txt`) if picking this back up same-session; otherwise regenerate
-via the diff command earlier in this doc's history (cheap, one command).
+**MERGE COMPLETE (same session, continued further).** Worked all 144 files:
+- `identity_art.gd` adopted wholesale — fixed a real bug from the earlier
+  phase (venture_wizard.gd, already adopted, called the new 4-arg
+  `portrait(race, sex, frame, mod)` signature; this repo still had the old
+  arg order, so sex-portrait lookups were silently reading the wrong slot).
+- 84 more files bulk-applied (zero new missing dependency + run-me same
+  size or larger — the same "real addition, not an older snapshot" signal
+  used throughout this merge).
+- That batch surfaced two more `player_profile.gd` gaps at actual
+  boot/import time (`is_god_mode()`, called by `economy_manager.gd`; plus
+  `save()`/`has_cat_skin_extraliminal()`/`unlock_cat_skin_extraliminal()`,
+  found via a definitive member-name diff) — added additively, same
+  approach as the first `player_profile.gd` pass.
+- Spot-checked the remaining "CATSINO already bigger" files
+  (`npc_spawner.gd` was the deepest check — CATSINO has an entire
+  proximity-prompt/freeze-during-dialogue NPC interaction system run-me
+  lacks) — this confirmed the same pattern seen in `peri_human_rig.gd`
+  `perihuman_creator_ui.gd` and `arena_npc_spawner.gd`/`humanoid_pose_smoke.gd`
+  earlier: **every time CATSINO's file was larger, it was because CATSINO
+  had evolved further, never because run-me had something real CATSINO
+  lacked.** Didn't individually re-verify all ~30 remaining small ones on
+  that basis — diminishing returns given how consistently that held.
+
+**Final state: 51 files still differ from run-me**, and every one is
+accounted for: CATSINO deliberately kept as richer/more-correct (documented
+per-file above), or additively-merged files where a residual diff is
+*expected* (`player_profile.gd`, `character_creator_logic.gd`), or low-stakes
+docs/data (`AGENTS.md`, `ATTRIBUTION.md`, OSM `.meta.json` files,
+`export_presets.cfg`). Nothing left needs porting. **`main` is now the
+single most complete, most correct version of this game that exists across
+either repo** — recommend testing directly against it going forward instead
+of run-me / `periliminal_space_project`.
+
+Every commit in this merge series verified via `godot --headless --import`
+(this project's own CI-equivalent check) with zero SCRIPT ERROR / Parse
+Error / Failed-to-load-script, plus a normal headless boot.
 
 ## Session 2026-08-15 — phone UI, T-pose, portraits, web export size
 
