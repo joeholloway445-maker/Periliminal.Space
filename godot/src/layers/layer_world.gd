@@ -9,12 +9,27 @@ var _sky: DayNightSky
 var _player: ThirdPersonController
 
 func _ready() -> void:
+	var LayerManager = AutoloadGate.get_node("LayerManager")
+	var IdentityLens = AutoloadGate.get_node("IdentityLens")
+	var DiscoveryManager = AutoloadGate.get_node("DiscoveryManager")
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	LayerManager.current_layer_id = layer_id
 	add_to_group("layer_world")
 
 	_terrain = TerrainBridge.new()
 	add_child(_terrain)
 	await _terrain.ensure_built(layer_id)
+
+	# Liminal uses a procedural hallway maze instead of open terrain.
+	# The terrain is still built underneath for height references / chunk
+	# streaming, but the maze is what the player walks through.
+	if layer_id == "liminal":
+		var hallway_seed := randi()
+		var hallway_maze := LiminalHallwayBuilder.build(
+			hallway_seed, 24, 4.0, 3.5,
+			OS.get_name() == "Web" or OS.get_name() == "Android"
+		)
+		add_child(hallway_maze)
 
 	_sky = DayNightSky.new()
 	match layer_id:
@@ -39,12 +54,16 @@ func _ready() -> void:
 
 	var spawn := _spawn_point()
 	_terrain.stream_around(DiscoveryManager.world_pos_to_chunk(spawn))
-	spawn.y = _terrain.height_at(spawn.x, spawn.z) + 2.0
+	if layer_id == "liminal":
+		spawn.y = 0.5  # maze floor is at Y=0
+	else:
+		spawn.y = _terrain.height_at(spawn.x, spawn.z) + 2.0
 	_player.global_position = spawn
 	_player.chunk_changed.connect(_on_chunk_changed)
 	add_child(SensoriumAmbience.new()) # your build's own hum, under the music
-	var vehicles := VehicleWorldWiring.spawn_hub_vehicles(self, _terrain, spawn)
-	VehicleWorldWiring.wire_streaming_bump(vehicles, _terrain, _sky)
+	if layer_id != "liminal":
+		var vehicles := VehicleWorldWiring.spawn_hub_vehicles(self, _terrain, spawn)
+		VehicleWorldWiring.wire_streaming_bump(vehicles, _terrain, _sky)
 	add_child(RealityBendOverlay.new(_reality_bend_baseline()))
 	var hotbar := HotbarUI.new()
 	hotbar.cast_requested.connect(_on_cast)
@@ -81,7 +100,8 @@ func _ready() -> void:
 				Color(0.75, 0.35, 0.95), _player, pos)
 			hideout.position = pos
 			add_child(hideout)
-	_populate_layer_npcs(spawn)
+	if layer_id != "liminal":
+		_populate_layer_npcs(spawn)
 	if layer_id == "liminal" and LayerManager.is_prototype_mode():
 		_spawn_prototype_spine_exits(spawn)
 
@@ -92,12 +112,12 @@ func _spawn_prototype_spine_exits(near: Vector3) -> void:
 	var metro := LayerExitDoor.new()
 	metro.target_layer = "supraliminal"
 	metro.position = near + Vector3(6, 0, 4)
-	metro.position.y = _terrain.height_at(metro.position.x, metro.position.z)
+	metro.position.y = 0.5 if layer_id == "liminal" else _terrain.height_at(metro.position.x, metro.position.z)
 	add_child(metro)
 	var catsino := LayerExitDoor.new()
 	catsino.target_layer = "hyperliminal"
 	catsino.position = near + Vector3(-6, 0, 4)
-	catsino.position.y = _terrain.height_at(catsino.position.x, catsino.position.z)
+	catsino.position.y = 0.5 if layer_id == "liminal" else _terrain.height_at(catsino.position.x, catsino.position.z)
 	add_child(catsino)
 
 var _peers: Dictionary = {} # peer_id -> RemotePlayer
@@ -108,6 +128,7 @@ var _attack_damage := 20
 var _hostile_tick := 0.0
 
 func _wire_presence() -> void:
+	var PresenceManager = AutoloadGate.get_node("PresenceManager")
 	PresenceManager.peer_joined.connect(func(pid, prof):
 		if _peers.has(pid): return
 		var rp := RemotePlayer.new()
@@ -145,6 +166,7 @@ func _on_peer_cast(_pid: String, sk: Dictionary, pos: Vector3) -> void:
 ## skill flash instead of only the silent hostile-tick damage, and feeds
 ## landed hits back so adaptive bots escalate mid-fight.
 func _on_bot_cast(pid: String, skill: Dictionary) -> void:
+	var PresenceManager = AutoloadGate.get_node("PresenceManager")
 	if not _peers.has(pid) or not is_instance_valid(_peers[pid]):
 		return
 	var rp: RemotePlayer = _peers[pid]
@@ -229,6 +251,7 @@ func _reality_bend_baseline() -> float:
 		_: return 0.0
 
 func _spawn_point() -> Vector3:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	match layer_id:
 		"supraliminal":
 			# Factionless start in Arlington's center; faction players in
@@ -250,6 +273,8 @@ const HubRegionData = preload("res://src/data/hub_region_data.gd")
 var _prev_chunk := Vector2i(2147483647, 0)
 
 func _on_chunk_changed(coord: Vector2i) -> void:
+	var DungeonRuns = AutoloadGate.get_node("DungeonRuns")
+	var PeriliminalRuns = AutoloadGate.get_node("PeriliminalRuns")
 	_terrain.stream_around(coord)
 	match layer_id:
 		"supraliminal":
@@ -277,6 +302,8 @@ var _hud_layer: CanvasLayer
 var _last_hazard_tick_dmg := 0
 
 func _ensure_periliminal_gauntlet() -> void:
+	var DungeonRuns = AutoloadGate.get_node("DungeonRuns")
+	var PeriliminalRuns = AutoloadGate.get_node("PeriliminalRuns")
 	if not _periliminal_gauntlet.is_empty():
 		return
 	var gen := PeriliminalGenerator.new()
@@ -290,6 +317,10 @@ func _ensure_periliminal_gauntlet() -> void:
 ## Instantiate the Hope-driven trap floor for the current depth — real
 ## entities + hazards, not denser random dens.
 func _apply_periliminal_floor(coord: Vector2i) -> void:
+	var DungeonRuns = AutoloadGate.get_node("DungeonRuns")
+	var PeriliminalRuns = AutoloadGate.get_node("PeriliminalRuns")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var Hope = AutoloadGate.get_node("Hope")
 	_ensure_periliminal_gauntlet()
 	var floors: Array = _periliminal_gauntlet.get("floors", [])
 	if floors.is_empty():
@@ -417,6 +448,10 @@ func _tick_floor_hazards() -> void:
 var _blessing_spawned := false
 
 func _maybe_bless(coord: Vector2i) -> void:
+	var DungeonRuns = AutoloadGate.get_node("DungeonRuns")
+	var PeriliminalRuns = AutoloadGate.get_node("PeriliminalRuns")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var Hope = AutoloadGate.get_node("Hope")
 	# Instanced dungeons suppress the Periliminal blessing exit — clear via
 	# DungeonRuns.try_clear() / eject instead.
 	if DungeonRuns != null and DungeonRuns.active:
@@ -434,8 +469,15 @@ func _maybe_bless(coord: Vector2i) -> void:
 	Hope.record("blessing_door", {"depth": PeriliminalRuns.depth})
 
 func _supraliminal_enter(coord: Vector2i) -> void:
-	var already_known := DiscoveryManager.has_chunk(coord)
-	var chunk := DiscoveryManager.get_or_generate_chunk(coord)
+	var DiscoveryManager = AutoloadGate.get_node("DiscoveryManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var MusicManager = AutoloadGate.get_node("MusicManager")
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var QuestManager = AutoloadGate.get_node("QuestManager")
+	var CrownManager = AutoloadGate.get_node("CrownManager")
+	var TerritoryControl = AutoloadGate.get_node("TerritoryControl")
+	var already_known = DiscoveryManager.has_chunk(coord)
+	var chunk = DiscoveryManager.get_or_generate_chunk(coord)
 	if chunk.is_hub:
 		var hub_name := str(HubRegionData.by_id(chunk.hub_id).get("name", chunk.hub_id.capitalize()))
 		NotificationUI.notify_info("Entering %s — PvE sanctuary." % hub_name)
@@ -451,7 +493,7 @@ func _supraliminal_enter(coord: Vector2i) -> void:
 	if not already_known:
 		QuestManager.update_progress("discover_chunk")
 		CrownManager.add_score("Top Terrain Explored", "local_player", 1)
-	var owner := TerritoryControl.claim_owner(coord)
+	var owner = TerritoryControl.claim_owner(coord)
 	if owner != "" and owner != PlayerProfile.faction:
 		NotificationUI.notify_info("⚔️ %s territory — you are fair game here." % owner)
 	_maybe_spawn_entity(coord)
@@ -459,6 +501,10 @@ func _supraliminal_enter(coord: Vector2i) -> void:
 var _chunk_entered_at := 0.0
 
 func _liminal_enter(coord: Vector2i) -> void:
+	var Hope = AutoloadGate.get_node("Hope")
+	var DiscoveryManager = AutoloadGate.get_node("DiscoveryManager")
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var QuestManager = AutoloadGate.get_node("QuestManager")
 	# Hope watches HOW you take each liminal threshold: fast transit reads
 	# as rushing (boredom/lust), a long dwell before moving on reads as
 	# hesitation (fear/anxiety). Chunk borders are the doors out here.
@@ -478,8 +524,7 @@ func _liminal_enter(coord: Vector2i) -> void:
 	var door := LiminalDoor.new()
 	door.layer = "liminal"
 	var size := float(HubRegionData.CHUNK_SIZE)
-	door.position = Vector3(coord.x * size + size * 0.3, 0, coord.y * size + size * 0.6)
-	door.position.y = _terrain.height_at(door.position.x, door.position.z)
+	door.position = Vector3(coord.x * size + size * 0.3, 0.5, coord.y * size + size * 0.6)
 	add_child(door)
 	# The obvious exits: most liminal chunks also carry a clearly-marked
 	# archway out. Weighted so the Hyperliminal (the Catsino) is the easy
@@ -498,8 +543,7 @@ func _liminal_enter(coord: Vector2i) -> void:
 			target = "extraliminal" # guild-war grounds
 		var exit_door := LayerExitDoor.new()
 		exit_door.target_layer = target
-		exit_door.position = Vector3(coord.x * size + size * 0.7, 0, coord.y * size + size * 0.25)
-		exit_door.position.y = _terrain.height_at(exit_door.position.x, exit_door.position.z)
+		exit_door.position = Vector3(coord.x * size + size * 0.7, 0.5, coord.y * size + size * 0.25)
 		add_child(exit_door)
 	_maybe_spawn_entity(coord)
 
@@ -522,9 +566,11 @@ func _register_world_entity(ent: WorldEntity) -> void:
 	ent.died.connect(_on_entity_died)
 
 func _maybe_spawn_entity(coord: Vector2i) -> void:
+	var DungeonRuns = AutoloadGate.get_node("DungeonRuns")
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	# Periliminal / dungeon runs use PeriliminalGenerator floors
 	# (`_apply_periliminal_floor`) — do not fall back to denser dens.
-	if layer_id == "periliminal":
+	if layer_id in ["periliminal", "liminal"]:
 		return
 	if DungeonRuns != null and DungeonRuns.active:
 		return
@@ -565,6 +611,9 @@ func _on_entity_bite(ent: WorldEntity, dmg: int) -> void:
 		_on_player_died(str(ent.stage_info.get("name", "the wilds")))
 
 func _on_entity_died(ent: WorldEntity) -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var QuestManager = AutoloadGate.get_node("QuestManager")
+	var CaptureSystem = AutoloadGate.get_node("CaptureSystem")
 	_entities.erase(ent.get_instance_id())
 	EconomyManager.earn_currency_local("fragments", ent.bounty(), "world_entity_kill")
 	QuestManager.update_progress("defeat_entity")
@@ -577,8 +626,11 @@ func _on_entity_died(ent: WorldEntity) -> void:
 var _hud_hp_bar: ProgressBar
 var _hud_shield_bar: ProgressBar
 var _hud_hp_label: Label
+var _hud_coins_label: Label
 
 func _build_hud() -> void:
+	var LayerManager = AutoloadGate.get_node("LayerManager")
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
 	var layer := CanvasLayer.new()
 	layer.name = "LayerHud"
 	add_child(layer)
@@ -590,6 +642,34 @@ func _build_hud() -> void:
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 		LayerManager.transition_to("hyperliminal"))
 	layer.add_child(back)
+
+	# Coins always visible in-world — the primary currency. Live-updates via
+	# EconomyManager.balance_changed.
+	_hud_coins_label = Label.new()
+	_hud_coins_label.text = "🪙 %d" % EconomyManager.get_coins()
+	_hud_coins_label.position = Vector2(0, 10)
+	_hud_coins_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_hud_coins_label.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
+	_hud_coins_label.offset_left = -300.0
+	_hud_coins_label.offset_right = -70.0
+	_hud_coins_label.add_theme_font_size_override("font_size", 20)
+	layer.add_child(_hud_coins_label)
+	
+	var pause_btn := Button.new()
+	pause_btn.text = "⏸"
+	pause_btn.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
+	pause_btn.offset_left = -50.0
+	pause_btn.offset_top = 10.0
+	pause_btn.offset_right = -10.0
+	pause_btn.add_theme_font_size_override("font_size", 20)
+	pause_btn.pressed.connect(func():
+		var pm = get_node_or_null("/root/PauseManager")
+		if pm and pm.has_method("toggle_pause"):
+			pm.toggle_pause()
+	)
+	layer.add_child(pause_btn)
+	if EconomyManager != null and EconomyManager.has_signal("balance_changed"):
+		EconomyManager.balance_changed.connect(_on_hud_balance_changed)
 
 	var quest_btn := Button.new()
 	quest_btn.text = "Quests (J)"
@@ -632,7 +712,13 @@ func _refresh_hud_vitals() -> void:
 	_hud_shield_bar.value = _shield
 	_hud_hp_label.text = "HP %d/100   Shield %d" % [_player_hp, _shield]
 
+func _on_hud_balance_changed(currency: String, _old_balance: int, new_balance: int) -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	if currency == EconomyManager.CURRENCY_COINS and is_instance_valid(_hud_coins_label):
+		_hud_coins_label.text = "🪙 %d" % new_balance
+
 func _open_quest_log() -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	if ResourceLoader.exists("res://scenes/ui/quest.tscn"):
 		get_tree().change_scene_to_file("res://scenes/ui/quest.tscn")
@@ -646,6 +732,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 
 func _in_pvp_zone() -> bool:
+	var TerritoryControl = AutoloadGate.get_node("TerritoryControl")
 	match layer_id:
 		"liminal": return true
 		"supraliminal": return TerritoryControl.is_pvp_at(_player.global_position)
@@ -655,6 +742,11 @@ func _in_pvp_zone() -> bool:
 ## and (in PvP zones) other players. Shared SkillCastResolver owns windup,
 ## telegraph, element riders, and VFX; we supply targets + shield hooks.
 func _on_cast(sk: Dictionary) -> void:
+	var PresenceManager = AutoloadGate.get_node("PresenceManager")
+	var Hope = AutoloadGate.get_node("Hope")
+	var BlueprintManager = AutoloadGate.get_node("BlueprintManager")
+	var SkillManager = AutoloadGate.get_node("SkillManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if _player == null or not is_instance_valid(_player):
 		return
 	# Online: broadcast cast so remotes can flash the same telegraph/VFX.
@@ -662,7 +754,7 @@ func _on_cast(sk: Dictionary) -> void:
 		PresenceManager.report_cast(sk, _player.global_position)
 	if Hope.maybe_manifest(str(sk.get("id", ""))):
 		SkillVFX.aoe_ring(self, _player.global_position, 2.0, Color(1.0, 0.95, 0.6))
-		var hope_bp := BlueprintManager.equipped_for("entity", "companion")
+		var hope_bp = BlueprintManager.equipped_for("entity", "companion")
 		if not hope_bp.is_empty():
 			var form := BlueprintMesh.build(hope_bp)
 			form.position = _player.global_position + Vector3(1.2, 0, 1.2)
@@ -731,6 +823,10 @@ func _apply_element_rider(elem: String, target: Node3D, _dmg: int) -> void:
 			pass
 
 func _on_peer_killed(pid: String, rp: RemotePlayer) -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var CrownManager = AutoloadGate.get_node("CrownManager")
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	_peers.erase(pid)
 	_peer_hp.erase(pid)
 	rp.queue_free()
@@ -748,6 +844,10 @@ func get_local_player() -> ThirdPersonController:
 	return _player
 
 func _on_player_died(killer: String) -> void:
+	var DungeonRuns = AutoloadGate.get_node("DungeonRuns")
+	var PeriliminalRuns = AutoloadGate.get_node("PeriliminalRuns")
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	# Gate 6 dungeon: eject with no wipe (DungeonRuns owns the flag).
 	if DungeonRuns.active or Engine.has_meta("dungeon_no_wipe"):
 		_player_hp = 100
@@ -779,6 +879,8 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			add_child(forge)
 
 func _process(_delta: float) -> void:
+	var PresenceManager = AutoloadGate.get_node("PresenceManager")
+	var SkillManager = AutoloadGate.get_node("SkillManager")
 	if is_instance_valid(_player):
 		PresenceManager.report_position(_player.global_position)
 	# Hope-driven trap floors tick hazards once per second.
