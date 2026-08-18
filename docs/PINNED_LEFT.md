@@ -1,5 +1,68 @@
 # Pinned — circle back when asked “what’s left”
 
+## Session 2026-08-16 — run-me (periliminal_space_project) merge
+
+Ziva/Cursor's separate fork (`joeholloway445-maker/periliminal_space_project`,
+branch `master`, Godot project at repo root not under `godot/`) diverged hard
+from this repo — 374 differing `.gd`/`.json`/`.md` files, 148 files only in
+run-me, 650 only here. Ziva's own `DIVERGENCE_REPORT.md` (pasted into chat,
+not committed) undercounted some claims and overstated others (see commits
+below) — verify its claims before trusting them, don't just apply them.
+
+**Done, verified, pushed:**
+- `terrain_bridge.gd` / `procedural_terrain.gd` — real feature (Liminal layer
+  skips prop/entity scattering) + AutoloadGate hardening
+- `character_rig.gd` — full replace with run-me's jointed/animated version
+  (was static primitive capsules, confirmed API-compatible with every
+  caller first)
+- `layer_exit_door.gd` — AutoloadGate hardening
+- **79 more files, bulk-applied** — every file where run-me's diff against
+  this repo was *purely* `var X = AutoloadGate.get_node("X")` additions with
+  zero removals, applied wholesale as a batch, 0 compile errors after.
+
+**Corrected from Ziva's report (verify before trusting a divergence report,
+including this one — recheck if run-me moves again):**
+- "TerrainBridge null crash" — not a null crash, `_proc` is always assigned
+  either branch. Real diff was a missing `layer_id` feature.
+- "Race portraits" — run-me's own portrait fix is INCOMPLETE (some files
+  still `.png` while the reader expects `.jpg`). This repo's fix (this
+  session's earlier work) is the complete one. Did not port anything back.
+
+**Deliberately NOT ported, and why — these are the real remaining work:**
+- `metahuman_character.gd` — run-me's rewrite drops the native PeriHuman
+  fallback entirely, falling straight to CharacterRig capsules whenever a
+  GLB isn't installed. This is a regression, not an upgrade — **this is
+  probably the actual root cause of the original "capsule bodies in
+  Character Creator" report**, if the user was testing a run-me build.
+  Keep this repo's resolver.
+- Run-me built ~12-15 entirely new subsystems this repo doesn't have AT ALL
+  (confirmed via full class_name + autoload inventory diff, not guessed):
+  **`PhoneShell`/`PhoneAppIcon`/`PhoneHomeScreen`** (a full phone-home-screen
+  UI redesign — `title_screen.gd` alone is 476 vs 143 lines built on this),
+  **`RoomNetwork`/`RoomGenerator`** (procedural rooms-behind-doors, replaces
+  `door.gd`'s old flavor-text table — `subliminal_manager.gd` also depends
+  on this), **`Forge`** (blueprint_data.gd depends on it), **`TerritoryControl`**
+  + **`LiminalHallwayBuilder`** (layer_world.gd depends on these),
+  **`ExtraliminalLayer`, `HyperliminalCatBreeds`, `PeriliminalDungeonDoor`,
+  `PeriliminalGroupSeal`, `RaceNamesByLayer`, `MatrixConsole`, `CharacterArt`**,
+  and new core autoloads **`APEX`/`DREAM`/`KNOLL`/`VISION`/`PauseManager`**
+  (names match the web app's PersonaMatrix/Apex/Dream stuff — looks like
+  Ziva ported that concept into the Godot game itself as a new narrative
+  layer). Each of these is a real, scoped feature-port project — new files,
+  autoload registration, testing — not a file-diff merge. `venture_wizard.gd`
+  (+200 run-me) is entangled with the customize/preview redesign; touch that
+  one carefully since it also carries this session's earlier compile fix.
+- **293 more files not yet individually reviewed**: 22 large (>100 line
+  delta, almost certainly more of the same new-subsystem entanglement above),
+  75 medium (20-100), 196 small (<20, most likely incremental drift/tuning,
+  probably safe either direction but not yet checked one by one).
+
+**Recommended next step, your call:** pick ONE new subsystem above to
+actually port as its own dedicated pass (Phone home-screen UI and the
+procedural-rooms system are the two most player-visible), rather than
+grinding the remaining 293-file list — most of that list is downstream of
+these same ~15 subsystems and won't resolve without porting them first.
+
 ## Session 2026-08-15 — phone UI, T-pose, portraits, web export size
 
 **Done this session** (PRs #77, #78, merged):
