@@ -48,6 +48,26 @@ var playtime_seconds: float = 0.0
 ## OTHER client rendering this player, or this player's companions/tied
 ## entities, also renders them undistorted — the opt-out travels with you.
 var view_scale_style: String = ""
+## Body sex: "m" or "f". Drives portrait selection, body proportions and
+## (when a female mesh slot exists) the 3D body itself.
+var sex: String = "m"
+## Appearance sliders from the character creator — body + color knobs.
+## height/build are multipliers; colors are HTML hex strings; glow is 0..1.
+var appearance: Dictionary = {
+	"height": 1.0,
+	"build": 1.0,
+	"skin": "#d9a066",
+	"hair": "#2b1d12",
+	"eye": "#6b4c2a",
+	"outfit": "#3a4a6a",
+	"glow": 0.0,
+}
+## Hidden testing flag — only settable via the secret god-mode login
+## sequence on the title screen. Enables infinite currency, no damage, etc.
+var is_testing: bool = false
+## True if the player has purchased/unlocked the right to wear the
+## Hyperliminal cat-skin in the surface-world (Extraliminal) layer.
+var cat_skin_extraliminal: bool = false
 
 ## Soft state for TitleEffects / dialogue gates (not all persisted yet).
 var _stat_modifiers: Dictionary = {}
@@ -100,6 +120,16 @@ func _load() -> void:
 	titles = Array(data.get("titles", []), TYPE_STRING, "", null)
 	active_title = data.get("active_title", "")
 	view_scale_style = str(data.get("view_scale_style", ""))
+	is_testing = bool(data.get("is_testing", false))
+	cat_skin_extraliminal = bool(data.get("cat_skin_extraliminal", false))
+	sex = str(data.get("sex", "m"))
+	if sex != "m" and sex != "f":
+		sex = "m"
+	var saved_appearance: Variant = data.get("appearance", {})
+	if saved_appearance is Dictionary:
+		for k in appearance.keys():
+			if saved_appearance.has(k):
+				appearance[k] = saved_appearance[k]
 	# Migration: saves from before this flag existed still have a real
 	# character if they've clearly played (leveled up, left the default
 	# frame/mod, or picked up a companion) — don't lock returning players
@@ -128,6 +158,10 @@ func _save() -> void:
 		"active_title": active_title,
 		"playtime_seconds": playtime_seconds,
 		"view_scale_style": view_scale_style,
+		"is_testing": is_testing,
+		"cat_skin_extraliminal": cat_skin_extraliminal,
+		"sex": sex,
+		"appearance": appearance,
 	}))
 	f.close()
 
@@ -199,6 +233,18 @@ func set_ascended_frame(frame_id: String) -> bool:
 
 func set_perihuman_dna(dna: Dictionary) -> void:
 	perihuman_dna = dna
+	_save()
+	profile_updated.emit()
+
+func set_sex(new_sex: String) -> void:
+	sex = new_sex if new_sex == "f" else "m"
+	_save()
+	profile_updated.emit()
+
+func set_appearance(key: String, value: Variant) -> void:
+	if not appearance.has(key):
+		return
+	appearance[key] = value
 	_save()
 	profile_updated.emit()
 
