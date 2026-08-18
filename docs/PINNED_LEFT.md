@@ -57,11 +57,44 @@ including this one — recheck if run-me moves again):**
   75 medium (20-100), 196 small (<20, most likely incremental drift/tuning,
   probably safe either direction but not yet checked one by one).
 
-**Recommended next step, your call:** pick ONE new subsystem above to
-actually port as its own dedicated pass (Phone home-screen UI and the
-procedural-rooms system are the two most player-visible), rather than
-grinding the remaining 293-file list — most of that list is downstream of
-these same ~15 subsystems and won't resolve without porting them first.
+**UPDATE (same session, continued):** ported all ~15 missing subsystems
+(RoomNetwork/RoomGenerator, PhoneShell/PhoneAppIcon/PhoneHomeScreen,
+LiminalHallwayBuilder, ExtraliminalLayer, HyperliminalCatBreeds,
+PeriliminalDungeonDoor [renamed from DungeonEntrance, caller fixed],
+PeriliminalGroupSeal, RaceNamesByLayer, MatrixConsole, CharacterArt, APEX/
+DREAM/KNOLL/VISION/PauseManager autoloads) and wired every file that calls
+them: `door.gd`, `title_screen.gd`, `subliminal_manager.gd`, `layer_world.gd`,
+`venture_wizard.gd`. Along the way, fixed a genuinely pre-existing bug this
+exposed (`shop_ui.gd`'s `_economy()` had no return type, breaking `:=`
+inference at 3 call sites — same bug class as everything else this session).
+
+`player_profile.gd` / `character_creator_logic.gd` were merged **additively**,
+not wholesale-replaced — run-me's versions delete `perihuman_dna`,
+`selected_variant`, `has_unbound_writ`, `view_scale_style`, which this repo's
+kept-on-purpose PeriHuman resolver and other systems still read. Added
+`sex`/`appearance`/`is_testing`/`cat_skin_extraliminal` + `set_sex()`/
+`set_appearance()` alongside the existing fields instead.
+
+Every commit in this series verified via this project's own CI-equivalent
+`godot --headless --import` (0 SCRIPT ERROR/Parse Error) plus a normal
+headless boot.
+
+**Ran a second mechanical AutoloadGate-only sweep after this — zero hits.**
+That pattern is fully exhausted; whatever's left needs real judgment.
+
+**Genuinely remaining: 144 files**, all needing per-file review (67 large,
+64 medium, 13 small by diff size). Top of the list: `world_data/dialogue.json`
+(923 diff lines), `world_data/npcs.json` (684), `metahuman_character.gd` (550
+— expected large, this repo deliberately keeps its own resolver, see above),
+`third_person_controller.gd` (415), `identity_art.gd` (312), `pvxc_zone.gd`
+(310), `race_lore.gd`/`race_lore_extended.gd`, `day_night_sky.gd`,
+`npc_spawner.gd`, `arena_mode_controller.gd`, `npc_dialogue_ui.gd`,
+`touch_controls.gd`, `remote_player.gd`, `asset_library.gd`,
+`blueprint_forge_ui.gd`, `hotbar_ui.gd`. No shortcuts left for these — each
+needs the same diff → dependency-check → apply-or-defer → verify loop as
+the files above. Full list in this session's scratchpad
+(`review2.txt`) if picking this back up same-session; otherwise regenerate
+via the diff command earlier in this doc's history (cheap, one command).
 
 ## Session 2026-08-15 — phone UI, T-pose, portraits, web export size
 
