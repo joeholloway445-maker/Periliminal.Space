@@ -554,7 +554,7 @@ static func _place_dungeons(root: Node3D, hub_id: String, base_y: float,
 		player: Node3D) -> void:
 	for d in DungeonData.in_hub(hub_id):
 		var cell: Vector2 = d.get("cell", Vector2.ZERO)
-		var door := DungeonEntrance.new()
+		var door := PeriliminalDungeonDoor.new()
 		door.setup(str(d.id), player)
 		door.position = Vector3(cell.x * CityData.CELL, base_y, cell.y * CityData.CELL)
 		root.add_child(door)

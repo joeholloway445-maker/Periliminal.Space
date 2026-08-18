@@ -1,4 +1,4 @@
-class_name DungeonEntrance
+class_name PeriliminalDungeonDoor
 extends Node3D
 ## A sealed Periliminal door inside an ordinary Metroplex building.
 ##
@@ -88,6 +88,7 @@ func _build_seal() -> void:
 
 ## The plate. Rank stays "?" until somebody has beaten this descent.
 func _build_plate(d: Dictionary) -> void:
+	var DungeonManager = AutoloadGate.get_node("DungeonManager")
 	_plate = Label3D.new()
 	_plate.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	_plate.font_size = 64
@@ -103,6 +104,7 @@ func _build_plate(d: Dictionary) -> void:
 				_refresh_plate(DungeonData.get_dungeon(dungeon_id)))
 
 func _refresh_plate(d: Dictionary) -> void:
+	var DungeonManager = AutoloadGate.get_node("DungeonManager")
 	if _plate == null:
 		return
 	var rank := "Rank ?"
@@ -121,6 +123,7 @@ func _build_ring(d: Dictionary) -> void:
 	add_child(area)
 
 	area.body_entered.connect(func(b: Node3D):
+		var NotificationUI = AutoloadGate.get_node("NotificationUI")
 		if b != player:
 			return
 		_armed = true
@@ -145,6 +148,11 @@ func _unhandled_input(event: InputEvent) -> void:
 ## Checks the gate, then hands off to PeriliminalRuns. Kept public so a
 ## party-finder UI can trigger it without faking an input event.
 func attempt_entry() -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var DungeonManager = AutoloadGate.get_node("DungeonManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var PeriliminalRuns = AutoloadGate.get_node("PeriliminalRuns")
+	var LayerManager = AutoloadGate.get_node("LayerManager")
 	var party := _party()
 	var level := 1
 	var keys: Array = []
@@ -175,11 +183,14 @@ func attempt_entry() -> void:
 		DungeonManager.begin_dungeon(dungeon_id)
 	if PeriliminalRuns:
 		PeriliminalRuns.begin_run(_party_ids(party))
+	if LayerManager:
+		LayerManager.transition_to("periliminal", true)
 
 ## Party membership: PartyManager when one is formed, an explicit override
 ## for a party-finder UI, solo otherwise. The gate decides whether the group
 ## that turns up is enough.
 func _party() -> Array:
+	var PartyManager = AutoloadGate.get_node("PartyManager")
 	if not party_members.is_empty():
 		return party_members
 	if PartyManager:
@@ -193,6 +204,7 @@ func _party_ids(party: Array) -> Array[String]:
 	return out
 
 func _self_id() -> String:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	if PlayerProfile and str(PlayerProfile.get("username")) != "":
 		return str(PlayerProfile.username)
 	return "player"

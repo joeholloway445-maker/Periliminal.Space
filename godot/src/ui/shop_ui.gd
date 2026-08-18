@@ -181,7 +181,7 @@ func _connect_economy() -> void:
 	if economy.has_signal("balance_changed") and not economy.is_connected("balance_changed", callback):
 		economy.connect("balance_changed", callback)
 
-func _economy():
+func _economy() -> Node:
 	return get_node_or_null("/root/EconomyManager")
 
 func _on_balance_changed(currency: String, _old_balance: int, _new_balance: int) -> void:
