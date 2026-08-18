@@ -89,6 +89,9 @@ func _ready() -> void:
 			_walk_through())
 
 func _walk_through() -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var PeriliminalRuns = AutoloadGate.get_node("PeriliminalRuns")
+	var LayerManager = AutoloadGate.get_node("LayerManager")
 	if _fired:
 		return
 	_fired = true
