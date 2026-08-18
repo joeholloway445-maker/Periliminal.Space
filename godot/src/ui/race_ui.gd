@@ -22,6 +22,7 @@ const POSITION_MULT = {1: 3.0, 2: 1.5, 3: 1.0}
 const DIFFICULTY_BONUS = {"beginner": 1.0, "intermediate": 1.25, "expert": 1.6}
 
 func _ready() -> void:
+	var MusicManager = AutoloadGate.get_node("MusicManager")
 	_frame_options.clear()
 	# Racing uses Hyperliminal sensorium frames; display OmniDex-safe names.
 	for f in FrameModData.FRAMES:
@@ -33,9 +34,11 @@ func _ready() -> void:
 	MusicManager.enter_racing()
 
 func _exit_tree() -> void:
+	var MusicManager = AutoloadGate.get_node("MusicManager")
 	MusicManager.exit_racing()
 
 func _build_ui() -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	var root = VBoxContainer.new()
 	root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(root)
@@ -152,6 +155,9 @@ func _refresh_track_info() -> void:
 		t.description, t.laps, "s" if t.laps > 1 else "", t.distance, t.district]
 
 func _on_race_pressed() -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var NetworkManager = AutoloadGate.get_node("NetworkManager")
 	var track := _selected_track()
 	if not RaceData.is_unlocked(track, PlayerProfile.level):
 		_status_label.text = "Track locked — reach level %d." % RaceData.unlock_level(track)
@@ -176,6 +182,8 @@ func _on_race_pressed() -> void:
 
 ## Actually drive the race in 3D — same fees, same payout math.
 func _on_drive_pressed() -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
 	var track := _selected_track()
 	if not RaceData.is_unlocked(track, PlayerProfile.level):
 		_status_label.text = "Track locked — reach level %d." % RaceData.unlock_level(track)
@@ -193,6 +201,7 @@ func _local_payout(position: int, bet: int, track: Dictionary) -> int:
 	return RaceSession.payout(position, bet, track)
 
 func _on_race_result(result: Dictionary, track: Dictionary, bet: int, entry_fee: int = 0) -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
 	_race_btn.disabled = false
 
 	if not result.get("success", false):

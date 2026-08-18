@@ -36,6 +36,9 @@ func _ready() -> void:
 			_fall_through())
 
 func _fall_through() -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var LayerManager = AutoloadGate.get_node("LayerManager")
+	var Hope = AutoloadGate.get_node("Hope")
 	if _fired:
 		return
 	_fired = true

@@ -37,6 +37,7 @@ static func element_color(elem: String) -> Color:
 	return e.get("color", Color.WHITE) as Color
 
 static func compute_damage(sk: Dictionary, base_attack: int) -> int:
+	var SkillManager = AutoloadGate.get_node("SkillManager")
 	var power := float(sk.get("power", 1.0))
 	var dmg := int(float(base_attack) * power)
 	var elem := str(sk.get("element", ""))
@@ -52,6 +53,8 @@ static func compute_damage(sk: Dictionary, base_attack: int) -> int:
 	return maxi(dmg, 1)
 
 static func play_cast_vfx(host: Node3D, caster: Node3D, sk: Dictionary) -> void:
+	var SkillManager = AutoloadGate.get_node("SkillManager")
+	var BlueprintManager = AutoloadGate.get_node("BlueprintManager")
 	if host == null or caster == null or not is_instance_valid(host) or not is_instance_valid(caster):
 		return
 	var at: Vector3 = caster.global_position
@@ -100,6 +103,7 @@ static func play_telegraph(host: Node3D, caster: Node3D, sk: Dictionary) -> void
 
 ## Immediate resolve — smokes + hosts that already did their own windup.
 static func resolve(host: Node3D, caster: Node3D, sk: Dictionary, opts: Dictionary = {}) -> Dictionary:
+	var SkillManager = AutoloadGate.get_node("SkillManager")
 	var out := {
 		"hits": 0, "damage": 0, "kind": str(sk.get("kind", "damage")),
 		"skill_id": str(sk.get("id", "")), "element": str(sk.get("element", "")),

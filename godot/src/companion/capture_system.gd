@@ -21,6 +21,12 @@ signal entity_lost(entity_id: String, name: String, stage: int)
 ## Call at the exact instant a WorldEntity dies to a player-driven cause.
 ## `player_hp_ratio` in [0..1] describes how healthy the player finished.
 func on_defeated(entity: WorldEntity, player_hp_ratio: float) -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var CompanionSystem = AutoloadGate.get_node("CompanionSystem")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var LayerManager = AutoloadGate.get_node("LayerManager")
+	var PeriliminalRuns = AutoloadGate.get_node("PeriliminalRuns")
+	var Hope = AutoloadGate.get_node("Hope")
 	if entity == null or entity.line.is_empty():
 		return
 	var entity_id := str(entity.line.get("id", ""))

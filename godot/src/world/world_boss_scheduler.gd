@@ -25,6 +25,7 @@ func _ready() -> void:
 	set_process(true)
 
 func _process(delta: float) -> void:
+	var NetworkManager = AutoloadGate.get_node("NetworkManager")
 	_online_mode = NetworkManager != null and NetworkManager.is_connected_to_server()
 	if _online_mode and _online_soft_fails < 3:
 		_process_online(delta)
@@ -32,6 +33,7 @@ func _process(delta: float) -> void:
 		_process_offline(delta)
 
 func _process_offline(delta: float) -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if _active_boss != null:
 		if not is_instance_valid(_active_boss):
 			_active_boss = null
@@ -54,6 +56,7 @@ func _process_offline(delta: float) -> void:
 		_next_spawn_in = BOSS_INTERVAL_SEC
 
 func _process_online(delta: float) -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if _active_boss != null and not is_instance_valid(_active_boss):
 		_active_boss = null
 		_boss_id = ""
@@ -75,6 +78,7 @@ func _process_online(delta: float) -> void:
 	_poll_server_state()
 
 func _poll_server_state() -> void:
+	var NetworkManager = AutoloadGate.get_node("NetworkManager")
 	if NetworkManager == null or not NetworkManager.has_method("call_rpc"):
 		return
 	_pending_rpc = true
@@ -101,6 +105,7 @@ func _on_server_state(result: Dictionary) -> void:
 		_claim_spawn()
 
 func _claim_spawn() -> void:
+	var NetworkManager = AutoloadGate.get_node("NetworkManager")
 	if _pending_rpc:
 		return
 	var ctx := _spawn_context()
@@ -127,6 +132,7 @@ func _claim_spawn() -> void:
 	)
 
 func note_zone_kill(hub_id: String) -> void:
+	var NetworkManager = AutoloadGate.get_node("NetworkManager")
 	_zone_kills[hub_id] = int(_zone_kills.get(hub_id, 0)) + 1
 	# Accelerate the next world boss after enough zone kills.
 	if int(_zone_kills.get(hub_id, 0)) >= 2:
@@ -142,6 +148,7 @@ func clear_active() -> void:
 	_boss_alive_for = 0.0
 
 func _spawn_context() -> Dictionary:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	var tree := get_tree()
 	if tree == null:
 		return {}
@@ -167,6 +174,7 @@ func _spawn_context() -> Dictionary:
 	return {"world": world, "player": player, "line": line, "pos": pos}
 
 func _spawn_world_boss(server_active: Dictionary) -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if _active_boss != null and is_instance_valid(_active_boss):
 		return
 	var ctx := _spawn_context()
@@ -208,6 +216,12 @@ func _spawn_world_boss(server_active: Dictionary) -> void:
 	boss_spawned.emit(_boss_id, pos)
 
 func _on_boss_died(ent: WorldEntity) -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var NetworkManager = AutoloadGate.get_node("NetworkManager")
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var QuestManager = AutoloadGate.get_node("QuestManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var CrownManager = AutoloadGate.get_node("CrownManager")
 	var killed_id := _boss_id
 	_active_boss = null
 	_boss_alive_for = 0.0

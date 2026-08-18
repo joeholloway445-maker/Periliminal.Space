@@ -19,6 +19,7 @@ func _init_grid() -> void:
 			_coin_grid[Vector2i(x, y)] = randf() < 0.35
 
 func drop_coin(column: int, bet: int) -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
 	if EconomyManager == null or not EconomyManager.spend_currency_local("chips", bet, "coin_pusher"):
 		push_warning("CoinPusher: insufficient chips")
 		return

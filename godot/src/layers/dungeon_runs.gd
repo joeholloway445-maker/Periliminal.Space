@@ -26,6 +26,7 @@ func run_seed(p_dungeon_id: String = "") -> int:
 
 ## Begin (or resume) a dungeon. Returns the stable seed.
 func begin(p_dungeon_id: String) -> int:
+	var MusicManager = AutoloadGate.get_node("MusicManager")
 	dungeon_id = p_dungeon_id
 	active = true
 	depth = 0
@@ -53,6 +54,10 @@ func advance_depth() -> void:
 
 ## Clear at depth 3+ — bank a soft reward and return to sanctuary hub.
 func try_clear() -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var QuestManager = AutoloadGate.get_node("QuestManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var LayerManager = AutoloadGate.get_node("LayerManager")
 	if not active or depth < 3:
 		return
 	var entry: Dictionary = _ledger.get_or_add(dungeon_id, {"seed": _seed, "deepest": 0, "clears": 0})
@@ -69,6 +74,8 @@ func try_clear() -> void:
 
 ## Death / quit — eject, keep inventory and currencies.
 func eject(reason: String = "death") -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var LayerManager = AutoloadGate.get_node("LayerManager")
 	if not active:
 		return
 	run_ejected.emit(dungeon_id, reason)

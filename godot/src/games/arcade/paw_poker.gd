@@ -36,6 +36,7 @@ func draw() -> void:
 	_call_rpc("draw", _held_indices)
 
 func _call_rpc(action: String, held: Array) -> void:
+	var NetworkManager = AutoloadGate.get_node("NetworkManager")
 	var payload = JSON.stringify({"action": action, "bet": _bet, "held_indices": held})
 	NetworkManager.call_rpc("play_poker", payload, _on_rpc_result)
 

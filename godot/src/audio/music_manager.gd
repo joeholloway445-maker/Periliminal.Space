@@ -48,6 +48,8 @@ var _active: AudioStreamPlayer
 var _current_context := ""
 
 func _ready() -> void:
+	var LayerManager = AutoloadGate.get_node("LayerManager")
+	var TournamentManager = AutoloadGate.get_node("TournamentManager")
 	_a = AudioStreamPlayer.new()
 	_b = AudioStreamPlayer.new()
 	for p in [_a, _b]:
@@ -65,6 +67,7 @@ func _ready() -> void:
 ## Play the track for a context, crossfading from whatever's on. `loop`
 ## false = play once then return to the previous context (victory stingers).
 func play_context(context: String, loop: bool = true) -> void:
+	var IdentityLens = AutoloadGate.get_node("IdentityLens")
 	if context == _current_context:
 		return
 	var paths: Array = TRACKS.get(context, [])
@@ -112,6 +115,7 @@ func play_context(context: String, loop: bool = true) -> void:
 
 	if not loop:
 		incoming.finished.connect(func():
+			var LayerManager = AutoloadGate.get_node("LayerManager")
 			_current_context = ""
 			play_context(LAYER_CONTEXT.get(LayerManager.current_layer_id, "theme")),
 			CONNECT_ONE_SHOT)
@@ -125,5 +129,6 @@ func _import_binary_ready(path: String) -> bool:
 ## Racing scenes call this on entry/exit.
 func enter_racing() -> void: play_context("racing")
 func exit_racing() -> void:
+	var LayerManager = AutoloadGate.get_node("LayerManager")
 	_current_context = ""
 	play_context(LAYER_CONTEXT.get(LayerManager.current_layer_id, "theme"))

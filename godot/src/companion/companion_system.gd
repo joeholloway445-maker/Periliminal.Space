@@ -148,6 +148,7 @@ func get_unlocked_count() -> int:
 
 ## Equip into a 1-based party slot on PlayerProfile.active_companion_ids.
 func equip_companion(companion_id, slot: int) -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	if slot < 1:
 		push_warning("CompanionSystem: equip_companion slot must be >= 1")
 		return

@@ -22,6 +22,8 @@ func _ready() -> void:
 
 ## Where banking is allowed: any hub city chunk, or the casino layer.
 func at_branch() -> bool:
+	var TerritoryControl = AutoloadGate.get_node("TerritoryControl")
+	var LayerManager = AutoloadGate.get_node("LayerManager")
 	if LayerManager.current_layer_id == "hyperliminal":
 		return true
 	if LayerManager.current_layer_id == "supraliminal":
@@ -29,6 +31,7 @@ func at_branch() -> bool:
 	return false
 
 func deposit(currency: String, amount: int) -> bool:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
 	if amount <= 0 or not await EconomyManager.spend_currency(currency, amount, "bank_deposit"):
 		return false
 	vault[currency] = vault.get(currency, 0) + amount
@@ -37,6 +40,7 @@ func deposit(currency: String, amount: int) -> bool:
 	return true
 
 func withdraw(currency: String, amount: int) -> bool:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
 	if amount <= 0 or vault.get(currency, 0) < amount:
 		return false
 	vault[currency] -= amount
@@ -46,6 +50,9 @@ func withdraw(currency: String, amount: int) -> bool:
 	return true
 
 func guild_deposit(currency: String, amount: int) -> bool:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var GuildManager = AutoloadGate.get_node("GuildManager")
 	if not GuildManager.in_guild():
 		NotificationUI.notify_error("No guild, no guild bank.")
 		return false
@@ -57,6 +64,9 @@ func guild_deposit(currency: String, amount: int) -> bool:
 	return true
 
 func guild_withdraw(currency: String, amount: int) -> bool:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var GuildManager = AutoloadGate.get_node("GuildManager")
 	if not GuildManager.can_use_guild_bank("local_player"):
 		NotificationUI.notify_error("Withdrawals need Officer rank or above.")
 		return false

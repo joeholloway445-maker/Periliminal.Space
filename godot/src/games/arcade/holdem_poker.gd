@@ -28,6 +28,8 @@ func _ready() -> void:
 	add_child(back)
 
 func _deal() -> void:
+	var NetworkManager = AutoloadGate.get_node("NetworkManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	NetworkManager.call_rpc("play_holdem", {action="deal", bet=int(bet_spin.value)},
 		func(result: Dictionary):
 			if result.get("error"):
@@ -42,6 +44,10 @@ func _deal() -> void:
 	)
 
 func _action(act: String) -> void:
+	var NetworkManager = AutoloadGate.get_node("NetworkManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var AchievementManager = AutoloadGate.get_node("AchievementManager")
+	var XPManager = AutoloadGate.get_node("XPManager")
 	NetworkManager.call_rpc("play_holdem", {action=act, bet=int(bet_spin.value)},
 		func(result: Dictionary):
 			if result.get("error"):

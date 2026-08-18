@@ -90,6 +90,7 @@ func disband() -> void:
 	party_changed.emit(members())
 
 func _self_id() -> String:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	if PlayerProfile and not str(PlayerProfile.username).is_empty():
 		return str(PlayerProfile.username)
 	return "local_player"

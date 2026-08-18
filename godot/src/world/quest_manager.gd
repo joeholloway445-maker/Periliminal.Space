@@ -254,6 +254,14 @@ func update_progress(trigger: String, amount: int = 1) -> void:
 	_save_quest_state()
 
 func _check_completion(quest_id: String, quest: Dictionary) -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var FactionManager = AutoloadGate.get_node("FactionManager")
+	var CompanionSystem = AutoloadGate.get_node("CompanionSystem")
+	var AchievementManager = AutoloadGate.get_node("AchievementManager")
+	var CrownManager = AutoloadGate.get_node("CrownManager")
+	var SkillManager = AutoloadGate.get_node("SkillManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	var progress = _active[quest_id].get("progress", {})
 	for obj in quest.get("objectives", []):
 		if progress.get(obj.id, 0) < obj.get("target", 1):
@@ -302,6 +310,7 @@ func _check_completion(quest_id: String, quest: Dictionary) -> void:
 ## server-tracked quests (neon_alley_racer, arcade_champion, ...) stay in
 ## sync when a session exists.
 func accept_quest(quest_id: String) -> void:
+	var NetworkManager = AutoloadGate.get_node("NetworkManager")
 	if not _find_quest(quest_id).is_empty():
 		accept(quest_id)
 	if NetworkManager.is_connected_to_server():
@@ -310,6 +319,7 @@ func accept_quest(quest_id: String) -> void:
 ## Force-completes a local quest (fills every objective) or, for
 ## server-only quest ids, just reports completion to Nakama.
 func complete_quest(quest_id: String) -> void:
+	var NetworkManager = AutoloadGate.get_node("NetworkManager")
 	var quest := _find_quest(quest_id)
 	if not quest.is_empty() and quest_id in _active:
 		for obj in quest.get("objectives", []):
@@ -319,6 +329,7 @@ func complete_quest(quest_id: String) -> void:
 	if NetworkManager.is_connected_to_server():
 		NetworkManager.call_rpc("quest_action", {quest_id=quest_id, action="complete"},
 			func(result: Dictionary):
+				var NotificationUI = AutoloadGate.get_node("NotificationUI")
 				if result.get("coins_awarded", 0) > 0:
 					NotificationUI.show_notification("Quest reward: +%d coins!" % result.coins_awarded, Color(0.3, 1.0, 0.3), "🎉")
 		)

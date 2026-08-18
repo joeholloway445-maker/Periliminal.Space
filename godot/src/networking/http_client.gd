@@ -127,6 +127,7 @@ func _do_request(
 
 # ─── Helpers ─────────────────────────────────────────────────────────────────
 func _build_headers(is_get: bool = false) -> PackedStringArray:
+	var AccountManager = AutoloadGate.get_node("AccountManager")
 	var headers: PackedStringArray = []
 	if not is_get:
 		headers.append("Content-Type: application/json")

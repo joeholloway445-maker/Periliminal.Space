@@ -58,6 +58,7 @@ func _build_ui() -> void:
 	btn_row.add_child(_dismiss_btn)
 
 func _check_claim() -> void:
+	var DailyRewards = AutoloadGate.get_node("DailyRewards")
 	if not DailyRewards: return
 	if not DailyRewards.can_claim():
 		_reward_label.text = "Already claimed today! Come back tomorrow."
@@ -76,6 +77,7 @@ func _check_claim() -> void:
 	_reward_label.text = reward_text
 
 func _on_claim_pressed() -> void:
+	var DailyRewards = AutoloadGate.get_node("DailyRewards")
 	if not DailyRewards: return
 	DailyRewards.reward_claimed.connect(_on_reward_claimed)
 	DailyRewards.already_claimed.connect(_on_dismiss)

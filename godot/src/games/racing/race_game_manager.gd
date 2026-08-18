@@ -24,12 +24,14 @@ func _ready() -> void:
 
 ## Legacy programmatic entry point (bypasses RaceUI) — still server-only.
 func start_race(frame_id: String, bet: int) -> void:
+	var NetworkManager = AutoloadGate.get_node("NetworkManager")
 	_current_bet = bet
 	_current_frame = frame_id
 	race_started.emit(frame_id, bet)
 
 	NetworkManager.call_rpc("start_race", {frame_id=frame_id, bet=bet},
 		func(result: Dictionary):
+			var NotificationUI = AutoloadGate.get_node("NotificationUI")
 			if result.get("error"):
 				NotificationUI.notify_error(result.error)
 				return
@@ -39,6 +41,10 @@ func start_race(frame_id: String, bet: int) -> void:
 	)
 
 func _on_race_result(position: int, payout: int, result: Dictionary) -> void:
+	var AchievementManager = AutoloadGate.get_node("AchievementManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var XPManager = AutoloadGate.get_node("XPManager")
+	var QuestManager = AutoloadGate.get_node("QuestManager")
 	race_finished.emit(position, payout)
 	AchievementManager.check("race_enter")
 	if position <= 3:
@@ -60,6 +66,8 @@ func _on_race_result(position: int, payout: int, result: Dictionary) -> void:
 	await _feed_arena_cup(position)
 
 func _feed_arena_cup(position: int) -> void:
+	var TournamentManager = AutoloadGate.get_node("TournamentManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if TournamentManager == null:
 		return
 	if TournamentManager.state != TournamentManager.TournamentState.REGISTRATION:

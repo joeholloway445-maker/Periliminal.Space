@@ -219,10 +219,12 @@ func _open_game_lobby() -> void:
 			game_lobby_ui.refresh()
 
 func _connect_signals() -> void:
+	var DistrictManager = AutoloadGate.get_node("DistrictManager")
 	if DistrictManager and DistrictManager.has_signal("player_count_updated"):
 		DistrictManager.player_count_updated.connect(_on_player_count_updated)
 
 func _on_player_count_updated(district_id: Variant, count: int) -> void:
+	var DistrictManager = AutoloadGate.get_node("DistrictManager")
 	# DistrictManager emits District enum (int).
 	var match_vegas := int(district_id) == int(DistrictManager.District.PAW_VEGAS)
 	if district_id is String:

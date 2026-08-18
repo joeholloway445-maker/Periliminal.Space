@@ -46,6 +46,8 @@ func can_claim() -> bool:
 	return _save_data.get("last_claim_date", "") != today
 
 func claim() -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var InventoryManager = AutoloadGate.get_node("InventoryManager")
 	if not can_claim():
 		already_claimed.emit()
 		return

@@ -31,6 +31,7 @@ func double_down() -> void:
 	_send_action("double", _bet, _game_state)
 
 func _send_action(action: String, bet: int, state: Dictionary) -> void:
+	var NetworkManager = AutoloadGate.get_node("NetworkManager")
 	var payload = JSON.stringify({
 		"action": action,
 		"bet": bet,

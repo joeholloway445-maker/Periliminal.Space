@@ -17,6 +17,11 @@ const LOCAL_RANGE := 60.0
 var _socket = null
 
 func send(channel: String, text: String, to: String = "") -> void:
+	var NetworkManager = AutoloadGate.get_node("NetworkManager")
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var GuildManager = AutoloadGate.get_node("GuildManager")
+	var Hope = AutoloadGate.get_node("Hope")
 	text = text.strip_edges()
 	if text == "" or channel not in CHANNELS:
 		return
@@ -41,6 +46,9 @@ func send(channel: String, text: String, to: String = "") -> void:
 		_maybe_ghost_reply(channel, text)
 
 func _scope_key(channel: String, to: String) -> String:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var LayerManager = AutoloadGate.get_node("LayerManager")
+	var GuildManager = AutoloadGate.get_node("GuildManager")
 	match channel:
 		"guild": return "guild_" + GuildManager.guild.get("name", "none")
 		"faction": return "faction_" + PlayerProfile.faction
@@ -49,6 +57,8 @@ func _scope_key(channel: String, to: String) -> String:
 		_: return "global"
 
 func _try_socket() -> bool:
+	var AccountManager = AutoloadGate.get_node("AccountManager")
+	var NetworkManager = AutoloadGate.get_node("NetworkManager")
 	if not NetworkManager.is_connected_to_server():
 		return false
 	if _socket == null:
@@ -88,6 +98,7 @@ const GHOST_LINES := [
 ]
 
 func _maybe_ghost_reply(channel: String, _text: String) -> void:
+	var PresenceManager = AutoloadGate.get_node("PresenceManager")
 	if randf() > 0.35:
 		return
 	var tree := get_tree()

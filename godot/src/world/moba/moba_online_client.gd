@@ -41,6 +41,8 @@ var _phase := 0
 var _last_snapshot: Dictionary = {}
 
 func start(p_player: Node3D, p_match_id: String) -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	player = p_player
 	match_id = p_match_id
 	my_id = str(PlayerProfile.username) if PlayerProfile else "player"
@@ -99,6 +101,8 @@ func hero_is_alive() -> bool:
 	return _shop.hero.get("hp", 1) > 0
 
 func _connect_and_join() -> bool:
+	var AccountManager = AutoloadGate.get_node("AccountManager")
+	var NetworkManager = AutoloadGate.get_node("NetworkManager")
 	if not NetworkManager.is_connected_to_server():
 		return false
 	var client = AccountManager.get_nakama_client()
@@ -251,6 +255,7 @@ func _on_match_end(data: Dictionary) -> void:
 		match_lost.emit()
 
 func _apply_snapshot(snap: Dictionary) -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	_last_snapshot = snap
 	_phase = int(snap.get("phase", _phase))
 	# Players

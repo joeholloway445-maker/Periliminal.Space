@@ -212,6 +212,7 @@ func _add_muted_label(container: VBoxContainer, text: String) -> void:
 	container.add_child(label)
 
 func _player_label(player_id: String) -> String:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	if player_id == LOCAL_PLAYER_ID:
 		return PlayerProfile.get_display_name() if PlayerProfile.has_method("get_display_name") else "You"
 	return player_id.replace("_", " ").capitalize()

@@ -30,6 +30,7 @@ func toggle() -> void:
 		open()
 
 func open() -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if can_shop_cb.is_valid() and not can_shop_cb.call():
 		NotificationUI.notify_error("Shop only at the ally fountain — recall (R) or walk home.")
 		return
@@ -156,6 +157,7 @@ func _rebuild_inv() -> void:
 		_inv.add_child(row)
 
 func _buy(item_id: String) -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if can_shop_cb.is_valid() and not can_shop_cb.call():
 		NotificationUI.notify_error("Leave fountain — shop closed.")
 		close()
@@ -169,6 +171,7 @@ func _buy(item_id: String) -> void:
 	_rebuild_inv()
 
 func _sell(slot: int) -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	var result := shop.sell(slot)
 	if not result.get("success", false):
 		NotificationUI.notify_error(str(result.get("error", "Sell failed")))

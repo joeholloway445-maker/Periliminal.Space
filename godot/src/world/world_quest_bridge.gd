@@ -4,11 +4,14 @@ extends Node
 # QUESTS win id collisions (register_quest skips ids that already exist).
 
 func _ready() -> void:
+	var WorldLoader = AutoloadGate.get_node("WorldLoader")
 	if WorldLoader.quests.is_empty():
 		await WorldLoader.world_loaded
 	_register_json_quests()
 
 func _register_json_quests() -> void:
+	var WorldLoader = AutoloadGate.get_node("WorldLoader")
+	var QuestManager = AutoloadGate.get_node("QuestManager")
 	var count := 0
 	for quest_id in WorldLoader.quests.keys():
 		var q: Dictionary = WorldLoader.quests[quest_id]

@@ -17,6 +17,10 @@ func _ready() -> void:
 	coins_label.text = "Chips on board: %d" % _coins_on_board
 
 func _drop_coin() -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var AchievementManager = AutoloadGate.get_node("AchievementManager")
+	var XPManager = AutoloadGate.get_node("XPManager")
 	if _drop_in_progress:
 		return
 	var bet := int(bet_spin.value)

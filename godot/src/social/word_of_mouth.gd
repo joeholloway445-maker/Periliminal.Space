@@ -25,6 +25,8 @@ func _ready() -> void:
 	_load()
 
 func record_interaction(npc_id: String, tone: String) -> void:
+	var SkillManager = AutoloadGate.get_node("SkillManager")
+	var Hope = AutoloadGate.get_node("Hope")
 	if tone not in TONES:
 		return
 	# Social Politics "Soft Power" — reputation swings land harder.

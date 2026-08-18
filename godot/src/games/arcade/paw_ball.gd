@@ -57,6 +57,7 @@ func _on_match_started_ui(home: String, away: String) -> void:
 		_result_label.text = "Whistle blown..."
 
 func _on_match_result_ui(home_score: int, away_score: int, winner: String, payout: int) -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if _result_label:
 		_result_label.text = "Final %d-%d (%s). Payout: %d" % [home_score, away_score, winner, payout]
 	if payout > 0 and NotificationUI:
@@ -64,12 +65,14 @@ func _on_match_result_ui(home_score: int, away_score: int, winner: String, payou
 	_preview_matchup()
 
 func _on_error_ui(message: String) -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if _result_label:
 		_result_label.text = message
 	if NotificationUI:
 		NotificationUI.notify_error(message)
 
 func start_match(bet: int, pick: String) -> void:
+	var NetworkManager = AutoloadGate.get_node("NetworkManager")
 	if _current_match.get("active", false):
 		error_occurred.emit("Match already in progress")
 		return

@@ -124,6 +124,7 @@ func add_battlepass_xp(amount: int, source: String = "gameplay") -> void:
 	_save_cache()
 
 func claim_battlepass_reward(tier: int, premium: bool) -> Dictionary:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
 	if premium and not has_premium_pass:
 		push_warning("LiveOpsManager: player does not have premium pass")
 		return {}
@@ -180,6 +181,7 @@ func _generate_battlepass_tiers() -> void:
 		})
 
 func _fetch_live_data() -> void:
+	var AccountManager = AutoloadGate.get_node("AccountManager")
 	if not AccountManager or not AccountManager.is_authenticated:
 		_load_mock_events()
 		return

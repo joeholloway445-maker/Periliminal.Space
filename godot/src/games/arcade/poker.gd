@@ -22,11 +22,13 @@ func _ready() -> void:
 	draw_btn.pressed.connect(_draw)
 
 func _deal() -> void:
+	var NetworkManager = AutoloadGate.get_node("NetworkManager")
 	if _phase != "bet":
 		_reset()
 		return
 	NetworkManager.call_rpc("play_poker", {action="deal", bet=int(bet_spin.value)},
 		func(result: Dictionary):
+			var NotificationUI = AutoloadGate.get_node("NotificationUI")
 			if result.get("error"):
 				NotificationUI.notify_error(result.error)
 				return
@@ -41,8 +43,12 @@ func _deal() -> void:
 	)
 
 func _draw() -> void:
+	var NetworkManager = AutoloadGate.get_node("NetworkManager")
 	NetworkManager.call_rpc("play_poker", {action="draw", held=_held, bet=int(bet_spin.value)},
 		func(result: Dictionary):
+			var NotificationUI = AutoloadGate.get_node("NotificationUI")
+			var AchievementManager = AutoloadGate.get_node("AchievementManager")
+			var XPManager = AutoloadGate.get_node("XPManager")
 			if result.get("error"):
 				NotificationUI.notify_error(result.error)
 				return

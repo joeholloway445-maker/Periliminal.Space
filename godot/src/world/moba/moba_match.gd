@@ -45,6 +45,7 @@ var _super_lanes_enemy: Dictionary = {} # lane_id -> true while inhib down
 var _super_lanes_ally: Dictionary = {}
 
 func start(p_player: Node3D) -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	player = p_player
 	if player:
 		player.global_position = ALLY_FOUNTAIN + Vector3(2, 0, 0)
@@ -261,6 +262,7 @@ func _spawn_one_bot(team: String, lane: int, nm: String) -> void:
 	bot.configure(team, lane, path, nm, self, false)
 
 func _spawn_companion() -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	var companion_name := "Hopebound"
 	if PlayerProfile and not PlayerProfile.active_companion_ids.is_empty():
 		var cid := str(PlayerProfile.active_companion_ids[0])
@@ -326,6 +328,7 @@ func _begin_recall() -> void:
 		_hud.set_recall(0.0)
 
 func _tick_recall(delta: float) -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	# Cancel if moved or damaged recently (movement check).
 	if player.global_position.distance_to(_recall_origin) > 0.6:
 		_recall_left = -1.0
@@ -377,6 +380,7 @@ func _nearest_enemy(within: float) -> Node3D:
 	return best
 
 func hero_take_hit(amount: int, _attacker: Node = null) -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if not _running or not _hero_alive:
 		return
 	# Cancel recall on damage

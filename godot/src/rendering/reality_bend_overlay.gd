@@ -70,6 +70,7 @@ func _make_overlay_rect(mat: ShaderMaterial) -> ColorRect:
 	return r
 
 func _process(delta: float) -> void:
+	var Hope = AutoloadGate.get_node("Hope")
 	# Anxiety pushes the bend further than the layer baseline alone —
 	# a fearful player's own screen gets less stable.
 	var anxiety: float = float(Hope.profile.get("anxiety", 0.0)) if Hope else 0.0

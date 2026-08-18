@@ -120,9 +120,14 @@ func _drop_and_fill() -> void:
 			_board[row][col] = randi() % SYMBOLS.size()
 
 func _submit_score() -> void:
+	var NetworkManager = AutoloadGate.get_node("NetworkManager")
 	_active = false
 	NetworkManager.call_rpc("submit_puzzle_score", {score=_score, bet=int(bet_spin.value)},
 		func(result: Dictionary):
+			var NotificationUI = AutoloadGate.get_node("NotificationUI")
+			var AchievementManager = AutoloadGate.get_node("AchievementManager")
+			var QuestManager = AutoloadGate.get_node("QuestManager")
+			var XPManager = AutoloadGate.get_node("XPManager")
 			var payout: int = result.get("payout", 0)
 			if payout > 0:
 				NotificationUI.notify_win("Puzzle score %d — +%d coins!" % [_score, payout])

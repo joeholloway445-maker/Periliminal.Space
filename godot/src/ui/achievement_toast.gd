@@ -14,6 +14,7 @@ var _showing := false
 var _toast_tween: Tween
 
 func _ready() -> void:
+	var AchievementManager = AutoloadGate.get_node("AchievementManager")
 	layer = 80
 	_build_ui()
 	if not AchievementManager.achievement_unlocked.is_connected(_on_achievement_unlocked):

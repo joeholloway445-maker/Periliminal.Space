@@ -48,6 +48,7 @@ func get_available_items() -> Array[Dictionary]:
 	return result
 
 func purchase(item_id: String) -> Dictionary:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
 	_check_refresh()
 	var item = _find_item(item_id)
 	if item.is_empty():
@@ -75,6 +76,7 @@ func purchase(item_id: String) -> Dictionary:
 	return {success=true, item=item}
 
 func _apply_purchase(item: Dictionary) -> void:
+	var CompanionSystem = AutoloadGate.get_node("CompanionSystem")
 	match item.get("type", ShopType.CONSUMABLE):
 		ShopType.COMPANION:
 			if item.id == "shop_companion_random":
