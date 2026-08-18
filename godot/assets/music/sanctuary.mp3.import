@@ -2,13 +2,13 @@
 
 importer="mp3"
 type="AudioStreamMP3"
-uid="uid://b8sanctuarybed01"
-path="res://.godot/imported/sanctuary.mp3-ownertrial01.mp3str"
+uid="uid://lko46by13iai"
+path="res://.godot/imported/sanctuary.mp3-166ba29a69ca55cc2df7ae237a9e590c.mp3str"
 
 [deps]
 
 source_file="res://assets/music/sanctuary.mp3"
-dest_files=["res://.godot/imported/sanctuary.mp3-ownertrial01.mp3str"]
+dest_files=["res://.godot/imported/sanctuary.mp3-166ba29a69ca55cc2df7ae237a9e590c.mp3str"]
 
 [params]
 

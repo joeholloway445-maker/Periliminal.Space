@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bq8periliminallogo01"
-path="res://.godot/imported/logo.png-periliminal01.ctex"
+uid="uid://biamcxg7qh4qi"
+path="res://.godot/imported/logo.png-d34d183e6fc605a54aaa32000f044bbc.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/ui/logo.png"
-dest_files=["res://.godot/imported/logo.png-periliminal01.ctex"]
+dest_files=["res://.godot/imported/logo.png-d34d183e6fc605a54aaa32000f044bbc.ctex"]
 
 [params]
 
