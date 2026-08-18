@@ -165,6 +165,20 @@ func _save() -> void:
 	}))
 	f.close()
 
+## Public alias for _save() -- some callers (dynamic .call("save"), or code
+## outside this class) need a public entry point.
+func save() -> void:
+	_save()
+
+func has_cat_skin_extraliminal() -> bool:
+	return cat_skin_extraliminal
+
+func unlock_cat_skin_extraliminal() -> void:
+	if cat_skin_extraliminal:
+		return
+	cat_skin_extraliminal = true
+	_save()
+
 func add_xp(amount: int) -> void:
 	xp += amount
 	var threshold = xp_for_level(level + 1)
@@ -235,6 +249,10 @@ func set_perihuman_dna(dna: Dictionary) -> void:
 	perihuman_dna = dna
 	_save()
 	profile_updated.emit()
+
+## True when the secret god-mode login sequence was used. See is_testing.
+func is_god_mode() -> bool:
+	return is_testing
 
 func set_sex(new_sex: String) -> void:
 	sex = new_sex if new_sex == "f" else "m"

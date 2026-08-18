@@ -14,12 +14,14 @@ const LOCAL_CUPS = [
 var _local_log: VBoxContainer
 
 func _ready() -> void:
+	var TournamentManager = AutoloadGate.get_node("TournamentManager")
 	TournamentManager.tournament_round_complete.connect(_on_round_complete)
 	TournamentManager.tournament_finished.connect(_on_tournament_finished)
 	_refresh()
 	UINav.add_back_button(self)
 
 func _refresh() -> void:
+	var NetworkManager = AutoloadGate.get_node("NetworkManager")
 	if NetworkManager.is_connected_to_server():
 		NetworkManager.call_rpc("get_tournaments", {},
 			func(result: Dictionary):
@@ -30,6 +32,7 @@ func _refresh() -> void:
 		_render([])
 
 func _render(tournaments: Array) -> void:
+	var TournamentManager = AutoloadGate.get_node("TournamentManager")
 	for child in tournament_list.get_children():
 		child.queue_free()
 
@@ -49,7 +52,7 @@ func _render(tournaments: Array) -> void:
 
 		var enter_btn := Button.new()
 		enter_btn.text = "Enter Tournament"
-		var tid := t.get("id", "")
+		var tid: String = t.get("id", "")
 		enter_btn.pressed.connect(func(): _enter(tid))
 		card.add_child(enter_btn)
 
@@ -60,6 +63,7 @@ func _render(tournaments: Array) -> void:
 	_render_local_cups()
 
 func _render_local_cups() -> void:
+	var TournamentManager = AutoloadGate.get_node("TournamentManager")
 	var header := Label.new()
 	header.text = "🏁 LOCAL RACING CUPS"
 	header.add_theme_font_size_override("font_size", 18)
@@ -92,6 +96,9 @@ func _render_local_cups() -> void:
 	tournament_list.add_child(_local_log)
 
 func _run_local_cup(cup: Dictionary) -> void:
+	var TournamentManager = AutoloadGate.get_node("TournamentManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	if TournamentManager.state != TournamentManager.TournamentState.IDLE:
 		NotificationUI.notify_error("A tournament is already running.")
 		return
@@ -137,6 +144,7 @@ func _on_round_complete(round_num: int, results: Array) -> void:
 	_log_line("Round %d complete." % round_num)
 
 func _on_tournament_finished(winner: Dictionary, _standings: Array) -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if winner.get("is_player", false):
 		_log_line("🥇 CHAMPION! You take the pot!")
 		NotificationUI.notify_win("Tournament champion! 🏆")
@@ -146,6 +154,8 @@ func _on_tournament_finished(winner: Dictionary, _standings: Array) -> void:
 		my_rank_label.text = "Last cup: %s" % ("CHAMPION 🏆" if winner.get("is_player", false) else "eliminated")
 
 func _enter(tournament_id: String) -> void:
+	var NetworkManager = AutoloadGate.get_node("NetworkManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	NetworkManager.call_rpc("join_tournament", {tournament_id=tournament_id},
 		func(result: Dictionary):
 			if result.get("success"):

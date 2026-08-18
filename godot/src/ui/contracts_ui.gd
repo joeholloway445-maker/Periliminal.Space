@@ -19,6 +19,9 @@ var _dungeon_list: VBoxContainer
 var _tick := 0.0
 
 func _ready() -> void:
+	var PvpMissions = AutoloadGate.get_node("PvpMissions")
+	var PartyManager = AutoloadGate.get_node("PartyManager")
+	var DungeonManager = AutoloadGate.get_node("DungeonManager")
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 
 	var scroll := ScrollContainer.new()
@@ -68,6 +71,7 @@ func _process(delta: float) -> void:
 		_refresh_missions()
 
 func _has_active() -> bool:
+	var PvpMissions = AutoloadGate.get_node("PvpMissions")
 	if not PvpMissions:
 		return false
 	for m in PvpMissions.all_missions():
@@ -120,6 +124,8 @@ func _refresh_all() -> void:
 	_refresh_dungeons()
 
 func _refresh_missions() -> void:
+	var PvpMissions = AutoloadGate.get_node("PvpMissions")
+	var PartyManager = AutoloadGate.get_node("PartyManager")
 	if _mission_list == null or not PvpMissions:
 		return
 	_clear(_mission_list)
@@ -131,7 +137,7 @@ func _refresh_missions() -> void:
 		var reward: Dictionary = m.get("reward", {})
 
 		if PvpMissions.is_active(id):
-			var left := PvpMissions.time_left(id)
+			var left = PvpMissions.time_left(id)
 			var row := _row(_mission_list, "%s   %d/%d   %s left\n%s" % [
 				str(m.name), PvpMissions.progress_of(id), target,
 				_hms(left), str(m.blurb)])
@@ -141,7 +147,7 @@ func _refresh_missions() -> void:
 			row.add_child(give_up)
 			continue
 
-		var done := PvpMissions.completed_count(id)
+		var done = PvpMissions.completed_count(id)
 		var line := "%s   Rank %s   stake %s → %s%s\n%s" % [
 			str(m.name), DungeonData.rank_label(int(m.get("rank", 1))),
 			_currency(stake), _currency(reward),
@@ -149,8 +155,8 @@ func _refresh_missions() -> void:
 			str(m.blurb)]
 
 		var party_needed := int(m.get("party", 1))
-		var party_have := PartyManager.size() if PartyManager else 1
-		var short := party_have < party_needed
+		var party_have = PartyManager.size() if PartyManager else 1
+		var short = party_have < party_needed
 		var row2 := _row(_mission_list, line, short)
 
 		var take := Button.new()
@@ -158,13 +164,19 @@ func _refresh_missions() -> void:
 		take.disabled = short
 		if short:
 			take.tooltip_text = "Needs a party of %d — you are %d." % [party_needed, party_have]
-		take.pressed.connect(func():
-			var res: Dictionary = PvpMissions.accept(id)
-			if not bool(res.ok) and NotificationUI:
-				NotificationUI.notify_error(str(res.reason)))
+		take.pressed.connect(_accept_mission.bind(id))
 		row2.add_child(take)
 
+func _accept_mission(id: String) -> void:
+	var PvpMissions = AutoloadGate.get_node("PvpMissions")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var res: Dictionary = await PvpMissions.accept(id)
+	if not bool(res.ok) and NotificationUI:
+		NotificationUI.notify_error(str(res.reason))
+
 func _refresh_party() -> void:
+	var PartyManager = AutoloadGate.get_node("PartyManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if _party_list == null:
 		return
 	_clear(_party_list)
@@ -205,6 +217,7 @@ func _refresh_party() -> void:
 		_party_list.add_child(leave)
 
 func _refresh_dungeons() -> void:
+	var DungeonManager = AutoloadGate.get_node("DungeonManager")
 	if _dungeon_list == null:
 		return
 	_clear(_dungeon_list)

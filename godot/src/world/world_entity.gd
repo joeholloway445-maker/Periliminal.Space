@@ -83,7 +83,8 @@ func setup_boss(dex_line: Dictionary, stage: int, target: Node3D,
 		_label.text = "%s · %s" % [_boss_title, str(stage_info.get("name", "?"))]
 		_label.font_size = 52
 	SkillVFX.add_aura_shell(self, Color(1.0, 0.35, 0.15), 0.12)
-	CombatSfx.play(self, "boss_spawn", global_position, -3.0)
+	if is_inside_tree():
+		CombatSfx.play(self, "boss_spawn", global_position, -3.0)
 	_refresh_boss_label()
 
 func is_boss() -> bool:

@@ -15,6 +15,8 @@ var _slots: Dictionary = {} # Vector2i -> MeshInstance3D
 var _panel_status: Label
 
 func _ready() -> void:
+	var LayerManager = AutoloadGate.get_node("LayerManager")
+	var SubliminalManager = AutoloadGate.get_node("SubliminalManager")
 	LayerManager.current_layer_id = "subliminal"
 	_build_room()
 	_build_camera()
@@ -25,6 +27,8 @@ func _ready() -> void:
 	_refresh_slots()
 
 func _build_room() -> void:
+	var SubliminalManager = AutoloadGate.get_node("SubliminalManager")
+	var IdentityLens = AutoloadGate.get_node("IdentityLens")
 	var grid: Vector2i = SubliminalManager.APARTMENT_GRID
 	var w := grid.x * SLOT_SIZE
 	var d := grid.y * SLOT_SIZE
@@ -77,6 +81,7 @@ func _build_room() -> void:
 			_slots[Vector2i(x, y)] = slot
 
 func _make_slot(gpos: Vector2i, w: float, d: float) -> MeshInstance3D:
+	var SubliminalManager = AutoloadGate.get_node("SubliminalManager")
 	var grid: Vector2i = SubliminalManager.APARTMENT_GRID
 	var mi := MeshInstance3D.new()
 	var plane := PlaneMesh.new()
@@ -106,6 +111,9 @@ func _make_slot(gpos: Vector2i, w: float, d: float) -> MeshInstance3D:
 
 ## Click cycles the slot: empty -> next unlocked entity blueprint -> empty.
 func _cycle_slot(gpos: Vector2i) -> void:
+	var CompanionSystem = AutoloadGate.get_node("CompanionSystem")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var SubliminalManager = AutoloadGate.get_node("SubliminalManager")
 	var key := "%d,%d" % [gpos.x, gpos.y]
 	var unlocked: Array[String] = []
 	for c in CompanionSystem.roster:
@@ -122,6 +130,8 @@ func _cycle_slot(gpos: Vector2i) -> void:
 		SubliminalManager.place_in_apartment(gpos, unlocked[idx + 1])
 
 func _refresh_slots() -> void:
+	var SubliminalManager = AutoloadGate.get_node("SubliminalManager")
+	var IdentityLens = AutoloadGate.get_node("IdentityLens")
 	for gpos in _slots.keys():
 		var slot: MeshInstance3D = _slots[gpos]
 		for child in slot.get_children():
@@ -154,6 +164,8 @@ func _build_camera() -> void:
 	add_child(cam)
 
 func _build_panel() -> void:
+	var SubliminalManager = AutoloadGate.get_node("SubliminalManager")
+	var IdentityLens = AutoloadGate.get_node("IdentityLens")
 	var layer := CanvasLayer.new()
 	add_child(layer)
 	var box := VBoxContainer.new()
@@ -184,10 +196,11 @@ func _build_panel() -> void:
 	var invite := Button.new()
 	invite.text = "Send invite ✉️"
 	invite.pressed.connect(func():
-		var code := SubliminalManager.send_invite()
+		var code = SubliminalManager.send_invite()
 		if code != "":
 			_panel_status.text = "Code %s — invites left: %d / %d" % [
-				code, SubliminalManager.invites_left(), SubliminalManager.invite_cap()])
+				code, SubliminalManager.invites_left(), SubliminalManager.invite_cap()]
+	)
 	box.add_child(invite)
 
 	if not SubliminalManager.is_creator():
@@ -196,8 +209,9 @@ func _build_panel() -> void:
 		sub.pressed.connect(func():
 			if await SubliminalManager.buy_creator_subscription():
 				_panel_status.text = "Creator active — invites left: %d / %d" % [
-					SubliminalManager.invites_left(), SubliminalManager.invite_cap()])
-				get_tree().reload_current_scene())
+					SubliminalManager.invites_left(), SubliminalManager.invite_cap()]
+				get_tree().reload_current_scene()
+		)
 		box.add_child(sub)
 
 	var storage := Label.new()
@@ -210,7 +224,8 @@ func _build_panel() -> void:
 	expand.pressed.connect(func():
 		if await SubliminalManager.buy_storage_expansion():
 			storage.text = "Locker: %d / %d" % [
-				SubliminalManager.storage_used(), SubliminalManager.storage_capacity()])
+				SubliminalManager.storage_used(), SubliminalManager.storage_capacity()]
+	)
 	box.add_child(expand)
 
 	# Ambient figures are creator-paywalled — nothing auto-spawns here.
@@ -219,7 +234,7 @@ func _build_panel() -> void:
 		amb.text = "Place ambient figure (%d / %d)" % [
 			SubliminalManager.ambient_npcs.size(), SubliminalManager.MAX_CREATOR_AMBIENT]
 		amb.pressed.connect(func():
-			var placed := SubliminalManager.place_ambient_npc("reflection")
+			var placed = SubliminalManager.place_ambient_npc("reflection")
 			if not placed.is_empty():
 				amb.text = "Place ambient figure (%d / %d)" % [
 					SubliminalManager.ambient_npcs.size(), SubliminalManager.MAX_CREATOR_AMBIENT])
@@ -232,7 +247,9 @@ func _build_panel() -> void:
 
 	var leave := Button.new()
 	leave.text = "⬅ Step out"
-	leave.pressed.connect(func(): LayerManager.transition_to("hyperliminal"))
+	leave.pressed.connect(func():
+		var LayerManager = AutoloadGate.get_node("LayerManager")
+		LayerManager.transition_to("hyperliminal"))
 	box.add_child(leave)
 
 ## The mode selector — the Subliminal IS the start screen, every session.
@@ -240,6 +257,9 @@ func _build_panel() -> void:
 ## enforced by LayerManager; the Periliminal shows but never opens — it
 ## takes you, you don't take it). The casino is one door of six.
 func _build_mode_selector() -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var LayerManager = AutoloadGate.get_node("LayerManager")
+	var SubliminalManager = AutoloadGate.get_node("SubliminalManager")
 	var layer := CanvasLayer.new()
 	add_child(layer)
 	var panel := PanelContainer.new()
@@ -261,7 +281,7 @@ func _build_mode_selector() -> void:
 		var btn := Button.new()
 		btn.text = str(l.name)
 		btn.tooltip_text = str(l.desc)
-		var gate := LayerManager.can_enter(str(l.id))
+		var gate = LayerManager.can_enter(str(l.id))
 		if not bool(gate.get("ok", true)):
 			btn.disabled = true
 			btn.text += "  (%s)" % str(gate.get("reason", "locked"))
@@ -296,7 +316,8 @@ func _build_mode_selector() -> void:
 		up.tooltip_text = str(t.desc)
 		up.pressed.connect(func():
 			if await SubliminalManager.buy_tier(str(t.id)):
-				get_tree().reload_current_scene())
+				get_tree().reload_current_scene()
+		)
 		box.add_child(up)
 	if cur.can_public:
 		var pub := CheckButton.new()

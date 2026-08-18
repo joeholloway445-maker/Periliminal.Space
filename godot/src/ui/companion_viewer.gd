@@ -83,6 +83,7 @@ func _build_ui() -> void:
 		equip_row.add_child(btn)
 
 func _load_companions() -> void:
+	var CompanionManager = AutoloadGate.get_node("CompanionManager")
 	if CompanionManager:
 		_unlocked_ids = CompanionManager.get_unlocked_ids()
 	_refresh_grid()
@@ -154,6 +155,7 @@ func _select_companion(companion: Dictionary) -> void:
 		if btn: btn.visible = true
 
 func _equip_to_slot(slot: int) -> void:
+	var CompanionManager = AutoloadGate.get_node("CompanionManager")
 	if _selected.is_empty(): return
 	var cid = _selected.get("id", "")
 	if CompanionManager:
@@ -165,7 +167,7 @@ func _get_all_companions() -> Array[Dictionary]:
 	# Merge all roster sources
 	if CompanionRoster:
 		all.append_array(CompanionRoster.get_sovereign_crown_roster())
-		all.append_array(CompanionRoster.get_wildlands_roster())
+		all.append_array(CompanionRoster.get_wildlands_ascendant_roster())
 		all.append_array(CompanionRoster.get_veiled_current_roster())
 		all.append_array(CompanionRoster.get_factionless_roster())
 	return all

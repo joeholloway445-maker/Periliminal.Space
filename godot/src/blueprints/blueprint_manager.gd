@@ -25,17 +25,20 @@ func _ready() -> void:
 
 # ---------------------------------------------------------------- library
 
-func create(kind: String, base_id: String, display_name: String) -> Dictionary:
+func create(kind: String, base_id: String, display_name: String, preset: String = "") -> Dictionary:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if _library.size() >= MAX_LIBRARY:
 		NotificationUI.notify_error("Blueprint library full (%d)." % MAX_LIBRARY)
 		return {}
-	var bp := BlueprintData.fresh(kind, base_id, display_name)
+	var bp: Dictionary = BlueprintData.preset_bp(kind, preset, display_name) if preset != "" else BlueprintData.fresh(kind, base_id, display_name)
 	_library[bp.id] = bp
 	save_library()
 	library_changed.emit()
 	return bp
 
 func fork(bp_id: String) -> Dictionary:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	# Forking is how designs spread — but ONLY at the creator's discretion.
 	# Your own designs fork freely; anyone else's require allow_forks=true,
 	# opted in by the creator, never assumed. The original author rides
@@ -110,6 +113,7 @@ func unequip(kind: String, slot: String) -> void:
 ## your own space a blueprint can be ANYTHING — it can't hurt canon lore
 ## there. Everywhere else, only canon designs render.
 func equipped_for(kind: String, slot: String) -> Dictionary:
+	var LayerManager = AutoloadGate.get_node("LayerManager")
 	var bp_id: String = _equipped.get(kind, {}).get(slot, "")
 	if bp_id == "":
 		return {}
@@ -136,6 +140,9 @@ const HOLDINGS_CUT := 0.10
 const HOLDINGS_NAME := "Holloway's Own Providential Enterprise Apex Holdings Inc."
 
 func submit_for_review(bp_id: String) -> bool:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var Hope = AutoloadGate.get_node("Hope")
 	var bp := get_blueprint(bp_id)
 	if bp.is_empty():
 		return false
@@ -156,6 +163,7 @@ func submit_for_review(bp_id: String) -> bool:
 ## Called by the moderation backend (Discord bot -> Supabase -> client
 ## sync). Local calls exist so the pipeline is testable offline.
 func review_advance(bp_id: String, verdict: String) -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	var bp := get_blueprint(bp_id)
 	if bp.is_empty():
 		return
@@ -176,6 +184,7 @@ func review_advance(bp_id: String, verdict: String) -> void:
 	review_status_changed.emit(bp_id, str(bp.status))
 
 func set_allow_forks(bp_id: String, allowed: bool) -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	var bp := get_blueprint(bp_id)
 	if bp.is_empty() or str(bp.get("author", "")) != PlayerProfile.username:
 		return
@@ -189,6 +198,7 @@ func is_canon(bp_id: String) -> bool:
 ## Only the creator crafts copies of their design — that right never
 ## leaves them unless the blueprint itself is sold.
 func can_craft(bp_id: String) -> bool:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	var bp := get_blueprint(bp_id)
 	return not bp.is_empty() and str(bp.get("author", "")) == PlayerProfile.username
 
@@ -207,6 +217,8 @@ func export_code(bp_id: String) -> String:
 	return "PL1." + Marshalls.utf8_to_base64(json).replace("+", "-").replace("/", "_")
 
 func import_code(code: String) -> Dictionary:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var Hope = AutoloadGate.get_node("Hope")
 	code = code.strip_edges()
 	if not code.begins_with("PL1."):
 		NotificationUI.notify_error("Not a Periliminal blueprint code.")

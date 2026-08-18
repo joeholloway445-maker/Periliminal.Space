@@ -21,6 +21,7 @@ var _siege_active := false
 
 func setup(p_site_id: String, p_realm: String, p_hub_id: String,
 		p_accent: Color, player: Node3D, world_pos: Vector3) -> void:
+	var HideoutRegistry = AutoloadGate.get_node("HideoutRegistry")
 	site_id = p_site_id
 	realm = p_realm
 	hub_id = p_hub_id
@@ -29,6 +30,7 @@ func setup(p_site_id: String, p_realm: String, p_hub_id: String,
 	HideoutRegistry.register_site(site_id, realm, hub_id, world_pos)
 
 func _ready() -> void:
+	var HideoutRegistry = AutoloadGate.get_node("HideoutRegistry")
 	# The hideout shell: a fortified low hall with a banner wall.
 	var shell := AssetLibrary.instance("guild_hideout")
 	if shell == null:
@@ -81,12 +83,16 @@ func _ready() -> void:
 			_in_ring = false)
 
 func _owner() -> String:
+	var HideoutRegistry = AutoloadGate.get_node("HideoutRegistry")
 	return HideoutRegistry.owner_of(site_id)
 
 func _my_guild() -> String:
+	var GuildManager = AutoloadGate.get_node("GuildManager")
 	return str(GuildManager.guild.get("name", "")) if GuildManager.in_guild() else ""
 
 func _ring_hint() -> void:
+	var HideoutRegistry = AutoloadGate.get_node("HideoutRegistry")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	var owner := _owner()
 	var garrison: int = HideoutRegistry.defenders(site_id).size()
 	if owner == "":
@@ -98,6 +104,8 @@ func _ring_hint() -> void:
 		NotificationUI.notify_info("🏴 %s holds this ground (%d defender(s)). E to attack and take it." % [shown, garrison])
 
 func _unhandled_key_input(event: InputEvent) -> void:
+	var HideoutRegistry = AutoloadGate.get_node("HideoutRegistry")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if not _in_ring:
 		return
 	if not (event is InputEventKey and event.pressed and not event.echo):
@@ -117,6 +125,8 @@ func _unhandled_key_input(event: InputEvent) -> void:
 				HideoutRegistry.recall_defenders(site_id)
 
 func _on_e() -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var HideoutRegistry = AutoloadGate.get_node("HideoutRegistry")
 	var guild := _my_guild()
 	if guild == "":
 		NotificationUI.notify_error("A hideout needs a guild. Charter one at the bank first.")
@@ -133,6 +143,9 @@ func _on_e() -> void:
 ## defenders registered with LayerWorld so hotbar casts and bites land.
 ## Clear them all → ownership transfers. No dice roll.
 func _begin_siege(attacker_guild: String) -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var HideoutRegistry = AutoloadGate.get_node("HideoutRegistry")
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	if _siege_active:
 		NotificationUI.notify_info("Siege already underway — drop the garrison.")
 		return
@@ -187,6 +200,7 @@ func _find_layer_world() -> Node:
 	return null
 
 func _on_siege_defender_died(_ent: WorldEntity, attacker_guild: String) -> void:
+	var HideoutRegistry = AutoloadGate.get_node("HideoutRegistry")
 	var keep: Array[Node] = []
 	for n in _siege_alive:
 		if is_instance_valid(n) and (n is WorldEntity) and (n as WorldEntity).hp > 0:
@@ -198,14 +212,18 @@ func _on_siege_defender_died(_ent: WorldEntity, attacker_guild: String) -> void:
 		await HideoutRegistry.resolve_contest_win(site_id, attacker_guild)
 
 func _station_next_defender() -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var HideoutRegistry = AutoloadGate.get_node("HideoutRegistry")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	for cid in PlayerProfile.active_companion_ids.duplicate():
 		if HideoutRegistry.assign_defender(site_id, str(cid)):
 			return
 	NotificationUI.notify_error("No active entities to station — your party is empty.")
 
 func _refresh() -> void:
+	var HideoutRegistry = AutoloadGate.get_node("HideoutRegistry")
 	var owner := _owner()
-	var flying := HideoutRegistry.banner_visible(site_id)
+	var flying = HideoutRegistry.banner_visible(site_id)
 	if owner == "":
 		_title.text = "🏴 UNCLAIMED HIDEOUT"
 		_title.modulate = Color(0.7, 0.7, 0.75)

@@ -8,6 +8,7 @@ var _face: Label
 var _status: Label
 
 func _ready() -> void:
+	var Hope = AutoloadGate.get_node("Hope")
 	var box := VBoxContainer.new()
 	box.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
 	box.position.x -= 240
@@ -35,7 +36,8 @@ func _ready() -> void:
 	_refresh()
 
 func _refresh() -> void:
-	var s := Hope.stage()
+	var Hope = AutoloadGate.get_node("Hope")
+	var s = Hope.stage()
 	# Mannerisms drift with the profile: an aggressive player's Hope leans
 	# forward; a cautious one's Hope sits half-hidden.
 	var mood := "⟢" if Hope.profile.caution > Hope.profile.aggression else "⟣"

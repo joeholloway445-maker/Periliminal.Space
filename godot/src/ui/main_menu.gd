@@ -59,7 +59,6 @@ func _build_ui() -> void:
 		{label="🐾 Companions", scene="res://scenes/ui/companion_viewer.tscn"},
 		{label="🛒 Shop", scene="res://scenes/ui/shop.tscn"},
 		{label="🏆 Achievements", scene="res://scenes/ui/achievements.tscn"},
-		{label="🧬 Character Studio", scene="res://scenes/ui/perihuman_creator.tscn"},
 		{label="🌐 Game Modes", scene="res://scenes/ui/game_mode_store.tscn"},
 		{label="🗺️ Overworld", scene="res://scenes/layers/supraliminal.tscn"},
 		{label="🌀 Reality Layers", scene="res://scenes/layers/layer_select.tscn"},
@@ -82,6 +81,7 @@ func _build_ui() -> void:
 		btn.text = action.label
 		var scene_path: String = str(action.get("scene", ""))
 		btn.pressed.connect(func():
+			var NotificationUI = AutoloadGate.get_node("NotificationUI")
 			if scene_path != "" and ResourceLoader.exists(scene_path):
 				get_tree().change_scene_to_file(scene_path)
 			elif scene_path != "":
@@ -112,6 +112,7 @@ func _make_district_button(district: Dictionary) -> Button:
 	return btn
 
 func _travel_district(district_id: String) -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	enter_district.emit(district_id)
 	var path := "res://scenes/world/%s.tscn" % district_id
 	if district_id == "paw_vegas":
@@ -168,6 +169,8 @@ func _play_theme_song() -> void:
 	player.play()
 
 func _refresh_player_info() -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
 	if not PlayerProfile: return
 	_player_info_label.text = "%s | Lv.%d" % [PlayerProfile.get_display_name(), PlayerProfile.level]
 	if EconomyManager:

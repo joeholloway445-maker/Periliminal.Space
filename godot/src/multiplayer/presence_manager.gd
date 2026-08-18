@@ -49,7 +49,9 @@ var _online_peers: Dictionary = {} # peer_id -> profile
 var _current_layer := ""
 
 func _ready() -> void:
-	LayerManager.layer_changed.connect(func(_f, to): join_layer(to))
+	var LayerManager = AutoloadGate.get_node("LayerManager")
+	LayerManager.layer_changed.connect(func(_f, to):
+		join_layer(to))
 
 func join_layer(layer_id: String) -> void:
 	# Tear down previous room.
@@ -62,8 +64,8 @@ func join_layer(layer_id: String) -> void:
 	_match_id = ""
 	_current_layer = layer_id
 
-	if layer_id in ["hyperliminal", "subliminal"]:
-		return # menus and your apartment stay yours
+	if layer_id in ["hyperliminal", "subliminal", "liminal"]:
+		return # menus and your apartment stay yours; liminal is the lonely between
 
 	if await _try_connect_socket():
 		var match_id := await _resolve_layer_match(layer_id)
@@ -85,6 +87,7 @@ func join_layer(layer_id: String) -> void:
 
 ## RPC → real Nakama match id for this layer (empty = fall back to ghosts).
 func _resolve_layer_match(layer_id: String) -> String:
+	var NetworkManager = AutoloadGate.get_node("NetworkManager")
 	if not NetworkManager.is_connected_to_server():
 		return ""
 	var done := false
@@ -102,17 +105,22 @@ func _resolve_layer_match(layer_id: String) -> String:
 	return match_id
 
 func _try_connect_socket() -> bool:
+	var NetworkManager = AutoloadGate.get_node("NetworkManager")
+	var AccountManager = AutoloadGate.get_node("AccountManager")
 	if not NetworkManager.is_connected_to_server():
 		return false
 	if _socket == null:
 		var client = AccountManager.get_nakama_client()
 		if client == null or not client.has_method("create_socket"):
 			return false
+		var nakama_session = AccountManager.get_nakama_session()
+		if nakama_session == null:
+			return false
 		_socket = client.create_socket()
 		_socket.received_match_state.connect(_on_match_state)
 		if _socket.has_signal("received_match_presence_event"):
 			_socket.received_match_presence_event.connect(_on_match_presence)
-		var result = await _socket.connect_async(AccountManager.get_nakama_session())
+		var result = await _socket.connect_async(nakama_session)
 		if result != null and result.has_method("is_exception") and result.is_exception():
 			push_warning("PresenceManager: socket connect failed: %s" % result.get_exception().message)
 			_socket = null
@@ -126,6 +134,7 @@ func report_position(pos: Vector3) -> void:
 ## Broadcast a skill cast to the layer match so remote clients can play VFX
 ## / apply soft feedback. Ghosts don't need this — they emit bot_wants_cast.
 func report_cast(sk: Dictionary, at: Vector3 = Vector3.ZERO) -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	if _match_id == "" or _socket == null or not _socket.is_connected_to_host():
 		return
 	var pos := at if at != Vector3.ZERO else _my_pos
@@ -145,6 +154,7 @@ func report_cast(sk: Dictionary, at: Vector3 = Vector3.ZERO) -> void:
 	}))
 
 func _physics_process(delta: float) -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	# Broadcast upstream.
 	if _match_id != "" and _socket != null and _socket.is_connected_to_host():
 		_accum += delta
@@ -231,6 +241,7 @@ func report_bot_hit_landed(peer_id: String) -> void:
 		_ghosts[peer_id].hits_landed = int(_ghosts[peer_id].get("hits_landed", 0)) + 1
 
 func _on_match_state(state) -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	var op := int(state.get("op_code", 0))
 	var data = JSON.parse_string(str(state.get("data", "{}")))
 	if not data is Dictionary:
@@ -280,8 +291,10 @@ func _on_match_presence(event) -> void:
 ## Offline stand-ins: named from the roster, profiled so perception works,
 ## tiered so the crowd feels alive without every bot being a threat.
 func _spawn_ghosts(layer_id: String) -> void:
-	if layer_id in ["hyperliminal", "subliminal"]:
-		return # menus and your apartment stay yours
+	var Hope = AutoloadGate.get_node("Hope")
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	if layer_id in ["hyperliminal", "subliminal", "liminal"]:
+		return # menus and your apartment stay yours; liminal is the lonely between
 	var knoll: Dictionary = Hope.combat_profile() if Hope else {}
 	for i in range(GHOST_COUNT):
 		var e := CompanionRegistry.get_random()

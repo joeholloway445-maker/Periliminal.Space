@@ -30,6 +30,11 @@ func _ready() -> void:
 	_connect_manager_signals.call_deferred()
 
 func _connect_manager_signals() -> void:
+	# Ensure all 1920×1080 content is always fully visible — `expand` crops
+	# the bottom on screens narrower than 16:9 (common on laptops).
+	var AccountManager = AutoloadGate.get_node("AccountManager")
+	var DistrictManager = AutoloadGate.get_node("DistrictManager")
+	get_tree().root.content_scale_aspect = Window.CONTENT_SCALE_ASPECT_KEEP
 	if AccountManager:
 		AccountManager.authenticated.connect(_on_authenticated)
 		AccountManager.session_expired.connect(_on_session_expired)
@@ -71,19 +76,20 @@ func is_in_state(state: GameState) -> bool:
 	return game_state == state
 
 func enter_game(game_type: int, variant_id: int, scene_path: String = "") -> void:
+	var GameFactory = AutoloadGate.get_node("GameFactory")
 	_set_state(GameState.GAME)
 	# Prefer a real packed scene (lobby catalog) over a blank factory stub.
 	if scene_path != "" and ResourceLoader.exists(scene_path):
 		get_tree().change_scene_to_file(scene_path)
 		return
 	if GameFactory and GameFactory.has_method("create_game_from_catalog"):
-		var catalog_node := GameFactory.create_game_from_catalog(game_type, variant_id)
+		var catalog_node = GameFactory.create_game_from_catalog(game_type, variant_id)
 		if catalog_node:
 			if get_tree().current_scene:
 				get_tree().current_scene.add_child(catalog_node)
 			return
 	if GameFactory:
-		var game_node := GameFactory.create_game(game_type, variant_id)
+		var game_node = GameFactory.create_game(game_type, variant_id)
 		if game_node and get_tree().current_scene:
 			get_tree().current_scene.add_child(game_node)
 
@@ -98,6 +104,7 @@ func close_social() -> void:
 
 # ── Init Steps ─────────────────────────────────────────────────────────────────
 func _init_account_manager() -> void:
+	var AccountManager = AutoloadGate.get_node("AccountManager")
 	if not AccountManager:
 		_init_errors.append("AccountManager not found")
 		return
@@ -106,6 +113,8 @@ func _init_account_manager() -> void:
 func _init_economy_manager() -> void:
 	# Offline/guest boot must still arm EconomyManager so spend/earn works
 	# before (or without) Nakama auth. initialize(null) keeps local cache.
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var AccountManager = AutoloadGate.get_node("AccountManager")
 	if not EconomyManager:
 		_init_errors.append("EconomyManager not found")
 		return
@@ -113,26 +122,31 @@ func _init_economy_manager() -> void:
 	EconomyManager.initialize(client)
 
 func _init_companion_system() -> void:
+	var CompanionSystem = AutoloadGate.get_node("CompanionSystem")
 	if not CompanionSystem:
 		return
 	await CompanionSystem.initialize()
 
 func _init_game_factory() -> void:
+	var GameFactory = AutoloadGate.get_node("GameFactory")
 	if not GameFactory:
 		return
 	await GameFactory.initialize()
 
 func _init_district_manager() -> void:
+	var DistrictManager = AutoloadGate.get_node("DistrictManager")
 	if not DistrictManager:
 		return
 	await DistrictManager.initialize()
 
 func _init_liveops_manager() -> void:
+	var LiveOpsManager = AutoloadGate.get_node("LiveOpsManager")
 	if not LiveOpsManager:
 		return
 	await LiveOpsManager.initialize()
 
 func _init_social_manager() -> void:
+	var SocialManager = AutoloadGate.get_node("SocialManager")
 	if not SocialManager:
 		return
 	await SocialManager.initialize()
@@ -143,9 +157,9 @@ func _on_authenticated(_session: Dictionary) -> void:
 	# that authenticate while initialize() is still running (or splash is up).
 	if game_state == GameState.LOGIN or game_state == GameState.LOADING:
 		_set_state(GameState.WORLD)
-		# The actual front door: title screen with Start New Venture /
-		# Continue Expedition. New ventures go to the Liminal (race/frame/
-		# mod selection first); continuing goes straight to the Subliminal.
+		# The front door is the phone-style title screen (home) — the player
+		# chooses Start New Venture, Continue Expedition, or browses the apps.
+		# Character creation is a CHOICE from there, never an auto-entry.
 		get_tree().change_scene_to_file("res://scenes/ui/title_screen.tscn")
 
 func _on_session_expired() -> void:

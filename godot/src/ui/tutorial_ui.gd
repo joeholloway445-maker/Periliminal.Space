@@ -17,12 +17,12 @@ const STEPS = [
 	},
 	{
 		title = "Companions",
-		body = "Collect up to 604 companions across the three factions. Equip 3 at a time for synergy bonuses. Rare companions have powerful signature moves.",
+		body = "Collect up to 500 companions across 4 factions. Equip 3 at a time for synergy bonuses. Rare companions have powerful signature moves.",
 		icon = "🐾",
 	},
 	{
 		title = "Factions",
-		body = "You start Factionless — no bonuses, no restrictions, and your own pool of companions and entities to collect while you decide. When you're ready, pledge to one faction for good (no swapping later):\n• SovereignCrown: +10% slots, +5% combat\n• WildlandsAscendant: +10% combat, +5 race SPD\n• VeiledCurrent: +12% slots, +8 race SPD",
+		body = "Choose a faction for bonus multipliers:\n• SovereignCrown: +10% slots, +5% combat\n• WildlandsAscendant: +10% combat, +5 race SPD\n• VeiledCurrent: +12% slots, +8 race SPD\n• Factionless: no bonuses, no restrictions",
 		icon = "⚔️",
 	},
 	{

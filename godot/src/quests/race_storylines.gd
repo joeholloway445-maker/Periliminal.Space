@@ -11,6 +11,9 @@ func _ready() -> void:
 	call_deferred("_register_all")
 
 func _register_all() -> void:
+	var QuestManager = AutoloadGate.get_node("QuestManager")
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	for race in RaceDataCharacter.RACES:
 		for quest in _chain_for(race):
 			QuestManager.register_quest(quest)
@@ -19,11 +22,12 @@ func _register_all() -> void:
 	if not QuestManager.is_active(act1) and not QuestManager.is_complete(act1):
 		QuestManager.accept(act1)
 		NotificationUI.notify_info("📜 Your blood remembers something. (%s storyline begun)" %
-			RaceDataCharacter.get_race(PlayerProfile.selected_race_id).get("name", "?"))
+			OmniDexRegistry.race_display_name(str(PlayerProfile.selected_race_id)))
 
 ## Three acts per race, themed by its dominant stat and told through its
 ## own lore text. Act structure: awakening → trial → the truth.
 func _chain_for(race: Dictionary) -> Array[Dictionary]:
+	var QuestManager = AutoloadGate.get_node("QuestManager")
 	var rid: String = race.id
 	var rname: String = race.name
 	var lore: String = race.get("lore", "")

@@ -13,7 +13,8 @@ var _shown_timelines: Array[Dictionary] = []
 var _current_submission: UgcSubmission
 
 func _ready() -> void:
-	var mode := GameModeManager.active_mode()
+	var GameModeManager = AutoloadGate.get_node("GameModeManager")
+	var mode = GameModeManager.active_mode()
 	var timeline_mode: String = mode.get("timeline_mode", "")
 	_shown_timelines = TimelineData.by_mode(timeline_mode) if not timeline_mode.is_empty() else TimelineData.TIMELINES
 	timeline_list.clear()
@@ -45,6 +46,7 @@ func _on_play_sandbox() -> void:
 	get_tree().change_scene_to_file("res://scenes/world/playtest_arena.tscn")
 
 func _on_submit_pressed() -> void:
+	var GameModeManager = AutoloadGate.get_node("GameModeManager")
 	var selected := timeline_list.get_selected_items()
 	if selected.is_empty():
 		status_label.text = "Select a timeline first."

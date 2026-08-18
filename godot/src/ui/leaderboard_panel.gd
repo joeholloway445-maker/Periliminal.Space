@@ -14,14 +14,16 @@ const BOARDS := {
 }
 
 func _ready() -> void:
+	UINav.add_back_button(self)
 	for key in BOARDS.keys():
 		board_option.add_item(BOARDS[key])
 	board_option.item_selected.connect(func(_i): _refresh())
 	_refresh()
 
 func _refresh() -> void:
+	var NetworkManager = AutoloadGate.get_node("NetworkManager")
 	var board_keys := BOARDS.keys()
-	var board_id := board_keys[board_option.selected]
+	var board_id: String = board_keys[board_option.selected]
 	NetworkManager.call_rpc("get_leaderboard", {board_id=board_id, limit=20},
 		func(result: Dictionary):
 			_render(result.get("records", []))

@@ -41,6 +41,11 @@ func propose_trade(
 	ask_items: Array = [],
 	ask_coins: int = 0
 ) -> Dictionary:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var InventoryManager = AutoloadGate.get_node("InventoryManager")
+	var Hope = AutoloadGate.get_node("Hope")
 	var counterparty := to_player.strip_edges()
 	if counterparty == "" or counterparty == PlayerProfile.username:
 		NotificationUI.notify_error("Pick another player to trade with.")
@@ -99,13 +104,18 @@ func propose_trade(
 ## Offline: when the acceptor is also the local player and the offer was
 ## from them (self-test), coins/items round-trip through escrow rules.
 func accept_trade(trade_id: String) -> bool:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var InventoryManager = AutoloadGate.get_node("InventoryManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var Hope = AutoloadGate.get_node("Hope")
 	var offer: Dictionary = _offers.get(trade_id, {})
 	if offer.is_empty() or str(offer.get("status", "")) != "open":
 		return false
 
 	var ask_coins: int = int(offer.ask_coins)
 	var ask_items: Array = offer.get("ask_items", [])
-	var acceptor := PlayerProfile.username
+	var acceptor = PlayerProfile.username
 
 	# Pull ask-side from acceptor inventory/wallet.
 	var ask_escrow: Array = []
@@ -167,6 +177,9 @@ func accept_trade(trade_id: String) -> bool:
 	return true
 
 func cancel_trade(trade_id: String) -> bool:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var Hope = AutoloadGate.get_node("Hope")
 	var offer: Dictionary = _offers.get(trade_id, {})
 	if offer.is_empty() or str(offer.get("status", "")) != "open":
 		return false
@@ -184,6 +197,8 @@ func cancel_trade(trade_id: String) -> bool:
 	return true
 
 func _refund_escrow(items: Array, coins: int) -> void:
+	var InventoryManager = AutoloadGate.get_node("InventoryManager")
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
 	for item in items:
 		if item is Dictionary:
 			InventoryManager.add_item(item)

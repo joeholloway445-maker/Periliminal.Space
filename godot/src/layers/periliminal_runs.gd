@@ -25,6 +25,7 @@ var _run_seed := 0
 var _seed_ledger: Dictionary = {} # seed -> {generated_at, deepest}
 
 func _ready() -> void:
+	var LayerManager = AutoloadGate.get_node("LayerManager")
 	_load_ledger()
 	LayerManager.pulled_into_periliminal.connect(func(): begin_run(["local_player"]))
 
@@ -33,6 +34,8 @@ func run_seed() -> int:
 	return _run_seed
 
 func begin_run(members: Array[String]) -> void:
+	var Hope = AutoloadGate.get_node("Hope")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if active:
 		return
 	active = true
@@ -66,7 +69,9 @@ func advance_depth() -> void:
 ## people, via WordOfMouth) both weigh in. Cruel, greedy, reckless players
 ## get a hotter hell; careful, kind ones get a survivable one.
 func difficulty() -> float:
-	var p := Hope.combat_profile()
+	var Hope = AutoloadGate.get_node("Hope")
+	var WordOfMouth = AutoloadGate.get_node("WordOfMouth")
+	var p = Hope.combat_profile()
 	var d := 1.0
 	d += float(p.get("aggression", 0.5)) * 0.5
 	d += float(p.get("greed", 0.5)) * 0.4
@@ -81,6 +86,7 @@ func difficulty() -> float:
 func blessing_depth() -> int:
 	# Prototype mode keeps the spine playable in one sitting without
 	# changing production difficulty math.
+	var LayerManager = AutoloadGate.get_node("LayerManager")
 	if LayerManager.is_prototype_mode():
 		return 1
 	return 2 + int(round(difficulty() * 2.0))
@@ -94,6 +100,8 @@ func preview_reward() -> int:
 
 ## Walking out alive banks the fragments.
 func exit_alive() -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var LayerManager = AutoloadGate.get_node("LayerManager")
 	if not active: return
 	var earned := preview_reward()
 	EconomyManager.earn_currency("fragments", earned, "periliminal_depth_%d" % depth)
@@ -112,6 +120,9 @@ func recall_escape() -> void:
 ## ANY party member dying wipes the whole party: entities, inventory, and
 ## every balance except prestige.
 func member_died(player_id: String) -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var LayerManager = AutoloadGate.get_node("LayerManager")
 	if not active or player_id not in party:
 		return
 	run_wiped.emit(depth, party.duplicate())
@@ -123,6 +134,11 @@ func member_died(player_id: String) -> void:
 	LayerManager.transition_to("subliminal", true)
 
 func _wipe_local_player() -> void:
+	var CompanionSystem = AutoloadGate.get_node("CompanionSystem")
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var InventoryManager = AutoloadGate.get_node("InventoryManager")
+	var BankManager = AutoloadGate.get_node("BankManager")
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
 	# Entities.
 	for c in CompanionSystem.roster:
 		if c.is_unlocked:

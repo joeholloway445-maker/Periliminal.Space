@@ -110,6 +110,8 @@ func update_quest_progress(quest_id: String, amount: int) -> void:
 			return
 
 func complete_quest(quest_id: String) -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var CompanionSystem = AutoloadGate.get_node("CompanionSystem")
 	if quest_id in _completed_quest_ids:
 		return
 	for quest in _active_quests:
@@ -146,9 +148,11 @@ func get_active_quests() -> Array[Dictionary]:
 ## the player moves through the forest; advances forest_explore_001 once
 ## per newly-generated (not previously visited) chunk.
 func explore_chunk(world_pos: Vector3, player_id: String, perception: int = 1) -> void:
-	var coord := DiscoveryManager.world_pos_to_chunk(world_pos)
-	var already_known := DiscoveryManager.has_chunk(coord)
-	var chunk := DiscoveryManager.get_or_generate_chunk(coord)
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var DiscoveryManager = AutoloadGate.get_node("DiscoveryManager")
+	var coord = DiscoveryManager.world_pos_to_chunk(world_pos)
+	var already_known = DiscoveryManager.has_chunk(coord)
+	var chunk = DiscoveryManager.get_or_generate_chunk(coord)
 	if chunk.is_hub:
 		return
 	var loadout := CharacterCreatorLogic.build_loadout(PlayerProfile.selected_race_id, PlayerProfile.selected_frame)

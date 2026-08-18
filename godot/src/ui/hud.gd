@@ -19,10 +19,16 @@ var _win_tween: Tween = null
 
 # Lifecycle
 func _ready() -> void:
+	# This script may be attached bare to a CanvasLayer (paw_vegas_hub) where
+	# its child nodes don't exist; guard everything so _ready never crashes.
+	if not is_instance_valid(win_popup):
+		return
 	# Hide popups initially
 	win_popup.modulate.a = 0.0
 	win_popup.visible = false
 
+	if not is_instance_valid(event_banner):
+		return
 	event_banner.visible = false
 
 	_connect_manager_signals()
@@ -112,6 +118,7 @@ func _on_gems_changed(_new_amount: int) -> void:
 	pass # Gem label not part of this HUD variant but could be added
 
 func _on_balance_changed(currency: String, _old_balance: int, new_balance: int) -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
 	if currency == EconomyManager.CURRENCY_COINS:
 		update_coins(new_balance)
 
@@ -122,6 +129,7 @@ func _on_battlepass_xp_gained(_current: int, _max_xp: int) -> void:
 	_update_prestige_from_profile()
 
 func _on_profile_updated() -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	update_perception(PlayerProfile.level)
 	_update_prestige_from_profile()
 
@@ -131,6 +139,9 @@ func _on_level_up(new_level: int) -> void:
 
 # Helpers
 func _connect_manager_signals() -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var LiveOpsManager = AutoloadGate.get_node("LiveOpsManager")
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	if EconomyManager.has_signal("coins_changed") and not EconomyManager.coins_changed.is_connected(_on_coins_changed):
 		EconomyManager.coins_changed.connect(_on_coins_changed)
 	if EconomyManager.has_signal("gems_changed") and not EconomyManager.gems_changed.is_connected(_on_gems_changed):
@@ -149,15 +160,18 @@ func _connect_manager_signals() -> void:
 		PlayerProfile.profile_updated.connect(_on_profile_updated)
 
 func _seed_initial_values() -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	update_coins(EconomyManager.get_coins())
 	update_perception(PlayerProfile.level)
 	_update_prestige_from_profile()
 
 func _update_prestige_from_profile() -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	if not is_instance_valid(xp_bar):
 		return
-	var current_threshold := PlayerProfile.xp_for_level(PlayerProfile.level)
-	var next_threshold := PlayerProfile.xp_for_level(PlayerProfile.level + 1)
+	var current_threshold = PlayerProfile.xp_for_level(PlayerProfile.level)
+	var next_threshold = PlayerProfile.xp_for_level(PlayerProfile.level + 1)
 	var span := maxi(next_threshold - current_threshold, 1)
 	var current := clampi(PlayerProfile.xp - current_threshold, 0, span)
 	xp_bar.max_value = span

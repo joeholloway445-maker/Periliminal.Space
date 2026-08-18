@@ -20,6 +20,7 @@ var _friend_entries: Dictionary = {}  # user_id -> HBoxContainer node
 
 # ─── Lifecycle ────────────────────────────────────────────────────────────────
 func _ready() -> void:
+	var SocialManager = AutoloadGate.get_node("SocialManager")
 	close_button.pressed.connect(_on_close_pressed)
 	send_button.pressed.connect(_on_send_pressed)
 	add_friend_button.pressed.connect(_on_add_friend_button_pressed)
@@ -46,11 +47,12 @@ func _ready() -> void:
 
 # ─── Init ─────────────────────────────────────────────────────────────────────
 func _load_initial_state() -> void:
+	var SocialManager = AutoloadGate.get_node("SocialManager")
 	var friends: Array = SocialManager.get_friend_list()
 	for friend_data in friends:
 		_add_or_update_friend_entry(friend_data)
 
-	var guild := SocialManager.get_guild_info()
+	var guild: Dictionary = SocialManager.get_guild_info()
 	_apply_guild_info(guild)
 
 	# Populate recent chat history if available
@@ -135,6 +137,7 @@ func _on_chat_submitted(_text: String) -> void:
 	_send_chat()
 
 func _send_chat() -> void:
+	var SocialManager = AutoloadGate.get_node("SocialManager")
 	var message := chat_input.text.strip_edges()
 	if message.is_empty():
 		return
@@ -142,6 +145,7 @@ func _send_chat() -> void:
 	chat_input.clear()
 
 func _on_add_friend_button_pressed() -> void:
+	var SocialManager = AutoloadGate.get_node("SocialManager")
 	var uid := add_friend_input.text.strip_edges()
 	if uid.is_empty():
 		return
@@ -152,6 +156,7 @@ func _on_close_pressed() -> void:
 	visible = false
 
 func _on_channel_selected(index: int) -> void:
+	var SocialManager = AutoloadGate.get_node("SocialManager")
 	_current_channel = channel_option.get_item_text(index)
 	chat_log.clear()
 	var history: Array = SocialManager.get_chat_history(_current_channel)

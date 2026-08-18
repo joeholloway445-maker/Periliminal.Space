@@ -140,6 +140,9 @@ func earn_ex_coins_local(amount: int, source: String = "chip_cashout_local") -> 
 
 # ── Generic currency API ──────────────────────────────────────────────────────
 func get_balance(currency: String) -> int:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	if PlayerProfile.is_god_mode():
+		return 999999
 	return _balances.get(currency, 0)
 
 func earn_currency(currency: String, amount: int, source: String = "unknown") -> void:
@@ -201,6 +204,7 @@ const CHIP_SELL_COINS_PER_100 := CHIP_TO_EX_PER_100
 ## during a match event — are matched 1:1 in fragments AND tokens.
 ## Ex-Coins are intentionally NOT grantable here.
 func purchase_coins(amount: int) -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if amount <= 0: return
 	await earn_currency("cat_coins", amount, "iap_purchase")
 	_coin_purchases_made += 1
@@ -241,6 +245,7 @@ func sell_chips(chip_amount: int) -> bool:
 	return await cashout_chips_to_ex(chip_amount)
 
 func cashout_chips_to_ex(chip_amount: int) -> bool:
+	var Hope = AutoloadGate.get_node("Hope")
 	var payout := chip_cashout_ex_payout(chip_amount)
 	if chip_amount <= 0 or payout <= 0:
 		return false
@@ -267,6 +272,7 @@ func sell_chips_local(chip_amount: int) -> bool:
 	return not cashout_chips_to_ex_local(chip_amount).is_empty()
 
 func cashout_chips_to_ex_local(chip_amount: int) -> Dictionary:
+	var Hope = AutoloadGate.get_node("Hope")
 	var payout := chip_cashout_ex_payout(chip_amount)
 	if chip_amount <= 0 or payout <= 0:
 		return {}
@@ -282,6 +288,7 @@ func cashout_chips_to_ex_local(chip_amount: int) -> Dictionary:
 ## is flavor + drip progression, not a farm. Never grants Coins or Ex-Coins.
 ## Wagering Arts passive "Cage Regular" (wag_p1) adds +1 to each drip that lands.
 func _grant_cashout_side_drops(chip_amount: int) -> Dictionary:
+	var SkillManager = AutoloadGate.get_node("SkillManager")
 	var scale := mini(2, int(chip_amount / 250)) # 0..2 from size
 	var cage_regular := false
 	if typeof(SkillManager) != TYPE_NIL and SkillManager.has_method("has_prestige_passive"):
@@ -348,6 +355,7 @@ func exchange_currency(from_currency: String, to_currency: String, amount: int) 
 	return true
 
 func _record_fx_audit(kind: String, from_c: String, from_amt: int, to_c: String, to_amt: int) -> void:
+	var Hope = AutoloadGate.get_node("Hope")
 	Hope.record("currency_exchange", {
 		"kind": kind, "from": from_c, "from_amount": from_amt,
 		"to": to_c, "to_amount": to_amt,
@@ -365,6 +373,7 @@ func award_jackpot_bonus(amount: int) -> void:
 ## otherwise block you (race, faction, morality, influence level, ...).
 ## Gate cost scales with how "hard" the gate is; callers pass the tier.
 func equivalent_exchange(gate: String, tier: int = 1) -> bool:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	var cost := 100 * tier * tier
 	if not await spend_currency("prestige", cost, "exchange_%s" % gate):
 		NotificationUI.notify_error("Equivalent exchange needs %d 🌟 prestige for this gate." % cost)
@@ -591,6 +600,7 @@ func _push_transaction_to_server(currency: String, amount: int, party: String, k
 	})
 
 func _rpc(fn: String, payload: Dictionary):
+	var NetworkManager = AutoloadGate.get_node("NetworkManager")
 	if not _nakama_client:
 		return null
 	# Routed through NetworkManager.call_rpc so the session (owned by

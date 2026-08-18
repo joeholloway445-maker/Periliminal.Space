@@ -194,10 +194,85 @@ static func add_aura_shell(root: Node3D, color: Color, size: float = 0.06) -> vo
 			shell.transform = child.transform
 			var mat := ShaderMaterial.new()
 			mat.shader = shader
-			mat.set_shader_parameter("aura_color", Color(color.r, color.g, color.b, 1.0))
 			mat.set_shader_parameter("aura_size", size)
+			mat.set_shader_parameter("aura_color", color)
 			shell.material_override = mat
-			child.add_child(shell)
+			root.add_child(shell)
+
+## Ground telegraph ring — shows where an AoE/self cast will land.
+## Fades in, pulses, then vanishes as the windup resolves.
+static func cast_telegraph(parent: Node3D, at: Vector3, radius: float, tint: Color, duration: float) -> void:
+	if parent == null or not is_instance_valid(parent):
+		return
+	var ring := MeshInstance3D.new()
+	var torus := TorusMesh.new()
+	torus.inner_radius = 0.05
+	torus.outer_radius = 0.15
+	ring.mesh = torus
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color(tint.r, tint.g, tint.b, 0.35)
+	mat.emission_enabled = true
+	mat.emission = tint
+	mat.emission_energy_multiplier = 1.5
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	ring.material_override = mat
+	ring.position = at + Vector3(0, 0.12, 0)
+	ring.scale = Vector3(radius * 0.5, 1.0, radius * 0.5)
+	parent.add_child(ring)
+	var tw := parent.create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(ring, "scale", Vector3(radius, 1.0, radius), duration * 0.6).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tw.tween_property(mat, "albedo_color:a", 0.0, duration * 0.4).set_delay(duration * 0.5)
+	tw.tween_property(mat, "emission_energy_multiplier", 0.5, duration * 0.3)
+	tw.chain().tween_callback(ring.queue_free)
+
+## Line telegraph — shows the beam path before a line skill lands.
+static func cast_telegraph_line(parent: Node3D, from: Vector3, dir: Vector3, length: float, tint: Color, duration: float) -> void:
+	if parent == null or not is_instance_valid(parent):
+		return
+	var beam := MeshInstance3D.new()
+	var cyl := CylinderMesh.new()
+	cyl.top_radius = 0.06
+	cyl.bottom_radius = 0.06
+	cyl.height = length
+	beam.mesh = cyl
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color(tint.r, tint.g, tint.b, 0.25)
+	mat.emission_enabled = true
+	mat.emission = tint
+	mat.emission_energy_multiplier = 1.2
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	beam.material_override = mat
+	beam.position = from + Vector3(0, 0.5, 0) + dir * (length / 2.0)
+	beam.rotation = Vector3(PI / 2.0, atan2(dir.x, dir.z), 0)
+	parent.add_child(beam)
+	var tw := parent.create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(mat, "albedo_color:a", 0.0, duration * 0.4).set_delay(duration * 0.5)
+	tw.chain().tween_callback(beam.queue_free)
+
+## Element-specific hit VFX — a small burst colored by the element.
+static func element_hit(parent: Node3D, at: Vector3, elem: String) -> void:
+	if parent == null or not is_instance_valid(parent):
+		return
+	var c := Color.TRANSPARENT
+	match elem:
+		"entropy":
+			c = Color(0.35, 0.9, 0.2, 1.0)
+		"quantum":
+			c = Color(0.9, 0.2, 0.9, 1.0)
+		"gravity":
+			c = Color(0.6, 0.2, 0.9, 1.0)
+		"psyche":
+			c = Color(0.9, 0.1, 0.5, 1.0)
+		"matter":
+			c = Color(0.5, 0.6, 1.0, 1.0)
+		_:
+			c = SkillVFX._tint()
+	if c.a <= 0.0:
+		c = Color(0.8, 0.8, 1.0, 1.0)
+	var p := _particles(parent, at + Vector3(0, 0.6, 0), 12, 0.35, c, 2.0)
+	p.one_shot = true
 
 ## Impact puff on a target.
 static func hit_spark(parent: Node3D, at: Vector3) -> void:
@@ -206,71 +281,6 @@ static func hit_spark(parent: Node3D, at: Vector3) -> void:
 	var p := _particles(parent, at + Vector3(0, 1.0, 0), 16, 0.35, Color(1.0, 0.8, 0.4), 3.0)
 	p.one_shot = true
 	CombatSfx.play(parent, "skill_hit", at, -8.0)
-
-## Element-tinted impact — second spark so riders read as a different force.
-static func element_hit(parent: Node3D, at: Vector3, element_id: String) -> void:
-	if parent == null or not is_instance_valid(parent):
-		return
-	var e: Dictionary = SkillData.element(element_id)
-	var c: Color = e.get("color", Color(0.9, 0.9, 1.0)) if not e.is_empty() else Color(0.9, 0.9, 1.0)
-	var p := _particles(parent, at + Vector3(0, 1.15, 0), 22, 0.4, c, 4.0)
-	p.one_shot = true
-
-## Player cast telegraph — shrinking ground disc that fills during windup.
-static func cast_telegraph(parent: Node3D, at: Vector3, radius: float, color: Color, duration: float = 0.25) -> void:
-	if parent == null or not is_instance_valid(parent) or duration <= 0.0:
-		return
-	var disc := MeshInstance3D.new()
-	var cyl := CylinderMesh.new()
-	cyl.top_radius = maxf(radius, 0.5)
-	cyl.bottom_radius = maxf(radius, 0.5)
-	cyl.height = 0.04
-	cyl.radial_segments = 28
-	disc.mesh = cyl
-	var mat := StandardMaterial3D.new()
-	mat.albedo_color = Color(color.r, color.g, color.b, 0.28)
-	mat.emission_enabled = true
-	mat.emission = color
-	mat.emission_energy_multiplier = 1.4
-	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
-	disc.material_override = mat
-	disc.position = at + Vector3(0, 0.08, 0)
-	parent.add_child(disc)
-	var tw := parent.create_tween()
-	tw.set_parallel(true)
-	tw.tween_property(disc, "scale", Vector3(0.35, 1.0, 0.35), duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
-	tw.tween_property(mat, "albedo_color:a", 0.55, duration * 0.6)
-	tw.chain().tween_callback(disc.queue_free)
-
-## Line-shape telegraph — thin beam that brightens then resolves.
-static func cast_telegraph_line(parent: Node3D, from: Vector3, dir: Vector3, length: float, color: Color, duration: float = 0.25) -> void:
-	if parent == null or not is_instance_valid(parent):
-		return
-	var beam := MeshInstance3D.new()
-	var cyl := CylinderMesh.new()
-	cyl.top_radius = 0.08
-	cyl.bottom_radius = 0.08
-	cyl.height = maxf(length, 1.0)
-	beam.mesh = cyl
-	var mat := StandardMaterial3D.new()
-	mat.albedo_color = Color(color.r, color.g, color.b, 0.35)
-	mat.emission_enabled = true
-	mat.emission = color
-	mat.emission_energy_multiplier = 2.0
-	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	beam.material_override = mat
-	var d := dir
-	d.y = 0.0
-	if d.length() < 0.01:
-		d = Vector3.FORWARD
-	d = d.normalized()
-	beam.position = from + Vector3(0, 1.0, 0) + d * (length / 2.0)
-	beam.rotation = Vector3(PI / 2.0, atan2(d.x, d.z), 0)
-	parent.add_child(beam)
-	var tw := parent.create_tween()
-	tw.tween_property(mat, "emission_energy_multiplier", 4.5, duration)
-	tw.tween_callback(beam.queue_free)
 
 ## Gate 5/6 — readable enrage telegraph when a world/zone boss advances phase.
 ## Phase 2: warm ground ring. Phase 3: hotter ring + holographic slam column.

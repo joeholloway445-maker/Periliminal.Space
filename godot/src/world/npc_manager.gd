@@ -19,6 +19,7 @@ signal npc_spawned(npc: Node3D, data: Dictionary)
 signal npc_despawned(npc_id: String)
 
 func _ready() -> void:
+	var WorldLoader = AutoloadGate.get_node("WorldLoader")
 	generator = NPCGenerator.new()
 	# Don't initialize yet; wait for WorldLoader
 	if WorldLoader.world_loaded.is_connected(_on_world_loaded):
@@ -29,6 +30,7 @@ func _ready() -> void:
 	_on_world_loaded()
 
 func _on_world_loaded() -> void:
+	var WorldLoader = AutoloadGate.get_node("WorldLoader")
 	# Lore dialogue blocks first (one per archetype × layer) so every
 	# generated NPC's dialogue_id resolves in npc_dialogue_ui.
 	NpcDialogueLibrary.register_all()
@@ -88,6 +90,7 @@ func get_npc(npc_id: String) -> Dictionary:
 
 ## Get all NPCs in a district (respects LOD distance).
 func get_npcs_in_district(district_id: String, player_pos: Vector3 = Vector3.ZERO) -> Array[Dictionary]:
+	var WorldLoader = AutoloadGate.get_node("WorldLoader")
 	var result: Array[Dictionary] = []
 	var npcs_by_dist: Array[Dictionary] = []
 
@@ -126,6 +129,7 @@ func set_player(player: Node3D) -> void:
 
 ## Preload a layer's NPCs into memory (called when entering a layer).
 func preload_layer(layer_id: String) -> void:
+	var WorldLoader = AutoloadGate.get_node("WorldLoader")
 	if layer_id == "subliminal":
 		# Hard lock: never generate ambient population for the private zone.
 		_loaded_npcs["subliminal"] = _loaded_npcs.get("subliminal", {})
@@ -187,5 +191,5 @@ func update_lod(player_pos: Vector3) -> void:
 			inst.call("update_lod", level)
 
 func _process(_delta: float) -> void:
-	if _player and is_instance_valid(_player):
+	if _player and is_instance_valid(_player) and _player.is_inside_tree():
 		update_lod(_player.global_position)

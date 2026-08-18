@@ -15,6 +15,7 @@ var buy_chips_button: Button
 var cashout_chips_button: Button
 
 func _ready() -> void:
+	var LiveOpsManager = AutoloadGate.get_node("LiveOpsManager")
 	_ensure_ui()
 	title_label.text = "PAWS VEGAS — Game Lobby"
 	if not close_button.pressed.is_connected(_on_close_pressed):
@@ -127,6 +128,7 @@ func refresh() -> void:
 	_refresh_battlepass()
 
 func _refresh_chips() -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
 	if chips_label == null:
 		return
 	var chips := 0
@@ -139,6 +141,8 @@ func _refresh_chips() -> void:
 	chips_label.text = "Chips: %d  ·  Coins: %d  ·  Ex-Coins: %d" % [chips, coins, ex]
 
 func _on_buy_chips() -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	# Local cage exchange — house-favorable rate (never 1:1).
 	if EconomyManager == null:
 		return
@@ -151,6 +155,8 @@ func _on_buy_chips() -> void:
 	_refresh_chips()
 
 func _on_cashout_chips() -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	# Compliance: chips → Ex-Coins only (never back into purchasable Coins).
 	# Side drops: small random fragments / tokens / charges.
 	if EconomyManager == null:
@@ -172,6 +178,7 @@ func _on_cashout_chips() -> void:
 	_refresh_chips()
 
 func _populate_games() -> void:
+	var GameFactory = AutoloadGate.get_node("GameFactory")
 	if game_grid == null:
 		return
 	for child in game_grid.get_children():
@@ -180,6 +187,11 @@ func _populate_games() -> void:
 	var catalog: Array = GameFactory.get_game_catalog() if GameFactory else []
 	for entry in catalog:
 		game_grid.add_child(_make_game_card(entry))
+
+	# The PVXC pit — staked survival under the casino floor.
+	var pvxc := _make_pvxc_card()
+	if pvxc != null:
+		game_grid.add_child(pvxc)
 
 func _make_game_card(entry: Dictionary) -> PanelContainer:
 	var card := PanelContainer.new()
@@ -220,6 +232,7 @@ func _make_game_card(entry: Dictionary) -> PanelContainer:
 	return card
 
 func _populate_events() -> void:
+	var LiveOpsManager = AutoloadGate.get_node("LiveOpsManager")
 	if events_container == null:
 		return
 	for child in events_container.get_children():
@@ -258,6 +271,7 @@ func _populate_events() -> void:
 		events_container.add_child(row)
 
 func _refresh_battlepass() -> void:
+	var LiveOpsManager = AutoloadGate.get_node("LiveOpsManager")
 	if bp_xp_bar == null or bp_label == null or LiveOpsManager == null:
 		return
 	var bp: Dictionary = {}
@@ -276,7 +290,49 @@ func _refresh_battlepass() -> void:
 	bp_xp_bar.value = current
 	bp_label.text = "Battlepass Tier %d — %d / %d XP" % [tier, current, max_xp]
 
+func _make_pvxc_card() -> PanelContainer:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var PvxcManager = AutoloadGate.get_node("PvxcManager")
+	if PvxcManager == null:
+		return null
+	var card := PanelContainer.new()
+	card.custom_minimum_size = Vector2(0, 72)
+	var hbox := HBoxContainer.new()
+	card.add_child(hbox)
+
+	var vbox := VBoxContainer.new()
+	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hbox.add_child(vbox)
+
+	var name_label := Label.new()
+	name_label.text = "🔴 The PVXC"
+	name_label.add_theme_font_size_override("font_size", 16)
+	vbox.add_child(name_label)
+
+	var type_label := Label.new()
+	type_label.text = "Staked Survival Pit"
+	type_label.modulate = Color(0.8, 0.8, 0.8)
+	vbox.add_child(type_label)
+
+	var bet_label := Label.new()
+	bet_label.text = "Min Stake: %d Chips" % PvxcManager.MIN_STAKE
+	bet_label.modulate = Color(1.0, 0.45, 0.4)
+	vbox.add_child(bet_label)
+
+	var play_btn := Button.new()
+	play_btn.text = "ENTER"
+	play_btn.custom_minimum_size = Vector2(80, 0)
+	play_btn.pressed.connect(func() -> void:
+		if ResourceLoader.exists("res://scenes/pvxc/pvxc_gate.tscn"):
+			get_tree().change_scene_to_file("res://scenes/pvxc/pvxc_gate.tscn")
+		else:
+			NotificationUI.notify_error("The PVXC gate is sealed right now."))
+	hbox.add_child(play_btn)
+	return card
+
 func _on_game_card_pressed(game_type: int, variant_id: int, scene_path: String = "") -> void:
+	var GameManager = AutoloadGate.get_node("GameManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if scene_path != "" and ResourceLoader.exists(scene_path):
 		get_tree().change_scene_to_file(scene_path)
 		return

@@ -34,6 +34,7 @@ var _hotbar: CanvasLayer
 var _attack_damage := 16
 
 func setup(p_mode: String, p_player: Node3D) -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	mode_id = p_mode
 	player = p_player
 	_build_hud()
@@ -101,6 +102,7 @@ func _process(delta: float) -> void:
 			_tick_moba(delta)
 
 func _tick_hero_combat(_delta: float) -> void:
+	var SkillManager = AutoloadGate.get_node("SkillManager")
 	# Light auto-attack between skill casts — skills are the real damage.
 	if _attack_cd <= 0.0:
 		var target := _nearest_feral(3.4)
@@ -127,48 +129,94 @@ func register_foe(n: Node) -> void:
 	if n != null and is_instance_valid(n):
 		_alive.append(n)
 
-## Hotbar cast resolution — shared SkillCastResolver (windup + element riders).
+## Hotbar cast resolution — same shape/kind contract as layer_world / PVXC.
 func _on_cast(sk: Dictionary) -> void:
+	var BlueprintManager = AutoloadGate.get_node("BlueprintManager")
+	var SkillManager = AutoloadGate.get_node("SkillManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if not _running or player == null or not is_instance_valid(player):
 		return
-	if PresenceManager != null and PresenceManager.has_method("report_cast"):
-		PresenceManager.report_cast(sk, player.global_position)
-	var targets: Array = []
-	for n in _alive.duplicate():
-		if is_instance_valid(n) and n is Node3D:
-			targets.append(n)
-	var opts := {
-		"base_attack": _attack_damage,
-		"targets": targets,
-		"on_self_shield": func(amount: int):
-			_shield = maxi(_shield, amount)
-			SkillVFX.shield_bubble(self, player, 5.0)
-			_refresh_hud("shield up"),
-		"on_self_buff": func(power: float):
+	var cast_bp = BlueprintManager.equipped_for("skill", str(sk.get("id", "")))
+	if not cast_bp.is_empty():
+		SkillVFX.blueprint_cast(self, player.global_position, cast_bp)
+	else:
+		SkillVFX.cast_flash(self, player.global_position)
+	var shape: String = str(sk.get("shape", "single"))
+	var radius: float = float(sk.get("radius", 3.0))
+	var power: float = float(sk.get("power", 1.0))
+	if int(sk.get("ult_cost", 0)) > 0:
+		SkillVFX.ultimate_burst(self, player.global_position, maxf(radius, 6.0))
+	elif shape == "aoe":
+		SkillVFX.aoe_ring(self, player.global_position, radius)
+	elif shape == "line":
+		SkillVFX.line_beam(self, player.global_position, -player.global_transform.basis.z, radius)
+	match str(sk.get("kind", "damage")):
+		"shield", "buff":
 			_shield = maxi(_shield, int(28 * power))
 			SkillVFX.shield_bubble(self, player, 5.0)
-			_refresh_hud("buff up"),
-		"on_self_mobility": func(dist: float):
-			player.global_position += -player.global_transform.basis.z * dist,
-		"skip_windup": DisplayServer.get_name() == "headless", # smokes stay instant
-	}
-	var result: Dictionary
-	if DisplayServer.get_name() == "headless" or bool(opts.get("skip_windup", false)):
-		opts["skip_windup"] = true
-		result = SkillCastResolver.resolve(self, player, sk, opts)
-	else:
-		result = await SkillCastResolver.resolve_async(self, player, sk, opts)
-	var hits := int(result.get("hits", 0))
+			_refresh_hud("shield up")
+			cast_resolved.emit(str(sk.get("id", "")), 0)
+			return
+		"mobility":
+			player.global_position += -player.global_transform.basis.z * (5.0 + 5.0 * power)
+			cast_resolved.emit(str(sk.get("id", "")), 0)
+			return
+		_:
+			pass
+	var dmg := int(_attack_damage * power)
+	var elem := str(sk.get("element", ""))
+	if elem == "" and SkillManager.has_method("element_of_skill"):
+		elem = str(SkillManager.element_of_skill(str(sk.get("id", ""))))
+	if elem == "energy":
+		dmg = int(dmg * 1.15)
+	# Wagering Arts soft edge — tiny tip, still house-favored overall.
+	if SkillManager.has_method("wagering_edge_relief"):
+		dmg = int(dmg * (1.0 + SkillManager.wagering_edge_relief()))
+	var reach := maxf(radius, 4.0)
+	var hits := 0
+	for n in _alive.duplicate():
+		if not is_instance_valid(n) or not (n is Node3D):
+			continue
+		var ent := n as Node3D
+		if ent.global_position.distance_to(player.global_position) > reach:
+			continue
+		if not n.has_method("take_hit"):
+			continue
+		n.take_hit(dmg)
+		SkillVFX.hit_spark(self, ent.global_position)
+		_apply_element_rider(elem, n, dmg)
+		hits += 1
+		SkillManager.gain_ultimate(4.0)
+		SkillManager.add_skill_xp(str(sk.get("id", "")), 8)
 	if hits == 0 and str(sk.get("kind", "damage")) in ["damage", "chance", "control"]:
 		NotificationUI.notify_info("No foe in range — close distance or use an AoE.")
 	_refresh_hud("cast %s (%d hit)" % [str(sk.get("name", "?")), hits])
 	cast_resolved.emit(str(sk.get("id", "")), hits)
 
 func _apply_element_rider(elem: String, target: Node, dmg: int) -> void:
-	# Legacy hook — SkillCastResolver owns riders now; keep for bots/tests.
 	if elem == "" or not is_instance_valid(target):
 		return
-	SkillCastResolver._apply_element_rider(self, player, elem, target as Node3D, dmg)
+	match elem:
+		"entropy":
+			get_tree().create_timer(0.9).timeout.connect(func():
+				if is_instance_valid(target) and target.has_method("take_hit"):
+					target.take_hit(maxi(1, dmg / 3))
+					if target is Node3D:
+						SkillVFX.hit_spark(self, (target as Node3D).global_position))
+		"quantum":
+			if randf() < 0.2 and target.has_method("take_hit"):
+				target.take_hit(dmg)
+				if target is Node3D:
+					SkillVFX.hit_spark(self, (target as Node3D).global_position)
+		"gravity":
+			if target is Node3D and player != null:
+				var t := target as Node3D
+				var pull: Vector3 = player.global_position - t.global_position
+				pull.y = 0.0
+				if pull.length() > 0.2:
+					t.global_position += pull.normalized() * mini(2.5, pull.length() * 0.35)
+		_:
+			pass
 
 func _on_bit(amount: int) -> void:
 	if not _running:
@@ -185,6 +233,7 @@ func _on_bit(amount: int) -> void:
 
 # ── Survival ───────────────────────────────────────────────────────────────
 func _setup_survival() -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	_zone_visual = MeshInstance3D.new()
 	var cyl := CylinderMesh.new()
 	cyl.top_radius = _zone_radius
@@ -228,6 +277,7 @@ func _tick_survival(delta: float) -> void:
 
 # ── Zombies ────────────────────────────────────────────────────────────────
 func _setup_zombies() -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	_wave = 0
 	_hero_max_hp = 140
 	_hero_hp = 140
@@ -248,6 +298,7 @@ func _tick_zombies(delta: float) -> void:
 			_next_wave()
 
 func _next_wave() -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	_wave += 1
 	var count := 3 + _wave * 2
 	var stage := mini(3, 1 + int((_wave - 1) / 2))
@@ -256,6 +307,7 @@ func _next_wave() -> void:
 
 # ── CTF ────────────────────────────────────────────────────────────────────
 func _setup_ctf() -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	_yarn = _make_pickup(Vector3(18, 1, 0), Color(1.0, 0.85, 0.2), "YarnBall")
 	_goal = _make_pickup(Vector3(-18, 1, 0), Color(0.3, 1.0, 0.45), "Goal")
 	_yarn.body_entered.connect(_on_yarn_entered)
@@ -265,6 +317,7 @@ func _setup_ctf() -> void:
 	NotificationUI.notify_info("Yarn Rush — deliver 3 before foes score 3. 120s clock.")
 
 func _tick_ctf(delta: float) -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	_prune_dead()
 	_drive_allies(delta)
 	# Distance-based pickup/deliver — works even if Area3D layers miss the player.
@@ -291,6 +344,7 @@ func _tick_ctf(delta: float) -> void:
 		_finish(false)
 
 func _on_yarn_entered(body: Node) -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if body == player or (body is Node and body.is_in_group("player")):
 		_yarn_held = true
 		if _yarn:
@@ -298,6 +352,7 @@ func _on_yarn_entered(body: Node) -> void:
 		NotificationUI.notify_info("Yarn secured — run it home.")
 
 func _on_goal_entered(body: Node) -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if not _yarn_held:
 		return
 	if body == player or (body is Node and body.is_in_group("player")):
@@ -310,6 +365,7 @@ func _on_goal_entered(body: Node) -> void:
 
 # ── Duel ───────────────────────────────────────────────────────────────────
 func _setup_duel() -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	var foes := 1 if mode_id == "duel" else 2
 	_spawn_ferals(foes, 2)
 	if mode_id == "duel_2v2":
@@ -326,6 +382,7 @@ func _tick_duel(delta: float) -> void:
 
 # ── Conflict (faction war warm-up) ─────────────────────────────────────────
 func _setup_conflict() -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	_hero_max_hp = 160
 	_hero_hp = 160
 	# 4 allies vs 8 enemies — scaled warm-up for team_size 12
@@ -547,6 +604,10 @@ func _make_pickup(pos: Vector3, color: Color, node_name: String) -> Area3D:
 	return area
 
 func _finish(won: bool) -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var CrownManager = AutoloadGate.get_node("CrownManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	if not _running:
 		return
 	_running = false
@@ -565,6 +626,8 @@ func _finish(won: bool) -> void:
 	_sync_online_result(won)
 
 func _sync_online_result(won: bool) -> void:
+	var NetworkManager = AutoloadGate.get_node("NetworkManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	## When queued via find_match, push a leaderboard score so online play is recorded.
 	if not Engine.has_meta("arena_online_match_id"):
 		return

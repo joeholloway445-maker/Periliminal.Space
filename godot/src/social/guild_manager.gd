@@ -24,6 +24,8 @@ func _ready() -> void:
 	_load()
 
 func create_guild(gname: String, tag: String) -> bool:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if in_guild():
 		NotificationUI.notify_error("Leave your current guild first.")
 		return false
@@ -88,6 +90,17 @@ func demote(player_id: String) -> bool:
 	guild.members[player_id] = r - 1
 	rank_changed.emit(player_id, guild.ranks[r - 1])
 	_save()
+	return true
+
+## Founder leaves = guild dissolves. Client-side authority for now.
+func disband() -> bool:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	if not in_guild():
+		return false
+	var gname: String = guild.get("name", "")
+	guild = {}
+	_save()
+	NotificationUI.notify_info("🏰 %s has been dissolved." % gname)
 	return true
 
 func rank_of(player_id: String) -> String:

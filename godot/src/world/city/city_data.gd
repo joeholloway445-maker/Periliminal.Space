@@ -152,8 +152,8 @@ static func accent_for(faction: String) -> Color:
 static func pick_profile(mix: Dictionary, rng: RandomNumberGenerator) -> String:
 	var roll := rng.randf()
 	var acc := 0.0
-	for name in mix:
-		acc += mix[name]
+	for city_name in mix:
+		acc += mix[city_name]
 		if roll <= acc:
-			return name
+			return city_name
 	return mix.keys()[0]

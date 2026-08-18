@@ -13,6 +13,7 @@ var _tier_label: Label
 var _ranking_overlay: PanelContainer
 
 func _ready() -> void:
+	var StoryVote = AutoloadGate.get_node("StoryVote")
 	var root := VBoxContainer.new()
 	root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(root)
@@ -184,6 +185,8 @@ func _show_pvp_rankings() -> void:
 	box.add_child(ranking)
 
 func _launch(mode_id: String) -> void:
+	var TournamentManager = AutoloadGate.get_node("TournamentManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	var mode := ArenaModes.by_id(mode_id)
 	var scene_path: String = str(mode.get("scene", ""))
 	match mode_id:
@@ -203,6 +206,8 @@ func _launch(mode_id: String) -> void:
 ## Online: queue via find_match (catsino_match) then enter practice-synced arena.
 ## Offline / Shift: practice immediately. Match id is stored for score sync.
 func _launch_arena_mode(mode_id: String, scene_path: String) -> void:
+	var NetworkManager = AutoloadGate.get_node("NetworkManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	var force_practice: bool = Input.is_key_pressed(KEY_SHIFT)
 	if force_practice or not NetworkManager.is_connected_to_server():
 		_enter_arena_scene(mode_id, scene_path, "")
@@ -218,10 +223,6 @@ func _launch_arena_mode(mode_id: String, scene_path: String) -> void:
 			_enter_arena_scene(mode_id, scene_path, "")
 			return
 		var mid := str(result.get("match_id", ""))
-		if mid.is_empty() or bool(result.get("practice", false)) or bool(result.get("offline", false)):
-			NotificationUI.notify_info("No live opponents — practice %s (score still syncs when online)." % mode_id)
-			_enter_arena_scene(mode_id, scene_path, "")
-			return
 		NotificationUI.notify_info("Joined arena match %s" % mid.substr(0, 8))
 		_enter_arena_scene(mode_id, scene_path, mid)
 	)
@@ -237,6 +238,8 @@ func _enter_arena_scene(mode_id: String, scene_path: String, match_id: String) -
 ## Online queue when authenticated; otherwise practice (offline MobaMatch).
 ## Holding Shift while clicking forces practice even when online.
 func _launch_moba(scene_path: String) -> void:
+	var NetworkManager = AutoloadGate.get_node("NetworkManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if scene_path.is_empty() or not ResourceLoader.exists(scene_path):
 		_simulate_match("moba")
 		return
@@ -276,6 +279,9 @@ func _enter_moba_scene(scene_path: String, match_id: String) -> void:
 ## stats + entities vs the field, luck-rolled — pays tokens (arena = PvP)
 ## and feeds the crown board on a win.
 func _simulate_match(mode_id: String) -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var CrownManager = AutoloadGate.get_node("CrownManager")
 	var mode := ArenaModes.by_id(mode_id)
 	var stats := CharacterCreatorLogic.build_starting_stats(
 		PlayerProfile.selected_race_id, PlayerProfile.faction,

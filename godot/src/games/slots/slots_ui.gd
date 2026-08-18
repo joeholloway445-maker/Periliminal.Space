@@ -28,12 +28,15 @@ func _show_idle_reels() -> void:
 			reel.add_child(lbl)
 
 func _spin() -> void:
+	var EventManager = AutoloadGate.get_node("EventManager")
+	var NetworkManager = AutoloadGate.get_node("NetworkManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if _spinning:
 		return
 	_spinning = true
 	spin_btn.disabled = true
 	result_label.text = "Spinning..."
-	var multiplier := EventManager.get_slot_multiplier() if EventManager else 1.0
+	var multiplier = EventManager.get_slot_multiplier() if EventManager else 1.0
 	NetworkManager.call_rpc("spin_slots", {bet=int(bet_spin.value), multiplier=multiplier},
 		func(result: Dictionary):
 			_spinning = false
@@ -47,6 +50,9 @@ func _spin() -> void:
 	)
 
 func _animate_result(symbols: Array, result: Dictionary) -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var AchievementManager = AutoloadGate.get_node("AchievementManager")
+	var XPManager = AutoloadGate.get_node("XPManager")
 	for i in range(3):
 		var reels := [reel1, reel2, reel3]
 		for child in reels[i].get_children():

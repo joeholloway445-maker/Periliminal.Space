@@ -11,6 +11,7 @@ var venue_root: Node3D
 const RING_RADIUS := 10.0
 
 func _unhandled_key_input(event: InputEvent) -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if not (event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_E):
 		return
 	match kind:
@@ -36,11 +37,13 @@ func _process(_delta: float) -> void:
 ## The vendor stalls: market = merchants/consumables, armorer = armor
 ## listings, blacksmith = weapon listings — all Marketplace vendor wares.
 func _open_marketplace(venue_kind: String) -> void:
+	var Marketplace = AutoloadGate.get_node("Marketplace")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	var vendor_id := {"market": "merchant", "armorer": "armorer", "blacksmith": "blacksmith"}.get(venue_kind, "merchant")
-	var vendor := Marketplace.vendor_by_id(vendor_id)
+	var vendor = Marketplace.vendor_by_id(vendor_id)
 	if vendor.is_empty():
 		return
-	var listings := Marketplace.listings_for(vendor.get("wares", []))
+	var listings = Marketplace.listings_for(vendor.get("wares", []))
 	if listings.is_empty():
 		NotificationUI.notify_info("%s %s: \"%s\" — no canon stock listed yet. The Forge awaits creators." % [vendor.icon, vendor.name, vendor.desc])
 		return

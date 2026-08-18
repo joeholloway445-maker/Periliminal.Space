@@ -11,24 +11,28 @@ extends CanvasLayer
 @onready var xp_bar: ProgressBar = $BottomBar/XPBar
 
 func _ready() -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	_refresh_wallet()
 	_refresh_profile()
 	_check_events()
 	PlayerProfile.xp_changed.connect(_on_xp_changed)
 
 func _refresh_wallet() -> void:
+	var NetworkManager = AutoloadGate.get_node("NetworkManager")
 	NetworkManager.call_rpc("get_wallet", {},
 		func(result: Dictionary):
 			coins_label.text = "🪙 %d" % int(result.get("coins", result.get("cat_coins", 0)))
 	)
 
 func _refresh_profile() -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	level_label.text = "Lv %d" % PlayerProfile.level
-	var progress := PlayerProfile.xp_progress()
+	var progress = PlayerProfile.xp_progress()
 	xp_bar.value = progress * 100
 
 func _check_events() -> void:
-	var multiplier := EventManager.get_slot_multiplier()
+	var EventManager = AutoloadGate.get_node("EventManager")
+	var multiplier = EventManager.get_slot_multiplier()
 	if multiplier > 1.0:
 		event_label.text = "🎰 %sx SLOTS ACTIVE" % multiplier
 		event_banner.show()
@@ -42,5 +46,6 @@ func set_district(district_name: String) -> void:
 	district_label.text = district_name
 
 func _on_xp_changed(new_xp: int, new_level: int) -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	level_label.text = "Lv %d" % new_level
 	xp_bar.value = PlayerProfile.xp_progress() * 100

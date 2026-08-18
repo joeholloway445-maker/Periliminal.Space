@@ -5,7 +5,13 @@ extends Node
 signal spin_completed(result: Dictionary)
 
 func spin(bet: int) -> void:
-	var multiplier := EventManager.get_slot_multiplier() if is_instance_valid(EventManager) else 1.0
+	var EventManager = AutoloadGate.get_node("EventManager")
+	var NetworkManager = AutoloadGate.get_node("NetworkManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var AchievementManager = AutoloadGate.get_node("AchievementManager")
+	var QuestManager = AutoloadGate.get_node("QuestManager")
+	var XPManager = AutoloadGate.get_node("XPManager")
+	var multiplier = EventManager.get_slot_multiplier() if is_instance_valid(EventManager) else 1.0
 	NetworkManager.call_rpc("spin_slots", {bet=bet, multiplier=multiplier},
 		func(result: Dictionary):
 			if result.get("error"):

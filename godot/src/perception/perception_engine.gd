@@ -29,6 +29,7 @@ class_name PerceptionEngine
 ##   distortion = 1.0 - conf/100
 
 static func psychology_score() -> float:
+	var Hope = AutoloadGate.get_node("Hope")
 	# Compiled from Hope's live profile: courage (inverse fear/anxiety),
 	# curiosity, and composure under gambling pressure.
 	var p: Dictionary = Hope.profile
@@ -38,7 +39,8 @@ static func psychology_score() -> float:
 	return clampf((courage * 0.5 + curiosity * 0.3 + composure * 0.2) * 100.0, 0.0, 100.0)
 
 static func perceive_entity(entity_confidence: float, group_prestiges: Array = []) -> Dictionary:
-	var pres := EconomyManager.influence_level()
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var pres = EconomyManager.influence_level()
 	for g in group_prestiges:
 		pres = maxi(pres, int(g)) # highest prestige dominates the group
 	var conf := clampf(

@@ -44,7 +44,7 @@ func _run() -> void:
 	# Minimal identity for lens/combat.
 	var profile: Node = root.get_node_or_null("PlayerProfile")
 	if profile != null:
-		profile.set("selected_race_id", "KETH")
+		profile.set("selected_race_id", "tabby")
 		profile.set("selected_frame", "veil")
 		profile.set("selected_mod", "catalyst")
 		profile.set("faction", "Factionless")
@@ -113,7 +113,7 @@ func _run() -> void:
 		var city: Node3D = MegaCityBuilder.build("arlington", Vector3.ZERO, sky,
 			func(_x, _z): return 0.0, null)
 		# Hidden doors only place when player != null — rebuild with a stand-in.
-		city.queue_free()
+		city.free()  # immediate — queue_free would keep it owned until end-of-frame
 		var stand_in := Node3D.new()
 		root.add_child(stand_in)
 		city = MegaCityBuilder.build("arlington", Vector3.ZERO, sky,

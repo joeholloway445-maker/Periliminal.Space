@@ -3,7 +3,7 @@ extends Control
 
 signal companion_obtained(companion_id: String, rarity: String)
 
-@onready var result_container: VBoxContainer = $Panel/VBox/ResultContainer
+@onready var result_container: VBoxContainer = $Panel/VBox/ScrollContainer/ResultContainer
 @onready var single_btn: Button = $Panel/VBox/Controls/SingleBtn
 @onready var multi_btn: Button = $Panel/VBox/Controls/MultiBtn
 @onready var faction_option: OptionButton = $Panel/VBox/Controls/FactionOption
@@ -33,8 +33,10 @@ func _ready() -> void:
 	UINav.add_back_button(self)
 
 func _summon(count: int) -> void:
+	var NetworkManager = AutoloadGate.get_node("NetworkManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	var factions := ["", "SovereignCrown", "WildlandsAscendant", "VeiledCurrent", "Factionless"]
-	var faction := factions[faction_option.selected] if faction_option else ""
+	var faction: String = factions[faction_option.selected] if faction_option else ""
 	if single_btn:
 		single_btn.disabled = true
 	if multi_btn:
@@ -54,6 +56,8 @@ func _summon(count: int) -> void:
 	)
 
 func _show_results(companions: Array) -> void:
+	var AchievementManager = AutoloadGate.get_node("AchievementManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	for child in result_container.get_children():
 		child.queue_free()
 

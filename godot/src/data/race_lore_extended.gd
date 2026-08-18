@@ -1,110 +1,111 @@
 class_name RaceLoreExtended
-# Extended lore, abilities, and race-specific game variants for all 20 races.
-# Keys MUST match RaceLore.get_all_race_names() exactly (Keth..Glyphe) —
-# these were previously a disjoint placeholder name set (Nyx, Ember, Glacial...)
-# that only coincidentally shared "Nyx", so get_game_bonus() silently returned
-# {} for 19 of the 20 actual playable races. Remapped 1:1 by theme below.
+# Extended lore, abilities, and race-specific game bonuses for all 20
+# canonical Periliminal.Space races (Lumenari through Starfall).
+# Keys match RaceLore.get_all_race_names().
+# Values derived from hdv_lore src/data/race_data.gd stat_bonus, passive,
+# and drawback fields — mapped to the gameplay bonus system (slot_mult,
+# race_spd_bonus, combat_crit, signature move).
 
 const RACE_GAME_BONUSES: Dictionary = {
-	"Nyx": {
-		slot_mult=1.15, race_spd_bonus=5, combat_crit=0.08,
-		signature_move="Void Phase", signature_desc="Phases through the first attack of each combat round",
-		hometown_district="arcade_galaxy", unlock_cost_coins=0,
-	},
-	"Ferros": {
-		slot_mult=1.0, race_spd_bonus=0, combat_crit=0.12,
-		signature_move="Combustion Strike", signature_desc="Next attack deals 1.4x damage if opponent used Heavy type",
-		hometown_district="cat_coliseum", unlock_cost_coins=500,
-	},
-	"Kryos": {
-		slot_mult=1.0, race_spd_bonus=-5, combat_crit=0.05,
-		signature_move="Frost Armor", signature_desc="Reduces incoming damage by 20% for 3 turns",
-		hometown_district="cat_forest", unlock_cost_coins=500,
-	},
-	"Volt": {
-		slot_mult=1.05, race_spd_bonus=10, combat_crit=0.10,
-		signature_move="Thunderclap", signature_desc="Stuns opponent for 1 turn on crit",
-		hometown_district="neon_alley", unlock_cost_coins=750,
-	},
-	"Etherea": {
-		slot_mult=1.25, race_spd_bonus=0, combat_crit=0.06,
-		signature_move="Entropy Wave", signature_desc="+25% slot multiplier when active, but -15 RES",
-		hometown_district="arcade_galaxy", unlock_cost_coins=0,
-	},
-	"Chimera": {
-		slot_mult=1.10, race_spd_bonus=8, combat_crit=0.09,
-		signature_move="Light Speed", signature_desc="Guaranteed first strike advantage, SPD check bypassed",
-		hometown_district="neon_alley", unlock_cost_coins=750,
-	},
-	"Sylva": {
-		slot_mult=1.05, race_spd_bonus=0, combat_crit=0.07,
-		signature_move="Petal Heal", signature_desc="Restores 10 RES points after each combat win",
-		hometown_district="cat_forest", unlock_cost_coins=500,
-	},
-	"Aquis": {
-		slot_mult=1.0, race_spd_bonus=12, combat_crit=0.08,
-		signature_move="Tidal Surge", signature_desc="+12 SPD bonus in water/river track segments",
-		hometown_district="neon_alley", unlock_cost_coins=500,
-	},
-	"Vex": {
-		slot_mult=1.15, race_spd_bonus=6, combat_crit=0.11,
-		signature_move="Aether Step", signature_desc="50% chance to dodge Tech-type attacks entirely",
-		hometown_district="paw_vegas", unlock_cost_coins=1000,
-	},
-	"Keth": {
-		slot_mult=1.10, race_spd_bonus=5, combat_crit=0.15,
-		signature_move="Umbral Strike", signature_desc="Crit chance doubles if attacking from behind (flanking)",
-		hometown_district="paw_vegas", unlock_cost_coins=1000,
-	},
-	"Sanguis": {
-		slot_mult=1.0, race_spd_bonus=0, combat_crit=0.10,
-		signature_move="Bloodrush", signature_desc="+5 POW stacking for each consecutive win (max +25)",
-		hometown_district="cat_coliseum", unlock_cost_coins=750,
-	},
-	"Geara": {
-		slot_mult=1.05, race_spd_bonus=15, combat_crit=0.09,
-		signature_move="Arc Dash", signature_desc="Teleports to end of race track on winning the last lap",
+	"Lumenari": {
+		slot_mult=1.20, race_spd_bonus=2, combat_crit=0.09,
+		signature_move="Radiant Pulse", signature_desc="Deals AoE light damage when Focus is at maximum",
 		hometown_district="neon_alley", unlock_cost_coins=1000,
 	},
-	"Glyphe": {
-		slot_mult=1.20, race_spd_bonus=2, combat_crit=0.08,
-		signature_move="Refraction", signature_desc="Splits into 3 afterimages; 1 is real; opponent must guess",
-		hometown_district="arcade_galaxy", unlock_cost_coins=1250,
+	"Gutterkin": {
+		slot_mult=1.10, race_spd_bonus=8, combat_crit=0.11,
+		signature_move="Hazard Conversion", signature_desc="Restores HP when standing in hazard zones",
+		hometown_district="paw_vegas", unlock_cost_coins=500,
 	},
-	"Myco": {
-		slot_mult=1.05, race_spd_bonus=0, combat_crit=0.06,
-		signature_move="Root Grip", signature_desc="Prevents opponent escape/flee for 2 turns",
-		hometown_district="cat_forest", unlock_cost_coins=500,
+	"Deepborne": {
+		slot_mult=1.05, race_spd_bonus=2, combat_crit=0.08,
+		signature_move="Pressure Pulse", signature_desc="Knocks back attackers when struck; 3s cooldown",
+		hometown_district="neon_alley", unlock_cost_coins=750,
 	},
-	"Igni": {
-		slot_mult=1.0, race_spd_bonus=3, combat_crit=0.14,
-		signature_move="Inferno Burst", signature_desc="Every 3rd attack deals 2x fire damage",
-		hometown_district="cat_coliseum", unlock_cost_coins=750,
+	"Ashen Choir": {
+		slot_mult=1.25, race_spd_bonus=0, combat_crit=0.07,
+		signature_move="Sorrow Amplification", signature_desc="Boosts ally damage by 15% while they remain above 50% HP",
+		hometown_district="neon_alley", unlock_cost_coins=1250,
 	},
-	"Ferox": {
-		slot_mult=1.10, race_spd_bonus=8, combat_crit=0.12,
-		signature_move="Cyclone Claw", signature_desc="AoE attack hits all opponents in team battles",
-		hometown_district="cat_coliseum", unlock_cost_coins=1000,
-	},
-	"Astra": {
-		slot_mult=1.15, race_spd_bonus=4, combat_crit=0.10,
-		signature_move="Moonrise Fury", signature_desc="All stats +15% during the in-game night cycle",
+	"Veilstriders": {
+		slot_mult=1.15, race_spd_bonus=12, combat_crit=0.12,
+		signature_move="Phase Skip", signature_desc="5% chance to ignore any incoming hit entirely",
 		hometown_district="paw_vegas", unlock_cost_coins=1000,
 	},
-	"Petra": {
-		slot_mult=1.0, race_spd_bonus=0, combat_crit=0.07,
-		signature_move="Stone Skin", signature_desc="Absorbs first 30 damage of every combat, no exceptions",
-		hometown_district="cat_forest", unlock_cost_coins=500,
+	"Chronarchs": {
+		slot_mult=1.15, race_spd_bonus=4, combat_crit=0.10,
+		signature_move="Micro-Rewind", signature_desc="Automatically corrects missed skill shots once per fight",
+		hometown_district="cat_forest", unlock_cost_coins=1250,
 	},
-	"Lumari": {
-		slot_mult=1.20, race_spd_bonus=3, combat_crit=0.09,
-		signature_move="Solar Flare", signature_desc="Blinds all opponents for 1 turn; they miss their attacks",
+	"Nullborn": {
+		slot_mult=1.30, race_spd_bonus=5, combat_crit=0.13,
+		signature_move="Outcome Shift", signature_desc="Subtly skews all RNG in your favor; small but cumulative",
+		hometown_district="neon_alley", unlock_cost_coins=1500,
+	},
+	"Thorned": {
+		slot_mult=1.0, race_spd_bonus=6, combat_crit=0.09,
+		signature_move="Regrowth Armor", signature_desc="Regenerates 3 HP per second in combat; heals 2x on kill",
+		hometown_district="cat_forest", unlock_cost_coins=750,
+	},
+	"Echoes": {
+		slot_mult=1.10, race_spd_bonus=3, combat_crit=0.14,
+		signature_move="System Hack", signature_desc="Passively jams enemy abilities within 8m; 20% chance to misfire",
+		hometown_district="cat_forest", unlock_cost_coins=1000,
+	},
+	"Hollowed": {
+		slot_mult=1.20, race_spd_bonus=0, combat_crit=0.06,
+		signature_move="Extra Item Slot", signature_desc="Carries one additional consumable without counting toward cap",
+		hometown_district="neon_alley", unlock_cost_coins=500,
+	},
+	"Riftspawn": {
+		slot_mult=1.05, race_spd_bonus=10, combat_crit=0.11,
+		signature_move="Minor Gravity Pull", signature_desc="Pulls nearby targets 1m toward you every 4s; interrupts channeling",
+		hometown_district="paw_vegas", unlock_cost_coins=1000,
+	},
+	"Mirekin": {
+		slot_mult=1.05, race_spd_bonus=3, combat_crit=0.08,
+		signature_move="Hive Awareness", signature_desc="Reveals all allies within 50m through terrain, even stealthed",
+		hometown_district="cat_forest", unlock_cost_coins=750,
+	},
+	"Sunspun": {
+		slot_mult=1.10, race_spd_bonus=9, combat_crit=0.10,
+		signature_move="Radiant Burst", signature_desc="Unleashes stored light: deals bonus damage scaling with Focus level",
+		hometown_district="paw_vegas", unlock_cost_coins=1000,
+	},
+	"Coldmarrow": {
+		slot_mult=1.0, race_spd_bonus=0, combat_crit=0.07,
+		signature_move="Freeze Aura", signature_desc="Slows all enemies within 5m by 20%; stacks on prolonged contact",
+		hometown_district="cat_forest", unlock_cost_coins=750,
+	},
+	"Pulseborn": {
+		slot_mult=1.10, race_spd_bonus=14, combat_crit=0.12,
+		signature_move="Shock Dash", signature_desc="Dashing leaves an electrical AoE that damages pursuers",
+		hometown_district="cat_forest", unlock_cost_coins=1000,
+	},
+	"Dreamflesh": {
+		slot_mult=1.25, race_spd_bonus=6, combat_crit=0.09,
+		signature_move="Minor Morph Shift", signature_desc="Briefly change hitbox shape; 15% chance to cause attacks to miss",
+		hometown_district="neon_alley", unlock_cost_coins=1250,
+	},
+	"Crownless": {
+		slot_mult=1.15, race_spd_bonus=3, combat_crit=0.10,
+		signature_move="Authority Override", signature_desc="Take temporary control of hostile turrets/doors for 4 seconds",
 		hometown_district="paw_vegas", unlock_cost_coins=1500,
 	},
-	"Azhul": {
-		slot_mult=1.30, race_spd_bonus=7, combat_crit=0.13,
-		signature_move="Superposition", signature_desc="Exists in win/lose state until observed; 60% collapses to win",
-		hometown_district="arcade_galaxy", unlock_cost_coins=2000,
+	"Rotweavers": {
+		slot_mult=1.20, race_spd_bonus=2, combat_crit=0.08,
+		signature_move="Decay Conversion", signature_desc="Killed enemies drop 1 extra loot stack; value scales with kill streak",
+		hometown_district="cat_forest", unlock_cost_coins=500,
+	},
+	"Glassborn": {
+		slot_mult=1.15, race_spd_bonus=0, combat_crit=0.07,
+		signature_move="Mirror Shield", signature_desc="Reflects 15% of incoming damage back at the attacker",
+		hometown_district="neon_alley", unlock_cost_coins=1250,
+	},
+	"Starfall": {
+		slot_mult=1.0, race_spd_bonus=15, combat_crit=0.13,
+		signature_move="Impact Entry", signature_desc="Falling from any height creates a damaging AoE at landing point; no fall damage",
+		hometown_district="paw_vegas", unlock_cost_coins=1500,
 	},
 }
 

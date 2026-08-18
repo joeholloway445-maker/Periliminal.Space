@@ -42,7 +42,7 @@ func _ready() -> void:
 		_result_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		_result_label.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
 		_result_label.offset_top = -80
-		(root as Control).add_child(_result_label)
+		(root as Control).add_child.call_deferred(_result_label)
 	if not spin_result.is_connected(_on_spin_ui_result):
 		spin_result.connect(_on_spin_ui_result)
 	if not error_occurred.is_connected(_on_spin_ui_error):
@@ -65,18 +65,21 @@ func _on_spin_pressed() -> void:
 	spin(_bet)
 
 func _on_spin_ui_result(segment_name: String, multiplier: float, payout: int) -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if _result_label:
 		_result_label.text = "%s (x%.1f) — +%d chips" % [segment_name, multiplier, payout]
 	if payout > 0 and NotificationUI:
 		NotificationUI.notify_win("Fortune: +%d" % payout)
 
 func _on_spin_ui_error(message: String) -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if _result_label:
 		_result_label.text = message
 	if NotificationUI:
 		NotificationUI.notify_error(message)
 
 func spin(bet: int) -> void:
+	var NetworkManager = AutoloadGate.get_node("NetworkManager")
 	if _spinning:
 		error_occurred.emit("Wheel is spinning")
 		return

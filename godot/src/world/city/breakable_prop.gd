@@ -26,11 +26,8 @@ var _prompt: Label3D
 
 func _ready() -> void:
 	add_to_group("breakable")
-	# Seeded on placement (variant_seed, set by MegaCityBuilder) so a street
-	# shows benches, hydrants, planters and statues rather than the same
-	# prop repeated, while any given prop keeps its identity across streaming.
 	var vrng := RandomNumberGenerator.new()
-	vrng.seed = variant_seed if variant_seed != 0 else hash(global_position.snapped(Vector3.ONE))
+	vrng.seed = variant_seed
 	var real := AssetLibrary.instance_variant("city_prop", vrng)
 	if real != null:
 		_visual = real
@@ -90,6 +87,8 @@ func take_hit(amount: int) -> void:
 		_demolish()
 
 func _demolish() -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var Hope = AutoloadGate.get_node("Hope")
 	broken = true
 	_visual.visible = false
 	_rubble.visible = true
@@ -100,6 +99,8 @@ func _demolish() -> void:
 	demolished.emit(self)
 
 func try_rebuild() -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if not broken:
 		return
 	if not await EconomyManager.spend_currency("fragments", REBUILD_COST, "rebuild_prop"):

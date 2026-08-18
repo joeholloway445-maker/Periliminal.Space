@@ -33,6 +33,9 @@ var _peer_hp: Dictionary = {}
 var _presence_wired := false
 
 func _ready() -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var PvxcManager = AutoloadGate.get_node("PvxcManager")
+	var MusicManager = AutoloadGate.get_node("MusicManager")
 	if not PvxcManager.in_run:
 		# No stake, no entry — bounce to the gate UI.
 		get_tree().change_scene_to_file.call_deferred("res://scenes/pvxc/pvxc_gate.tscn")
@@ -100,6 +103,7 @@ func _set_creatures_active(active: bool) -> void:
 			c.global_position.y = 0.0
 
 func _ensure_presence() -> void:
+	var PresenceManager = AutoloadGate.get_node("PresenceManager")
 	if _presence_wired:
 		return
 	_presence_wired = true
@@ -110,6 +114,7 @@ func _ensure_presence() -> void:
 	PresenceManager.join_layer("pvxc")
 
 func _on_peer_joined(pid: String, prof: Dictionary) -> void:
+	var PvxcManager = AutoloadGate.get_node("PvxcManager")
 	if _peers.has(pid):
 		return
 	var rp := RemotePlayer.new()
@@ -123,6 +128,7 @@ func _on_peer_joined(pid: String, prof: Dictionary) -> void:
 	_peer_hp[pid] = 80 + randi() % 60
 
 func _on_peer_updated(pid: String, pos: Vector3) -> void:
+	var PresenceManager = AutoloadGate.get_node("PresenceManager")
 	if not _peers.has(pid):
 		_on_peer_joined(pid, PresenceManager.peer_profile(pid))
 	if _peers.has(pid) and is_instance_valid(_peers[pid]):
@@ -138,6 +144,8 @@ func _on_peer_left(pid: String) -> void:
 	_peer_hp.erase(pid)
 
 func _on_bot_cast(pid: String, skill: Dictionary) -> void:
+	var PresenceManager = AutoloadGate.get_node("PresenceManager")
+	var PvxcManager = AutoloadGate.get_node("PvxcManager")
 	if not PvxcManager.is_pvp_phase():
 		return
 	if not _peers.has(pid) or not is_instance_valid(_peers[pid]):
@@ -159,6 +167,7 @@ func _on_bot_cast(pid: String, skill: Dictionary) -> void:
 
 
 func _build_arena() -> void:
+	var IdentityLens = AutoloadGate.get_node("IdentityLens")
 	# Environment: windowless casino-basement dark, red bleed from the core.
 	var env := Environment.new()
 	env.background_mode = Environment.BG_COLOR
@@ -268,6 +277,8 @@ func _build_arena() -> void:
 		_spawn_gate(Vector3(cos(a) * (RIM - 3.0), 0, sin(a) * (RIM - 3.0)))
 
 func _spawn_harvest_node(pos: Vector3, rng: RandomNumberGenerator) -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var PvxcManager = AutoloadGate.get_node("PvxcManager")
 	var node := Area3D.new()
 	var mi := MeshInstance3D.new()
 	var prism := PrismMesh.new()
@@ -298,6 +309,8 @@ func _spawn_harvest_node(pos: Vector3, rng: RandomNumberGenerator) -> void:
 	add_child(node)
 
 func _spawn_creature(pos: Vector3, rng: RandomNumberGenerator) -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var PvxcManager = AutoloadGate.get_node("PvxcManager")
 	var roster := CompanionRegistry.get_all()
 	if roster.is_empty():
 		return
@@ -314,6 +327,8 @@ func _spawn_creature(pos: Vector3, rng: RandomNumberGenerator) -> void:
 		NotificationUI.notify_win("🗡️ %s down (+%d bounty)" % [creature.entity.get("name", "?"), creature.bounty]))
 
 func _spawn_gate(pos: Vector3) -> void:
+	var PvxcManager = AutoloadGate.get_node("PvxcManager")
+	var MusicManager = AutoloadGate.get_node("MusicManager")
 	var gate := Area3D.new()
 	var mi := MeshInstance3D.new()
 	var box := BoxMesh.new()
@@ -341,72 +356,84 @@ func _spawn_gate(pos: Vector3) -> void:
 			get_tree().change_scene_to_file("res://scenes/ui/main_menu.tscn"))
 	add_child(gate)
 
-## Skill effect resolution — shared cast resolver + PVXC-specific builds/summons.
+## Skill effect resolution — the hotbar emits, the zone applies.
 func _on_cast(sk: Dictionary) -> void:
-	if not PvxcManager.in_run or _player == null or not is_instance_valid(_player):
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var SkillManager = AutoloadGate.get_node("SkillManager")
+	var PvxcManager = AutoloadGate.get_node("PvxcManager")
+	var BlueprintManager = AutoloadGate.get_node("BlueprintManager")
+	if not PvxcManager.in_run:
 		return
-	if PresenceManager != null and PresenceManager.has_method("report_cast"):
-		PresenceManager.report_cast(sk, _player.global_position)
 	var kind: String = sk.get("kind", "damage")
 	var shape: String = sk.get("shape", "single")
 	var radius: float = float(sk.get("radius", 3.0))
 	var power: float = float(sk.get("power", 1.0))
-	var targets: Array = []
-	if kind in ["damage", "chance", "control"]:
-		if PvxcManager.is_pvp_phase():
-			for pid in _peers.keys():
-				var rp = _peers[pid]
-				if is_instance_valid(rp):
-					targets.append(rp)
-		else:
-			for c in _targets_for(shape, radius):
-				targets.append(c)
-	var opts := {
-		"base_attack": _attack_damage,
-		"targets": targets,
-		"telegraph": kind in ["damage", "chance", "control"],
-		"on_self_shield": func(amount: int):
-			_shield = maxi(_shield, amount)
+	var dmg := int(_attack_damage * power)
+	# VFX: every cast flashes in your sensorium's light — unless the player
+	# forged a blueprint for this skill, in which case THEIR design plays.
+	var cast_bp = BlueprintManager.equipped_for("skill", str(sk.get("id", "")))
+	if not cast_bp.is_empty():
+		SkillVFX.blueprint_cast(self, _player.global_position, cast_bp)
+	else:
+		SkillVFX.cast_flash(self, _player.global_position)
+	if sk.get("ult_cost", 0) > 0:
+		SkillVFX.ultimate_burst(self, _player.global_position, maxf(radius, 6.0))
+	elif shape == "aoe":
+		SkillVFX.aoe_ring(self, _player.global_position, radius)
+	elif shape == "line":
+		SkillVFX.line_beam(self, _player.global_position, -_player.global_transform.basis.z, radius)
+	match kind:
+		"damage", "chance":
+			if kind == "chance":
+				dmg = int(dmg * (2.0 if randf() < 0.35 else 0.6)) # gambler's spread
+			var hit := 0
+			if PvxcManager.is_pvp_phase():
+				hit = _hit_peers(shape, radius, dmg)
+			else:
+				for c in _targets_for(shape, radius):
+					c.take_hit(dmg)
+					SkillVFX.hit_spark(self, c.global_position)
+					hit += 1
+			if hit > 0:
+				SkillManager.gain_ultimate(6.0 * hit)
+			else:
+				NotificationUI.notify_info("%s — nothing in reach." % sk.get("name", "?"))
+		"shield":
+			_shield = maxi(_shield, int(30 * power))
 			SkillVFX.shield_bubble(self, _player, 6.0)
-			SkillManager.gain_ultimate(4.0),
-		"on_self_mobility": func(dist: float):
-			_player.global_position += -_player.global_transform.basis.z * dist
-			SkillManager.gain_ultimate(3.0),
-		"on_self_buff": func(p: float):
-			_attack_damage = int(_attack_damage * (1.0 + 0.25 * p))
-			get_tree().create_timer(8.0).timeout.connect(func():
-				_attack_damage = _attack_damage_base)
-			SkillManager.gain_ultimate(4.0),
-		"on_build": func(p: float):
-			_spawn_wall(_player.global_position - _player.global_transform.basis.z * 3.0, p)
-			SkillManager.gain_ultimate(4.0),
-		"on_sentry": func(p: float):
-			_spawn_sentry(_player.global_position - _player.global_transform.basis.z * 2.0, p)
-			SkillManager.gain_ultimate(4.0),
-		"on_summon": func(p: float):
-			_spawn_summon(_player.global_position + Vector3(1.5, 0, 1.5), p)
-			SkillManager.gain_ultimate(4.0),
-		"on_transform": func(p: float, is_ult: bool):
-			_apply_transform(p, is_ult)
-			SkillManager.gain_ultimate(3.0),
-		"on_bastion": func(p: float):
-			for i in range(4):
-				var a := TAU * i / 4.0
-				_spawn_wall(_player.global_position + Vector3(cos(a), 0, sin(a)) * 6.0, p)
-				_spawn_sentry(_player.global_position + Vector3(cos(a + 0.4), 0, sin(a + 0.4)) * 5.0, p),
-		"on_control": func(_sk: Dictionary, _p: float):
+			SkillManager.gain_ultimate(4.0)
+		"mobility":
+			var fwd := -_player.global_transform.basis.z
+			_player.global_position += fwd * (6.0 + 6.0 * power)
+			SkillManager.gain_ultimate(3.0)
+		"control":
 			for c in _targets_for("aoe", maxf(radius, 6.0)):
 				c.speed *= 0.5
 				get_tree().create_timer(4.0).timeout.connect(func():
 					if is_instance_valid(c): c.speed *= 2.0)
-			SkillManager.gain_ultimate(5.0),
-		"skip_windup": DisplayServer.get_name() == "headless",
-	}
-	var result: Dictionary = await SkillCastResolver.resolve_async(self, _player, sk, opts)
-	if int(result.get("hits", 0)) == 0 and kind in ["damage", "chance"]:
-		NotificationUI.notify_info("%s — nothing in reach." % sk.get("name", "?"))
-	elif int(result.get("hits", 0)) > 0:
-		SkillManager.gain_ultimate(2.0 * float(result.hits)) # bonus on top of resolver
+			SkillManager.gain_ultimate(5.0)
+		"buff":
+			_attack_damage = int(_attack_damage * (1.0 + 0.25 * power))
+			get_tree().create_timer(8.0).timeout.connect(func():
+				_attack_damage = _attack_damage_base) # settles back
+			SkillManager.gain_ultimate(4.0)
+		"build": # Sovereign Crown / Wildlands creations — walls and thickets
+			_spawn_wall(_player.global_position - _player.global_transform.basis.z * 3.0, power)
+			SkillManager.gain_ultimate(4.0)
+		"sentry": # Crown Sentry — autonomous turret
+			_spawn_sentry(_player.global_position - _player.global_transform.basis.z * 2.0, power)
+			SkillManager.gain_ultimate(4.0)
+		"summon": # Wildlands Packmate — a made creature that fights for you
+			_spawn_summon(_player.global_position + Vector3(1.5, 0, 1.5), power)
+			SkillManager.gain_ultimate(4.0)
+		"transform": # Feral Shift / Apex Bloom — become the bigger thing
+			_apply_transform(power, sk.get("ult_cost", 0) > 0)
+			SkillManager.gain_ultimate(3.0)
+		"bastion": # Coronation Bastion — walls + sentries in a ring
+			for i in range(4):
+				var a := TAU * i / 4.0
+				_spawn_wall(_player.global_position + Vector3(cos(a), 0, sin(a)) * 6.0, power)
+				_spawn_sentry(_player.global_position + Vector3(cos(a + 0.4), 0, sin(a + 0.4)) * 5.0, power)
 
 func _targets_for(shape: String, radius: float) -> Array[PvxcCreature]:
 	var out: Array[PvxcCreature] = []
@@ -431,6 +458,7 @@ func _targets_for(shape: String, radius: float) -> Array[PvxcCreature]:
 	return out
 
 func _hit_peers(shape: String, radius: float, dmg: int) -> int:
+	var PvxcManager = AutoloadGate.get_node("PvxcManager")
 	var hit := 0
 	var origin := _player.global_position
 	var fwd := -_player.global_transform.basis.z
@@ -463,6 +491,8 @@ func _hit_peers(shape: String, radius: float, dmg: int) -> int:
 	return hit
 
 func _on_player_bitten(damage: int) -> void:
+	var SkillManager = AutoloadGate.get_node("SkillManager")
+	var PvxcManager = AutoloadGate.get_node("PvxcManager")
 	if PvxcManager.is_pvp_phase():
 		return # wildlife sleeps during PvP
 	SkillManager.gain_ultimate(3.0) # taking hits charges the ultimate too
@@ -484,6 +514,8 @@ func _on_player_bitten(damage: int) -> void:
 		_on_player_bitten_fatal(killer)
 
 func _on_player_bitten_fatal(killer: String) -> void:
+	var PvxcManager = AutoloadGate.get_node("PvxcManager")
+	var MusicManager = AutoloadGate.get_node("MusicManager")
 	PvxcManager.record_death(killer)
 	MusicManager.exit_racing()
 	get_tree().change_scene_to_file("res://scenes/pvxc/pvxc_gate.tscn")
@@ -492,9 +524,12 @@ func _on_player_bitten_fatal(killer: String) -> void:
 const CROWN_BUFF := 1.5 # Mandate of Stone: Crown structures last longer, hit harder
 
 func _faction_mult() -> float:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	return CROWN_BUFF if PlayerProfile.faction == "SovereignCrown" else 1.0
 
 func _spawn_wall(at: Vector3, power: float) -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var IdentityLens = AutoloadGate.get_node("IdentityLens")
 	var wall := StaticBody3D.new()
 	var mi := MeshInstance3D.new()
 	var box := BoxMesh.new()
@@ -556,6 +591,8 @@ func _spawn_sentry(at: Vector3, power: float) -> void:
 		if is_instance_valid(sentry): sentry.queue_free())
 
 func _spawn_summon(at: Vector3, power: float) -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var IdentityLens = AutoloadGate.get_node("IdentityLens")
 	# A made creature: chases the nearest hostile and bites it.
 	var ally := Node3D.new()
 	var mi := MeshInstance3D.new()
@@ -593,7 +630,9 @@ func _spawn_summon(at: Vector3, power: float) -> void:
 		if is_instance_valid(ally): ally.queue_free())
 
 func _apply_transform(power: float, is_ult: bool) -> void:
-	var wa := PlayerProfile.faction == "WildlandsAscendant"
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var wa = PlayerProfile.faction == "WildlandsAscendant"
 	var dur := (12.0 if is_ult else 8.0) * (1.3 if wa else 1.0) # Green Memory
 	var mult := 1.0 + 0.3 * power
 	_attack_damage = int(_attack_damage * mult)
@@ -605,6 +644,7 @@ func _apply_transform(power: float, is_ult: bool) -> void:
 		if is_instance_valid(_player): _player.scale = Vector3.ONE)
 
 func _build_hud() -> void:
+	var PvxcManager = AutoloadGate.get_node("PvxcManager")
 	var layer := CanvasLayer.new()
 	add_child(layer)
 	_hud_mult = Label.new()
@@ -625,17 +665,19 @@ func _build_hud() -> void:
 	var target := Label.new()
 	target.position = Vector2(10, 84)
 	target.modulate = Color(1, 0.4, 0.4)
-	var t := PvxcManager.my_target()
+	var t = PvxcManager.my_target()
 	target.text = "⚔️ Revenge target inside: %s" % t if t != "" else ""
 	layer.add_child(target)
 
 func _process(_delta: float) -> void:
+	var PresenceManager = AutoloadGate.get_node("PresenceManager")
+	var PvxcManager = AutoloadGate.get_node("PvxcManager")
 	if _player == null or not is_instance_valid(_player):
 		return
 	if _presence_wired:
 		PresenceManager.report_position(_player.global_position)
-	var m := PvxcManager.mult_at(_player.global_position)
-	var red := PvxcManager.in_red_core(_player.global_position)
+	var m = PvxcManager.mult_at(_player.global_position)
+	var red = PvxcManager.in_red_core(_player.global_position)
 	_hud_mult.text = "🔴 RED CORE — x12" if red else "PVXC — x%d" % int(m)
 	_hud_mult.modulate = Color(1, 0.15, 0.2) if red else Color(1, 0.8, 0.3)
 	var secs := int(PvxcManager.phase_seconds_left())

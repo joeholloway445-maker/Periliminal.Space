@@ -4,6 +4,7 @@ extends Control
 ## ascension title). Hidden crowns show as sealed until someone takes one.
 
 func _ready() -> void:
+	var CrownManager = AutoloadGate.get_node("CrownManager")
 	var root := VBoxContainer.new()
 	root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(root)
@@ -13,9 +14,9 @@ func _ready() -> void:
 	title.add_theme_font_size_override("font_size", 24)
 	root.add_child(title)
 
-	var mine := CrownManager.crowns_of("local_player")
+	var mine = CrownManager.crowns_of("local_player")
 	var status := Label.new()
-	var t := CrownManager.title_of("local_player")
+	var t = CrownManager.title_of("local_player")
 	status.text = "You hold %d crown%s (x%.2f bonus)%s%s" % [
 		mine.size(), "" if mine.size() == 1 else "s",
 		CrownManager.crown_bonus_mult("local_player"),

@@ -60,6 +60,7 @@ func stage() -> Dictionary:
 	return current
 
 func gain_bond(amount: int, why: String = "") -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	var before: String = str(stage().get("name", ""))
 	bond += amount
 	_save()
@@ -70,7 +71,9 @@ func gain_bond(amount: int, why: String = "") -> void:
 ## Hope's synergy skill lines — derived from race/frame/mod + playstyle,
 ## never chosen. Two actives + one synergy per growth stage unlocked.
 func synergy_lines() -> Array[Dictionary]:
-	var seed_hash := IdentityLens.identity_seed()
+	var IdentityLens = AutoloadGate.get_node("IdentityLens")
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var seed_hash = IdentityLens.identity_seed()
 	var frame_line := SkillData.frame_line(PlayerProfile.selected_frame)
 	if frame_line.is_empty():
 		return []
@@ -133,6 +136,7 @@ func observe_door(door_id: String, approach: String, seconds_hesitated: float) -
 
 ## Generic behavioral event (combat choices, loot-vs-exit, layer dwell...).
 func record(event: String, context: Dictionary) -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	_queue.append({
 		"player": PlayerProfile.username,
 		"event": event, "context": context,
@@ -145,6 +149,7 @@ func record(event: String, context: Dictionary) -> void:
 ## Push queued rows to Supabase through the web API (hope_telemetry table).
 ## Soft-fails when the endpoint is missing / offline — queue stays on disk.
 func _try_flush() -> void:
+	var CasinoHTTPClient = AutoloadGate.get_node("CasinoHTTPClient")
 	if _queue.is_empty():
 		return
 	if not CasinoHTTPClient:

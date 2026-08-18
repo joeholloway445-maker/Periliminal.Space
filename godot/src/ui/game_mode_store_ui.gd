@@ -10,6 +10,7 @@ const GameModeData = preload("res://src/data/game_mode_data.gd")
 @onready var activate_button: Button = $ActivateButton
 
 func _ready() -> void:
+	var GameModeManager = AutoloadGate.get_node("GameModeManager")
 	_populate()
 	mode_list.item_selected.connect(_on_mode_selected)
 	buy_button.pressed.connect(_on_buy_pressed)
@@ -17,6 +18,7 @@ func _ready() -> void:
 	GameModeManager.active_mode_changed.connect(func(_id): _populate())
 
 func _populate() -> void:
+	var GameModeManager = AutoloadGate.get_node("GameModeManager")
 	mode_list.clear()
 	for mode in GameModeData.MODES:
 		var label: String = mode["name"]
@@ -28,12 +30,14 @@ func _populate() -> void:
 	status_label.text = "Active mode: %s" % GameModeManager.active_mode().get("name", "")
 
 func _on_mode_selected(index: int) -> void:
+	var GameModeStore = AutoloadGate.get_node("GameModeStore")
 	var mode: Dictionary = GameModeData.MODES[index]
-	var cost := GameModeStore.price_gems(mode["id"])
+	var cost = GameModeStore.price_gems(mode["id"])
 	var price_text := "Free" if cost == 0 else "Price: %d gems" % cost
 	status_label.text = "%s\n%s\n%s" % [mode["name"], mode["description"], price_text]
 
 func _on_buy_pressed() -> void:
+	var GameModeStore = AutoloadGate.get_node("GameModeStore")
 	var index := mode_list.get_selected_items()
 	if index.is_empty():
 		return
@@ -42,6 +46,7 @@ func _on_buy_pressed() -> void:
 	_populate()
 
 func _on_activate_pressed() -> void:
+	var GameModeManager = AutoloadGate.get_node("GameModeManager")
 	var index := mode_list.get_selected_items()
 	if index.is_empty():
 		return

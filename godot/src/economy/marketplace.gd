@@ -77,7 +77,11 @@ func audit_log(limit: int = 100) -> Array[Dictionary]:
 
 ## List a canon design for sale. Price in coins; the cut comes out on sale.
 func list_copy(bp_id: String, price: int) -> Dictionary:
-	var bp := BlueprintManager.get_blueprint(bp_id)
+	var BlueprintManager = AutoloadGate.get_node("BlueprintManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var Hope = AutoloadGate.get_node("Hope")
+	var bp = BlueprintManager.get_blueprint(bp_id)
 	if bp.is_empty():
 		return {}
 	if not BlueprintManager.is_canon(bp_id):
@@ -115,6 +119,11 @@ func listings_for(wares: Array) -> Array[Dictionary]:
 ## Buy one crafted copy. The creator's name stays on it; the blueprint
 ## does NOT transfer.
 func buy_copy(listing_id: String) -> bool:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var BlueprintManager = AutoloadGate.get_node("BlueprintManager")
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var Hope = AutoloadGate.get_node("Hope")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	var l: Dictionary = _listings.get(listing_id, {})
 	if l.is_empty():
 		return false
@@ -128,7 +137,7 @@ func buy_copy(listing_id: String) -> bool:
 		EconomyManager.earn_coins(creator_share, "ugc_royalty_%s" % l.name)
 	l["sold"] = int(l.sold) + 1
 	_listings[listing_id] = l
-	var bp := BlueprintManager.get_blueprint(str(l.bp_id))
+	var bp = BlueprintManager.get_blueprint(str(l.bp_id))
 	if not bp.is_empty():
 		bp["copies_sold"] = int(bp.get("copies_sold", 0)) + 1
 		BlueprintManager.update(bp)
@@ -149,7 +158,11 @@ func buy_copy(listing_id: String) -> bool:
 ## Sell the blueprint ITSELF: authorship, name, crafting rights and all.
 ## Irreversible by design — this is the one way a creator's name comes off.
 func transfer_blueprint(bp_id: String, new_owner: String) -> bool:
-	var bp := BlueprintManager.get_blueprint(bp_id)
+	var BlueprintManager = AutoloadGate.get_node("BlueprintManager")
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var Hope = AutoloadGate.get_node("Hope")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var bp = BlueprintManager.get_blueprint(bp_id)
 	if bp.is_empty() or str(bp.get("author", "")) != PlayerProfile.username:
 		return false
 	var prev_author: String = str(bp.author)
