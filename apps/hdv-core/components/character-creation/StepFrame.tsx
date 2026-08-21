@@ -59,6 +59,15 @@ export default function StepFrame({ value, onChange }: { value: string | null; o
                   : 'border-slate-800 bg-[#1a1a2e]/40 hover:border-slate-600'
               }`}
             >
+              <div className="relative w-full h-28 mb-2 rounded overflow-hidden bg-slate-900">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={`/characters/frames/frame_${frame.id}.jpg`}
+                  alt={frame.name}
+                  className="w-full h-full object-cover object-top"
+                  style={{ borderBottom: selected ? '2px solid #a855f7' : '2px solid #1e1b4b' }}
+                />
+              </div>
               <div className="flex items-center justify-between mb-0.5">
                 <span className="font-mono text-xs text-slate-200">{frame.name}</span>
                 <span className="font-mono text-xs text-slate-600 uppercase">{frame.frameType}</span>

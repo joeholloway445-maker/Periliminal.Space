@@ -1,6 +1,24 @@
 'use client'
 
+import { useState } from 'react'
 import { PHYSICAL_MODS } from '@/lib/game/data/physicalMods'
+
+function ModImage({ id, name, selected }: { id: string; name: string; selected: boolean }) {
+  const [visible, setVisible] = useState(true)
+  if (!visible) return null
+  return (
+    <div className="relative w-full h-28 mb-2 rounded overflow-hidden bg-slate-900">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={`/characters/mods/morph_${id}.jpg`}
+        alt={name}
+        className="w-full h-full object-cover object-top"
+        style={{ borderBottom: selected ? '2px solid #a855f7' : '2px solid #1e1b4b' }}
+        onError={() => setVisible(false)}
+      />
+    </div>
+  )
+}
 
 export default function StepPhysMod({ value, onChange }: { value: string | null; onChange: (id: string) => void }) {
   return (
@@ -23,6 +41,7 @@ export default function StepPhysMod({ value, onChange }: { value: string | null;
                   : 'border-slate-800 bg-[#1a1a2e]/40 hover:border-slate-600'
               }`}
             >
+              <ModImage id={mod.id} name={mod.name} selected={selected} />
               <div className="font-mono text-xs text-slate-200 mb-1">{mod.name}</div>
               <div className="font-mono text-xs text-slate-500 leading-tight line-clamp-2 mb-1.5">
                 {mod.description}

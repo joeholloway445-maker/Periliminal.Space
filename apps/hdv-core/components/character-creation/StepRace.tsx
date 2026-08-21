@@ -40,6 +40,15 @@ export default function StepRace({ value, onChange }: { value: string | null; on
                   : 'border-slate-800 bg-[#1a1a2e]/40 hover:border-slate-600'
               }`}
             >
+              <div className="relative w-full h-28 mb-2 rounded overflow-hidden bg-slate-900">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={`/characters/races/${race.id}_m.jpg`}
+                  alt={race.name}
+                  className="w-full h-full object-cover object-top"
+                  style={{ borderBottom: `2px solid ${race.texture.primaryColor}` }}
+                />
+              </div>
               <div className="flex items-center gap-2 mb-1">
                 <div
                   className="w-2.5 h-2.5 rounded-full flex-shrink-0"

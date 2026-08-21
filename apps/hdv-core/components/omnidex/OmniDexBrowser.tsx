@@ -53,25 +53,42 @@ function UnlockedCard({
   description,
   accentHex,
   descriptionLocked,
+  imageSrc,
 }: {
   name: string
   sub: string
   description: string
   accentHex: string
   descriptionLocked?: boolean
+  imageSrc?: string
 }) {
+  const [imgVisible, setImgVisible] = useState(!!imageSrc)
   return (
     <div
-      className="rounded-lg border bg-[#1a1a2e] p-4 h-40 flex flex-col"
+      className="rounded-lg border bg-[#1a1a2e] flex flex-col overflow-hidden"
       style={{ borderColor: accentHex }}
     >
-      <div className="font-mono text-sm text-slate-200">{name}</div>
-      <div className="font-mono text-[10px] text-slate-500 mb-2">{sub}</div>
-      {descriptionLocked ? (
-        <div className="font-mono text-[11px] text-slate-600 italic">Lore locked — catch this entity to unlock.</div>
-      ) : (
-        <div className="font-mono text-[11px] text-slate-400 overflow-hidden">{description}</div>
+      {imageSrc && imgVisible && (
+        <div className="relative w-full h-32 bg-slate-900 flex-shrink-0">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={imageSrc}
+            alt={name}
+            className="w-full h-full object-cover object-top"
+            style={{ borderBottom: `2px solid ${accentHex}` }}
+            onError={() => setImgVisible(false)}
+          />
+        </div>
       )}
+      <div className="p-3 flex flex-col flex-1">
+        <div className="font-mono text-sm text-slate-200">{name}</div>
+        <div className="font-mono text-[10px] text-slate-500 mb-2">{sub}</div>
+        {descriptionLocked ? (
+          <div className="font-mono text-[11px] text-slate-600 italic">Lore locked — catch this entity to unlock.</div>
+        ) : (
+          <div className="font-mono text-[11px] text-slate-400 overflow-hidden line-clamp-3">{description}</div>
+        )}
+      </div>
     </div>
   )
 }
@@ -134,7 +151,7 @@ export default function OmniDexBrowser({
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
           {races.map((r) =>
             unlockedRaceSet.has(r.id) ? (
-              <UnlockedCard key={r.id} name={r.name} sub={r.faction} description={r.description} accentHex={r.texture.primaryColor} />
+              <UnlockedCard key={r.id} name={r.name} sub={r.faction} description={r.description} accentHex={r.texture.primaryColor} imageSrc={`/characters/races/${r.id}_m.jpg`} />
             ) : (
               <SilhouetteCard key={r.id} name={r.name} />
             ),
@@ -146,7 +163,7 @@ export default function OmniDexBrowser({
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
           {frames.map((f) =>
             unlockedFrameSet.has(f.id) ? (
-              <UnlockedCard key={f.id} name={f.name} sub={f.role} description={f.description} accentHex="#6366f1" />
+              <UnlockedCard key={f.id} name={f.name} sub={f.role} description={f.description} accentHex="#6366f1" imageSrc={`/characters/frames/frame_${f.id}.jpg`} />
             ) : (
               <SilhouetteCard key={f.id} name={f.name} />
             ),
@@ -158,7 +175,7 @@ export default function OmniDexBrowser({
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
           {mods.map((m) =>
             unlockedModSet.has(m.id) ? (
-              <UnlockedCard key={m.id} name={m.name} sub={m.visualEffect} description={m.description} accentHex="#22c55e" />
+              <UnlockedCard key={m.id} name={m.name} sub={m.visualEffect} description={m.description} accentHex="#22c55e" imageSrc={`/characters/mods/morph_${m.id}.jpg`} />
             ) : (
               <SilhouetteCard key={m.id} name={m.name} />
             ),
