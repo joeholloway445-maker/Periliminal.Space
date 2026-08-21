@@ -4,6 +4,11 @@ import { useState } from 'react'
 import type { Race, Frame, PhysicalMod } from '@/types/character'
 import type { Entity } from '@/types/entities'
 import { OMNIDEX_FRAME_COUNT, OMNIDEX_RACE_COUNT, OMNIDEX_MOD_COUNT } from '@/lib/game/data/omniDexRegistry'
+import { ALL_ENTITIES } from '@/lib/game/data/entities'
+
+const ENTITY_IMAGE: Record<string, string> = Object.fromEntries(
+  ALL_ENTITIES.map((e) => [e.id, e.imagePath ?? '']),
+)
 
 type Tab = 'races' | 'frames' | 'mods' | 'entities' | 'companions'
 
@@ -195,6 +200,7 @@ export default function OmniDexBrowser({
                 description={e.description}
                 accentHex="#a855f7"
                 descriptionLocked={!caughtSet.has(e.id)}
+                imageSrc={ENTITY_IMAGE[e.id] || undefined}
               />
             )
           })}
