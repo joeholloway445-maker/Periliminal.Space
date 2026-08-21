@@ -5,7 +5,7 @@ import type { ViewMode, ActivityEntry, AgentDef } from './types'
 interface KnollStore {
   viewMode: ViewMode
   selectedNodeId: string | null
-  sidebarTab: 'agents' | 'tools' | 'docs' | 'repos'
+  sidebarTab: 'pipeline' | 'tools' | 'docs' | 'repos'
   activityFeed: ActivityEntry[]
   setViewMode: (mode: ViewMode) => void
   setSelectedNode: (id: string | null) => void
@@ -16,7 +16,7 @@ interface KnollStore {
 export const useKnollStore = create<KnollStore>((set) => ({
   viewMode: 'overview',
   selectedNodeId: null,
-  sidebarTab: 'agents',
+  sidebarTab: 'pipeline',
   activityFeed: [],
 
   setViewMode: (mode) => set({ viewMode: mode }),

@@ -10,21 +10,19 @@ import {
   type NodeMouseHandler,
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
-import { useCallback, useEffect } from 'react'
+import { useCallback } from 'react'
 import { nodeTypes } from './NodeTypes'
 import { buildNodes, buildEdges } from '@/lib/knoll/flow-builder'
 import { useKnollStore } from '@/lib/knoll/store'
 import type { KnollFlowNodeData } from '@/lib/knoll/types'
 
-export default function KnollCanvas() {
-  const { viewMode, setSelectedNode } = useKnollStore()
-  const [nodes, setNodes, onNodesChange] = useNodesState(buildNodes(viewMode))
-  const [edges, setEdges, onEdgesChange] = useEdgesState(buildEdges(viewMode))
+const INITIAL_NODES = buildNodes()
+const INITIAL_EDGES = buildEdges()
 
-  useEffect(() => {
-    setNodes(buildNodes(viewMode))
-    setEdges(buildEdges(viewMode))
-  }, [viewMode, setNodes, setEdges])
+export default function KnollCanvas() {
+  const { setSelectedNode } = useKnollStore()
+  const [nodes, , onNodesChange] = useNodesState(INITIAL_NODES)
+  const [edges, , onEdgesChange] = useEdgesState(INITIAL_EDGES)
 
   const onNodeClick: NodeMouseHandler<KnollFlowNodeData> = useCallback(
     (_, node) => setSelectedNode(node.id),
@@ -34,7 +32,7 @@ export default function KnollCanvas() {
   const onPaneClick = useCallback(() => setSelectedNode(null), [setSelectedNode])
 
   return (
-    <div className="w-full h-full">
+    <div className="w-full h-full" style={{ background: '#0a0a0a' }}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -44,33 +42,34 @@ export default function KnollCanvas() {
         onPaneClick={onPaneClick}
         nodeTypes={nodeTypes}
         fitView
-        fitViewOptions={{ padding: 0.12 }}
-        minZoom={0.05}
+        fitViewOptions={{ padding: 0.08 }}
+        minZoom={0.04}
         maxZoom={2}
         proOptions={{ hideAttribution: true }}
       >
         <Background
-          variant={BackgroundVariant.Dots}
-          gap={24}
+          variant={BackgroundVariant.Lines}
+          gap={40}
           size={1}
-          color="rgba(139,92,246,0.15)"
+          color="rgba(239,68,68,0.04)"
         />
         <MiniMap
           style={{
-            background: 'rgba(15,15,26,0.85)',
-            border: '1px solid rgba(139,92,246,0.3)',
+            background: '#0d0d0d',
+            border: '1px solid rgba(239,68,68,0.2)',
+            borderRadius: 6,
           }}
           nodeColor={(node) => {
             const d = node.data as KnollFlowNodeData
-            return d.primaryColor + '88'
+            return d.primaryColor + '99'
           }}
-          maskColor="rgba(0,0,0,0.5)"
+          maskColor="rgba(0,0,0,0.55)"
         />
         <Controls
           style={{
-            background: 'rgba(15,15,26,0.85)',
-            border: '1px solid rgba(139,92,246,0.3)',
-            borderRadius: 8,
+            background: '#0d0d0d',
+            border: '1px solid rgba(239,68,68,0.2)',
+            borderRadius: 6,
           }}
         />
       </ReactFlow>
