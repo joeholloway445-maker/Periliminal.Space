@@ -41,9 +41,9 @@ jobs:
 
       - name: Run Autonomous Asset Generation
         env:
-          BATCH_SIZE: ${{ inputs.batch_size || '25' }
-          WORKERS: ${{ inputs.workers || '12' }
-          KIND: ${{ inputs.kind || 'all' }
+          BATCH_SIZE: ${{ inputs.batch_size || '25' }}
+          WORKERS: ${{ inputs.workers || '12' }}
+          KIND: ${{ inputs.kind || 'all' }}
         run: |
           python3 scripts/auto_asset_runner.py --limit "$BATCH_SIZE" --workers "$WORKERS" --kind "$KIND"
 
