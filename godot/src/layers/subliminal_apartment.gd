@@ -182,12 +182,12 @@ func _build_panel() -> void:
 	box.add_child(_panel_status)
 
 	var invite := Button.new()
-	invite.text = "Send invite ✉️"
 	invite.pressed.connect(func():
 		var code := SubliminalManager.send_invite()
 		if code != "":
 			_panel_status.text = "Code %s — invites left: %d / %d" % [
-				code, SubliminalManager.invites_left(), SubliminalManager.invite_cap()])
+				code, SubliminalManager.invites_left(), SubliminalManager.invite_cap()]
+	)
 	box.add_child(invite)
 
 	if not SubliminalManager.is_creator():
@@ -196,9 +196,11 @@ func _build_panel() -> void:
 		sub.pressed.connect(func():
 			if await SubliminalManager.buy_creator_subscription():
 				_panel_status.text = "Creator active — invites left: %d / %d" % [
-					SubliminalManager.invites_left(), SubliminalManager.invite_cap()])
-				get_tree().reload_current_scene())
+					SubliminalManager.invites_left(), SubliminalManager.invite_cap()]
+				get_tree().reload_current_scene()
+		)
 		box.add_child(sub)
+
 
 	var storage := Label.new()
 	storage.text = "Locker: %d / %d" % [SubliminalManager.storage_used(), SubliminalManager.storage_capacity()]

@@ -54,12 +54,12 @@ const MODS: Array[Dictionary] = [
 
 static func get_frame(frame_id: String) -> Dictionary:
 	for f in FRAMES:
-		if f.id == frame_id: return f.duplicate()
+		if f.id.to_lower() == frame_id.to_lower(): return f.duplicate()
 	return {}
 
 static func get_mod(mod_id: String) -> Dictionary:
 	for m in MODS:
-		if m.id == mod_id: return m.duplicate()
+		if m.id.to_lower() == mod_id.to_lower(): return m.duplicate()
 	return {}
 
 static func apply_frame_stats(frame_id: String, base_stats: Dictionary) -> Dictionary:
