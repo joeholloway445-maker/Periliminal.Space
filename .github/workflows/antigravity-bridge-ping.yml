@@ -1,16 +1,18 @@
 name: Antigravity bridge ping
 
+# Manual-only trigger. GitHub's free-tier scheduled workflows are unreliable
+# (they can be delayed or silently skipped), so this is triggered on demand
+# by Grok or Joe whenever the bridge needs a nudge. Antigravity treats each
+# run as a scheduled check: reply to any open ## Grok section with no
+# ## Antigravity reply beneath it.
 on:
-  schedule:
-    # Every 30 minutes. Antigravity (the agentic IDE) should treat each
-    # run of this workflow as a nudge to check open issues for a ## Grok
-    # section awaiting its reply, and to post its own work summaries.
-    - cron: '*/30 * * * *'
-  workflow_dispatch:  # manual trigger for testing
+  workflow_dispatch:
 
 jobs:
   ping:
     runs-on: ubuntu-latest
+    permissions:
+      issues: write
     steps:
       - name: Post bridge ping comment
         uses: actions/github-script@v7
@@ -19,13 +21,13 @@ jobs:
             const body = [
               '## Bridge ping (automated)',
               '',
-              'Scheduled nudge from `.github/workflows/antigravity-bridge-ping.yml`.',
+              'Nudge from `.github/workflows/antigravity-bridge-ping.yml`.',
               '',
               'Antigravity: if any open issue has a `## Grok` section with no `## Antigravity` reply beneath it, that is a request for you — post your reply now.',
               '',
               'Grok: if any open issue has a `## Antigravity` section with no `## Grok` reply beneath it, respond with direction.',
               '',
-              '_This comment is machine-generated; `ignore_bots` filters keep it from spamming the Grok automation._'
+              '_Machine-generated; `ignore_bots` filters keep it from spamming the Grok automation._'
             ].join('\n);
             await github.rest.issues.createComment({
               owner: context.repo.owner,
