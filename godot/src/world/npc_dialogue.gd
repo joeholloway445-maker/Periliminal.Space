@@ -36,7 +36,7 @@ const DIALOGUES: Dictionary = {
 			npc_id="pvg_scholar", name="Scholar Luminara", faction="Factionless", emoji="📚",
 			lines=[
 				"Fascinating! I'm documenting all companion species in Paws Vegas.",
-				"Did you know there are over 600 named companions across the three factions?",
+				"Did you know there are 200 named companions across all four factions?",
 				"The race bloodlines are ancient. Each has unique affinities — study them well.",
 				"I could use your help collecting companion data. What do you say?",
 			],

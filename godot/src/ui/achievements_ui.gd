@@ -19,6 +19,7 @@ var _filter_tabs: HBoxContainer
 var _current_filter: String = "all"
 
 func _ready() -> void:
+	var AchievementManager = AutoloadGate.get_node("AchievementManager")
 	_build_ui()
 	_populate()
 	if AchievementManager and AchievementManager.has_signal("achievement_unlocked"):
@@ -69,6 +70,7 @@ func _set_filter(filter: String) -> void:
 	_populate()
 
 func _populate() -> void:
+	var AchievementManager = AutoloadGate.get_node("AchievementManager")
 	for child in _container.get_children():
 		child.queue_free()
 	var achievements = AchievementManager.get_all_achievements()

@@ -166,6 +166,7 @@ func start_combat(
 	player_pos: Vector2 = DEFAULT_PLAYER_POS,
 	enemy_pos: Vector2 = DEFAULT_ENEMY_POS
 ) -> void:
+	var CombatRealtime = AutoloadGate.get_node("CombatRealtime")
 	_player_id = player_id
 	_enemy_id = enemy_id
 	_player_position = player_pos
@@ -221,6 +222,7 @@ func _build_health_panel(title: String, is_player: bool) -> PanelContainer:
 	return panel
 
 func _build_player_panel() -> PanelContainer:
+	var CombatRealtime = AutoloadGate.get_node("CombatRealtime")
 	var panel := _build_health_panel("You", true)
 	var margin := panel.get_child(0) as MarginContainer
 	var box := margin.get_child(0) as VBoxContainer
@@ -278,6 +280,7 @@ func _build_status_panel(title: String) -> PanelContainer:
 	return panel
 
 func _build_hotbar() -> void:
+	var CombatRealtime = AutoloadGate.get_node("CombatRealtime")
 	_ability_slots.clear()
 	for i in range(8):
 		var ability_id := ABILITY_IDS[i]
@@ -305,6 +308,7 @@ func _build_hotbar() -> void:
 		})
 
 func _connect_combat_signals() -> void:
+	var CombatRealtime = AutoloadGate.get_node("CombatRealtime")
 	if not CombatRealtime.combat_started.is_connected(_on_combat_started):
 		CombatRealtime.combat_started.connect(_on_combat_started)
 	if not CombatRealtime.ability_used.is_connected(_on_ability_used):
@@ -326,6 +330,7 @@ func _on_combat_started(player_id: String, enemy_id: String) -> void:
 	_status_label.text = "Combat started: %s versus %s" % [player_id, enemy_id]
 
 func _on_ability_pressed(ability_id: String) -> void:
+	var CombatRealtime = AutoloadGate.get_node("CombatRealtime")
 	if not _active:
 		_status_label.text = "Start combat before using abilities."
 		return
@@ -340,13 +345,14 @@ func _on_ability_pressed(ability_id: String) -> void:
 		target_id = _player_id
 		target_position = _player_position
 
-	var used := CombatRealtime.use_ability(_player_id, ability_id, target_id, target_position)
+	var used = CombatRealtime.use_ability(_player_id, ability_id, target_id, target_position)
 	if not used:
 		_status_label.text = "%s is not ready." % ability.get("name", ability_id)
 	_refresh_resource_bars()
 	_refresh_ability_slots()
 
 func _on_ability_used(attacker_id: String, ability_id: String, target_id: String, damage: int) -> void:
+	var CombatRealtime = AutoloadGate.get_node("CombatRealtime")
 	if attacker_id != _player_id and attacker_id != _enemy_id:
 		return
 	var ability: Dictionary = CombatRealtime.ABILITY_DATABASE.get(ability_id, {})
@@ -385,6 +391,7 @@ func _on_status_applied(target_id: String, status: String, duration: float) -> v
 	_refresh_status_effects()
 
 func _on_ability_ready(actor_id: String, ability_id: String) -> void:
+	var CombatRealtime = AutoloadGate.get_node("CombatRealtime")
 	if actor_id != _player_id:
 		return
 	var ability: Dictionary = CombatRealtime.ABILITY_DATABASE.get(ability_id, {})
@@ -392,6 +399,7 @@ func _on_ability_ready(actor_id: String, ability_id: String) -> void:
 	_refresh_ability_slots()
 
 func _on_ability_on_cooldown(actor_id: String, ability_id: String, remaining: float) -> void:
+	var CombatRealtime = AutoloadGate.get_node("CombatRealtime")
 	if actor_id != _player_id:
 		return
 	var ability: Dictionary = CombatRealtime.ABILITY_DATABASE.get(ability_id, {})
@@ -413,6 +421,7 @@ func _on_combat_ended(winner_id: String, loser_id: String, stats: Dictionary) ->
 	combat_finished.emit(won, result_stats)
 
 func _use_enemy_ability() -> void:
+	var CombatRealtime = AutoloadGate.get_node("CombatRealtime")
 	if not _active:
 		return
 	var enemy_abilities := ["feral_strike", "shadow_strike", "precision_strike", "primal_fury"]
@@ -421,6 +430,7 @@ func _use_enemy_ability() -> void:
 			return
 
 func _refresh_resource_bars() -> void:
+	var CombatRealtime = AutoloadGate.get_node("CombatRealtime")
 	var player_health := MAX_HEALTH
 	var enemy_health := MAX_HEALTH
 	if not _combat_id.is_empty() and CombatRealtime.active_combats.has(_combat_id):
@@ -431,7 +441,7 @@ func _refresh_resource_bars() -> void:
 	_set_bar(_player_health_bar, _player_health_label, player_health, MAX_HEALTH, "HP")
 	_set_bar(_enemy_health_bar, _enemy_health_label, enemy_health, MAX_HEALTH, "HP")
 	_set_bar(_player_mana_bar, _player_mana_label, _player_mana, MAX_MANA, "Mana")
-	var energy := CombatRealtime.get_energy_level(_player_id) * CombatRealtime.ENERGY_MAX
+	var energy = CombatRealtime.get_energy_level(_player_id) * CombatRealtime.ENERGY_MAX
 	_set_bar(_player_energy_bar, _player_energy_label, energy, float(CombatRealtime.ENERGY_MAX), "Energy")
 
 func _set_bar(bar: ProgressBar, label: Label, value: float, max_value: float, suffix: String) -> void:
@@ -442,16 +452,17 @@ func _set_bar(bar: ProgressBar, label: Label, value: float, max_value: float, su
 	label.text = "%s %d / %d" % [suffix, int(bar.value), int(max_value)]
 
 func _refresh_ability_slots() -> void:
+	var CombatRealtime = AutoloadGate.get_node("CombatRealtime")
 	for slot in _ability_slots:
 		var ability_id: String = slot["ability_id"]
 		var button := slot["button"] as Button
 		var ring := slot["ring"] as CooldownRing
 		var ability: Dictionary = CombatRealtime.ABILITY_DATABASE.get(ability_id, {})
-		var cooldown := CombatRealtime.get_ability_cooldown(_player_id, ability_id)
+		var cooldown = CombatRealtime.get_ability_cooldown(_player_id, ability_id)
 		var max_cooldown := maxf(float(ability.get("cooldown", 1.0)), 0.01)
 		var energy_cost := int(ability.get("energy_cost", 0))
-		var energy := CombatRealtime.get_energy_level(_player_id) * CombatRealtime.ENERGY_MAX
-		var ready := _active and cooldown <= 0.0 and energy >= energy_cost
+		var energy = CombatRealtime.get_energy_level(_player_id) * CombatRealtime.ENERGY_MAX
+		var ready = _active and cooldown <= 0.0 and energy >= energy_cost
 		button.disabled = not ready
 		ring.ratio = cooldown / max_cooldown
 		if cooldown > 0.0:
@@ -464,6 +475,7 @@ func _refresh_status_effects() -> void:
 	_populate_status_list(_enemy_status_list, _enemy_id)
 
 func _populate_status_list(list: HBoxContainer, actor_id: String) -> void:
+	var CombatRealtime = AutoloadGate.get_node("CombatRealtime")
 	if not is_instance_valid(list):
 		return
 	for child in list.get_children():

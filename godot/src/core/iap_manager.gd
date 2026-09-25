@@ -129,6 +129,8 @@ func _on_sku_details_loaded(sku_details: Array) -> void:
 # ── Private — credit coins server-side after purchase confirmed ───────────────
 
 func _credit_coins(product_id: String, coins: int) -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if EconomyManager:
 		await EconomyManager.purchase_coins(coins)
 		purchase_completed.emit(product_id, coins)

@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bq8periliminalboot02"
-path="res://.godot/imported/boot_splash.png-periliminal02.ctex"
+uid="uid://biamcxgwqqaqj"
+path="res://.godot/imported/boot_splash.png-d43d482a5bcb3966e9b36c5357e552f8.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/ui/boot_splash.png"
-dest_files=["res://.godot/imported/boot_splash.png-periliminal02.ctex"]
+dest_files=["res://.godot/imported/boot_splash.png-d43d482a5bcb3966e9b36c5357e552f8.ctex"]
 
 [params]
 

@@ -290,7 +290,7 @@ func get_cosmetics_by_rarity(rarity: String) -> Array[Dictionary]:
 
 func search_cosmetics(query: String) -> Array[Dictionary]:
 	"""Search cosmetics by name"""
-	var result = []
+	var result: Array[Dictionary] = []
 	var query_lower = query.to_lower()
 	for cosmetic in all_cosmetics:
 		if cosmetic.get("name", "").to_lower().contains(query_lower):

@@ -28,6 +28,7 @@ func _spawn_ai_racers() -> void:
 		_ai_racers.append(racer)
 
 func _build_ui() -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	var layer := CanvasLayer.new()
 	add_child(layer)
 	var root := VBoxContainer.new()
@@ -66,6 +67,7 @@ func _build_ui() -> void:
 	root.add_child(back)
 
 func start_race(player_char: CharacterData) -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
 	if EconomyManager == null or not await EconomyManager.spend_coins(ENTRY_FEE, "neon_alley_race"):
 		if _status:
 			_status.text = "Not enough coins for entry."

@@ -27,6 +27,7 @@ func _ready() -> void:
 
 # ── Dialogue Initiation ────────────────────────────────────────────────────
 func start_dialogue(npc_id: String, dialogue_key: String = "greeting") -> bool:
+	var WordOfMouth = AutoloadGate.get_node("WordOfMouth")
 	var base_id := _base_npc_id(npc_id)
 	var resolved := _resolve_npc_key(npc_id)
 	if resolved.is_empty():
@@ -155,6 +156,7 @@ func _present_dialogue(npc_id: String, dialogue_key: String, line: String, tree:
 
 # ── Dialogue Choice ────────────────────────────────────────────────────────
 func choose_dialogue_option(npc_id: String, option_index: int) -> void:
+	var WordOfMouth = AutoloadGate.get_node("WordOfMouth")
 	var base_id := _base_npc_id(npc_id)
 	if _pending_resolved_key.is_empty() and base_id not in _dialogue_db and npc_id not in _dialogue_db:
 		return
@@ -190,6 +192,7 @@ func choose_dialogue_option(npc_id: String, option_index: int) -> void:
 		dialogue_ended.emit(base_id, choice.get("text", ""))
 
 func _apply_dialogue_effect(npc_id: String, effect: Dictionary) -> void:
+	var QuestSystem = AutoloadGate.get_node("QuestSystem")
 	# Disposition change
 	if "disposition" in effect:
 		adjust_disposition(npc_id, effect["disposition"])

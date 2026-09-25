@@ -14,6 +14,7 @@ extends Node3D
 @export var spawn_position := Vector3(0, 2, 0)
 
 func _ready() -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	var queued := ""
 	if Engine.has_meta("arena_queued_mode"):
 		queued = str(Engine.get_meta("arena_queued_mode"))

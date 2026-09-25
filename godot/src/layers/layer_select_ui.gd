@@ -4,6 +4,8 @@ extends Control
 ## takes you, you don't take it).
 
 func _ready() -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var LayerManager = AutoloadGate.get_node("LayerManager")
 	var root := VBoxContainer.new()
 	root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(root)

@@ -22,15 +22,17 @@ const GAME_STATE_NAMES := {
 }
 
 func _ready() -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	_refresh()
 	if not PlayerProfile.profile_updated.is_connected(_refresh):
 		PlayerProfile.profile_updated.connect(_refresh)
 
 func _refresh() -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	username_label.text = PlayerProfile.get_display_name()
 	title_label.text = '"%s"' % PlayerProfile.active_title if not PlayerProfile.active_title.is_empty() else "No title selected"
 	perception_label.text = "Perception: %d" % PlayerProfile.level
-	var progress := PlayerProfile.xp_progress()
+	var progress = PlayerProfile.xp_progress()
 	prestige_bar.value = progress * 100.0
 	prestige_label.text = "Prestige: %d%% to Perception %d" % [roundi(progress * 100.0), PlayerProfile.level + 1]
 	_populate_stats()
@@ -40,12 +42,16 @@ func _refresh() -> void:
 	_populate_achievements()
 
 func _populate_stats() -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var IdentityLens = AutoloadGate.get_node("IdentityLens")
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var GameManager = AutoloadGate.get_node("GameManager")
 	_clear_list(stats_list)
 	_add_section(stats_list, "Identity")
 	_add_line(stats_list, "Username: %s" % PlayerProfile.username)
 	_add_line(stats_list, "Display name: %s" % PlayerProfile.get_display_name())
 	_add_line(stats_list, "Faction: %s" % PlayerProfile.faction)
-	var frame_text := PlayerProfile.selected_frame.capitalize()
+	var frame_text = PlayerProfile.selected_frame.capitalize()
 	if PlayerProfile.ascended_frame != "":
 		frame_text += " + %s (ascended)" % PlayerProfile.ascended_frame.capitalize()
 	_add_line(stats_list, "Frame: %s" % frame_text)
@@ -70,6 +76,7 @@ func _populate_stats() -> void:
 		])
 
 func _populate_skills() -> void:
+	var SkillManager = AutoloadGate.get_node("SkillManager")
 	_clear_list(skills_list)
 	_add_line(skills_list, "Skill points: %d" % SkillManager.skill_points)
 	_add_line(skills_list, "Active bar: %s" % ["I", "II"][SkillManager.active_bar])
@@ -88,13 +95,14 @@ func _populate_skills() -> void:
 	_add_section(skills_list, "Known lines")
 	for line in SkillManager.known_lines():
 		var line_data: Dictionary = line
-		var attunement := SkillManager.attunement_of(str(line_data.get("id", "")))
+		var attunement = SkillManager.attunement_of(str(line_data.get("id", "")))
 		var element_name := "none"
 		if attunement != "":
 			element_name = str(SkillData.element(attunement).get("name", attunement))
 		_add_line(skills_list, "%s - attunement: %s" % [str(line_data.get("name", "Unknown line")), element_name])
 
 func _populate_equipment() -> void:
+	var InventoryManager = AutoloadGate.get_node("InventoryManager")
 	_clear_list(equipment_list)
 	_add_section(equipment_list, "Equipped")
 	_add_equipment_slot("Cosmetic skin", InventoryManager.ItemType.COSMETIC_SKIN)
@@ -103,7 +111,7 @@ func _populate_equipment() -> void:
 	_add_equipment_slot("Title item", InventoryManager.ItemType.TITLE)
 	_add_equipment_slot("Emote", InventoryManager.ItemType.EMOTE)
 
-	var items := InventoryManager.get_all_items()
+	var items = InventoryManager.get_all_items()
 	_add_section(equipment_list, "Inventory")
 	if items.is_empty():
 		_add_line(equipment_list, "No inventory items yet.")
@@ -114,6 +122,7 @@ func _populate_equipment() -> void:
 		_add_line(equipment_list, "%s%s" % [str(item_data.get("name", item_data.get("id", "Unknown item"))), equipped])
 
 func _populate_titles() -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	_clear_list(titles_list)
 	_add_line(titles_list, "Active title: %s" % (PlayerProfile.active_title if not PlayerProfile.active_title.is_empty() else "None"))
 	if PlayerProfile.titles.is_empty():
@@ -124,8 +133,9 @@ func _populate_titles() -> void:
 		_add_line(titles_list, "%s%s" % [str(title), suffix])
 
 func _populate_achievements() -> void:
+	var AchievementManager = AutoloadGate.get_node("AchievementManager")
 	_clear_list(achievements_list)
-	var achievements := AchievementManager.get_all_achievements()
+	var achievements = AchievementManager.get_all_achievements()
 	var unlocked_count := 0
 	for achievement in achievements:
 		var counted_achievement: Dictionary = achievement
@@ -150,17 +160,19 @@ func _populate_achievements() -> void:
 			_add_achievement_line(locked_achievement)
 
 func _add_skill_line(list: VBoxContainer, slot: int, skill_id: String, is_ultimate: bool = false) -> void:
+	var SkillManager = AutoloadGate.get_node("SkillManager")
 	var slot_name := "Ultimate" if is_ultimate else "Slot %d" % slot
 	if skill_id.is_empty():
 		_add_line(list, "%s: Empty" % slot_name)
 		return
-	var skill := SkillManager.resolved(skill_id)
-	var rank := SkillManager.rank_of(skill_id)
+	var skill = SkillManager.resolved(skill_id)
+	var rank = SkillManager.rank_of(skill_id)
 	var rank_text := "" if rank <= 0 else " rank %s" % ["I", "II", "III", "IV"][rank - 1]
 	_add_line(list, "%s: %s%s" % [slot_name, str(skill.get("name", skill_id)), rank_text])
 
 func _add_equipment_slot(label_text: String, item_type: int) -> void:
-	var item := InventoryManager.get_equipped_by_type(item_type)
+	var InventoryManager = AutoloadGate.get_node("InventoryManager")
+	var item = InventoryManager.get_equipped_by_type(item_type)
 	if item.is_empty():
 		_add_line(equipment_list, "%s: Empty" % label_text)
 		return

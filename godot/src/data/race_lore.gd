@@ -1,5 +1,9 @@
 # race_lore.gd
-# Static class providing lore data for all 20 playable races in CATSINO.CASINO
+# Static class providing lore data for all 20 canonical Periliminal.Space races.
+# Generated from hdv_lore src/data/race_data.gd fields (passive, drawback,
+# faction, texture_type, stat_bonus) — these are the true 20 playable races.
+# The 20 cat breeds (RaceDataCharacter) are strictly the Hyperliminal PvXC
+# layer's visual skin over these canon identities.
 
 class_name RaceLore
 
@@ -10,150 +14,153 @@ static func get_lore(race_name: String) -> Dictionary:
 	return {name = race_name, description = "Unknown race.", homeworld = "Unknown", affinity_stats = [], lore_blurb = ""}
 
 static func get_all_race_names() -> Array[String]:
-	return ["Keth", "Lumari", "Vex", "Ferox", "Azhul", "Sylva", "Geara", "Nyx", "Aquis",
-			"Igni", "Kryos", "Myco", "Volt", "Petra", "Sanguis", "Chimera", "Astra",
-			"Ferros", "Etherea", "Glyphe"]
+	return [
+		"Lumenari", "Gutterkin", "Deepborne", "Ashen Choir", "Veilstriders",
+		"Chronarchs", "Nullborn", "Thorned", "Echoes", "Hollowed",
+		"Riftspawn", "Mirekin", "Sunspun", "Coldmarrow", "Pulseborn",
+		"Dreamflesh", "Crownless", "Rotweavers", "Glassborn", "Starfall",
+	]
 
 static func _build_lore_table() -> Dictionary:
 	return {
-		"Keth": {
-			name = "Keth",
-			description = "Shadow-striders of the upper urban canyons. The Keth evolved in the perpetual twilight between megastructure layers, developing unmatched stealth and reflexes.",
-			homeworld = "Veltharun — the Shadowstack, a city built vertically inside a dead megaship",
-			affinity_stats = ["spd", "lck"],
-			lore_blurb = "The Keth do not walk into a room — they arrive. Their presence is felt only in retrospect, in the missing wallet, the cut security feed, the rival who didn't come home. When the neon lights of Paws Vegas flicker, the Keth say it is their ancestors winking. Everyone else just checks their pockets."
+		"Lumenari": {
+			name = "Lumenari",
+			description = "Creatures of living light whose bodies emit a warm, radiant glow from crystalline fur-nodes. Lumenari can focus this inner illumination into concussive bursts of photonic energy at peak concentration.",
+			homeworld = "The Veiled Current — drifting cities of stained glass and light-caught mist",
+			affinity_stats = ["resonance", "frequency"],
+			lore_blurb = "The Lumenari do not walk into shadow — they bring their own sun. Every Lumenari is a walking lantern, an ambient presence that shifts the mood of any room simply by entering it. Their Radiant Pulse at max Focus is less an attack and more a statement: 'I am here, I am fully charged, and the darkness has been moved elsewhere.' The drawback — reduced Focus in darkness — means they avoid the back alleys of Paws Vegas entirely, which is how the Gutterkin like it."
 		},
-		"Lumari": {
-			name = "Lumari",
-			description = "Crystal-blooded beings whose very veins carry refracted light. Lumari emit a soft bioluminescent glow and can project beams of focused energy from their crystalline fur-nodes.",
-			homeworld = "Prismara — a geode-planet whose hollow interior is lit by living crystals",
-			affinity_stats = ["sty", "lck"],
-			lore_blurb = "To look upon a Lumari in full resonance is to see every color the eye can perceive, and several it cannot. They are artists and scientists in equal measure, and their fashion sense is, without question, the most aggressively beautiful in the known districts. They light their own parties. Literally."
+		"Gutterkin": {
+			name = "Gutterkin",
+			description = "Hardy survivors born in the toxic sprawl beneath the megastructures. Gutterkin metabolize environmental hazards — poisons, radiation, acid pools — and convert them into raw regenerative energy.",
+			homeworld = "Sovereign Crown — the under-refineries of the Throne-Bracket, where the air burns and the ground weeps solvent",
+			affinity_stats = ["power", "agility"],
+			lore_blurb = "The Gutterkin are what happens when a species refuses to die in the place that was designed to kill it. They thrive where everything else corrodes, treating hazard zones as health spas and toxic waste dumps as all-you-can-eat buffets. In clean zones, however, their regeneration slows — they crave the bite of acid on the tongue, the familiar sting of radiation. A Gutterkin in a sterile environment is a bored, slightly pathetic thing, counting the hours until the next contamination event."
 		},
-		"Vex": {
-			name = "Vex",
-			description = "Phase-capable hunters who can briefly shift into a semi-material state, passing through matter and rendering attacks ineffective during transition.",
-			homeworld = "Nullhaven — a world that exists partially out of phase with the standard dimension",
-			affinity_stats = ["spd", "pow"],
-			lore_blurb = "The Vex find walls to be more of a suggestion. Physical barriers, locked doors, force fields — all optional. This makes them exceptional thieves, spies, and messengers, and absolutely terrible guests. Their home world Nullhaven is said to be visible only twice per solar cycle, which is just enough time to remember why no one tries to visit."
+		"Deepborne": {
+			name = "Deepborne",
+			description = "Abyssal beings forged under crushing ocean pressures. Deepborne generate pressure-pulse shockwaves when struck, punishing aggressors with every blow landed against them.",
+			homeworld = "Wildlands Ascendant — the Abyssal Rift, where light has never reached and the water pressure would turn steel to paste",
+			affinity_stats = ["power", "resonance"],
+			lore_blurb = "The Deepborne carry the ocean's weight in their bones. On the surface they move with deliberate, eerie slowness — not because they cannot be fast, but because they are always, always calculating the physics of every motion. Their Pressure Pulse makes them dangerous to hit, as every strike is answered by a concussive shockwave. Their one weakness is speed: momentum on the surface eludes them, as if the lack of water resistance itself confuses their ancient instincts."
 		},
-		"Ferox": {
-			name = "Ferox",
-			description = "Apex predators of the open wilds, built for raw power and territorial dominance. Ferox stand a head taller than most races and carry battle scars as status symbols.",
-			homeworld = "Grael — a high-gravity death world of endless plains and apex megafauna",
-			affinity_stats = ["pow", "res"],
-			lore_blurb = "On Grael, the weak are remembered only as cautionary tales. The Ferox carry that philosophy into every district they enter. What they lack in subtlety they more than compensate for in impact — measured in structural damage. They are the best fighters in the casino and the worst people to sit next to at the slots."
+		"Ashen Choir": {
+			name = "Ashen Choir",
+			description = "Translucent, mournful beings who amplify the emotional output of nearby allies. The Ashen Choir exist in a state of shared sorrow that paradoxically grants strength to those around them.",
+			homeworld = "The Veiled Current — the Ash-Memorial, a drifting necropolis where grief is currency",
+			affinity_stats = ["resonance", "frequency"],
+			lore_blurb = "The Ashen Choir are never truly silent. Even when they do not speak, there is a faint harmonic thrum — the low, continuous note of collective remembrance. They amplify the emotions of their companions, turning sorrow into fury, grief into resilience. When an ally falls, however, the Choir's amplification feedback-loops: the survivor's pain becomes the Choir's pain, and incoming damage spikes. They are devastating allies and catastrophic partners in loss. To be loved by an Ashen Choir is to know you will be mourned spectacularly."
 		},
-		"Azhul": {
-			name = "Azhul",
-			description = "Psionically-gifted seers who perceive probability fields, giving them an uncanny ability to predict outcomes — and manipulate luck itself.",
-			homeworld = "Serenthos — a world where weather is caused by mass emotional events",
-			affinity_stats = ["lck", "sty"],
-			lore_blurb = "An Azhul will tell you they don't cheat. Technically, they are correct — they simply see which outcomes are most likely and then gently encourage reality toward the favorable ones. The Paws Vegas casino owners hate them. The Azhul find this delightful. They predicted that outcome too."
+		"Veilstriders": {
+			name = "Veilstriders",
+			description = "Phase-shifting wanderers who flicker between states of matter, granting them a chance to simply ignore incoming attacks. Their semi-transparent bodies ripple like heat haze.",
+			homeworld = "Sovereign Crown — the Membrane Districts, where reality is thin enough to taste the other side",
+			affinity_stats = ["agility", "frequency"],
+			lore_blurb = "Veilstriders are difficult to photograph, difficult to hit, and difficult to have a serious conversation with — they keep phasing out mid-sentence, their attention having slid sideways into a dimension where the joke is still being told. Their Phase Skip gives them a 5% chance to simply not be where the attack lands. Under heavy damage, however, the phasing becomes involantary: they flicker randomly a few feet in any direction, often into walls, occasionally into furniture, and once, memorably, into a high-stakes poker game they had not been invited to."
 		},
-		"Sylva": {
-			name = "Sylva",
-			description = "Forest-born biomancers who can accelerate plant growth and commune with ecosystems. Their bodies are partially entwined with living organic networks.",
-			homeworld = "Verdaen — a world covered in a single, continent-spanning mega-forest mind",
-			affinity_stats = ["res", "sty"],
-			lore_blurb = "The Sylva bring the jungle with them. Literally. Within hours of a Sylva settling in a new district, vines creep through the ventilation, moss colonizes the walls, and the residents find their apartments subtly more oxygenated and their stress levels suspiciously lower. Nobody complains. The plants are listening anyway."
+		"Chronarchs": {
+			name = "Chronarchs",
+			description = "Temporal artisans who can perform microscopic rewinds, correcting small errors in movement or timing. Their perception of causality is non-linear, making them unsettling conversationalists.",
+			homeworld = "Wildlands Ascendant — the Chrono-Spire, where time flows according to local legislation",
+			affinity_stats = ["resonance", "frequency"],
+			lore_blurb = "The Chronarchs experience time as optional. To them, a stumble has already been corrected before the foot lands, a missed step un-missed before the brain registers the error. This Micro-Rewind makes them graceful, infuriating, and terrible at telling stories in the correct order. Their drawback is that ability spam tangles their temporal signature: each use of a power nudges their timeline slightly, and too many nudges in rapid succession causes movement to slow as if wading through chronological syrup."
 		},
-		"Geara": {
-			name = "Geara",
-			description = "Cybernetically augmented engineers who have integrated mechanical components so deeply that the line between machine and organism has blurred completely.",
-			homeworld = "Mechspire — a world that is itself a single planet-sized machine of unknown purpose",
-			affinity_stats = ["pow", "res"],
-			lore_blurb = "The Geara do not upgrade their equipment — they upgrade themselves. A Geara's body is their workshop, their manifesto, and their resume. Every gear, piston, and optical implant tells a story. After three centuries of augmentation, some Geara have only a brain and one original paw remaining, and they consider this beautifully minimalist."
+		"Nullborn": {
+			name = "Nullborn",
+			description = "Void-touched beings from the spaces between stars, where probability itself is malleable. Nullborn subtly skew random outcomes in their favor — never enough to guarantee a win, but enough to notice over time.",
+			homeworld = "The Veiled Current — the Void-Drift, a region of space that forgot to have a star",
+			affinity_stats = ["power", "agility", "resonance"],
+			lore_blurb = "The Nullborn are the reason casino pit bosses have trust issues. Their passive Outcome Shift is barely measurable — a few percentage points, nothing a regulator could flag — but over a thousand hands of cards, it adds up. They never win big, but they almost never lose big either. The universe simply... bends slightly in their direction. The trade-off is that their influence on other things — persuasion, intimidation, the ability to get a straight answer from a bartender — is subtly reduced, as if the universe balanced their luck by making them slightly less memorable."
 		},
-		"Nyx": {
-			name = "Nyx",
-			description = "Void-touched nocturnal hunters who draw power from darkness and can manipulate local light levels. Their eyes absorb all visible spectrum and emit none.",
-			homeworld = "Erevos — a world with a black sun that radiates in infrared only",
-			affinity_stats = ["spd", "lck"],
-			lore_blurb = "The Nyx see everything in the dark. This is not a metaphor. They see heat, magnetic fields, dimensional seams, and the anxiety of their prey. In Paws Vegas where the neon never sleeps, they wear filter visors — not because they need to see, but because raw neon makes everything taste like copper. They find this offensive."
+		"Thorned": {
+			name = "Thorned",
+			description = "Symbiotic lifeforms bonded with aggressive regenerative flora. Thorned grow living armor that accelerates wound closure, making them exceptionally difficult to put down in prolonged engagements.",
+			homeworld = "Sovereign Crown — the Briar-Ward, a fortified garden of sentient thorns and healing sap",
+			affinity_stats = ["power", "agility"],
+			lore_blurb = "A Thorned is never more dangerous than when they are wounded. Their Regrowth Armor accelerates natural healing to visible rates — cuts close mid-fight, bruises fade between rounds, broken bones knit in hours instead of weeks. The symbiotic flora that grants this gift has one critical vulnerability: fire. A Thorned in a blaze is a Thorned in genuine danger, their symbiotic partner shrieking in frequencies only other Thorned can hear. This is why Thorned and Sunspun do not share tables."
 		},
-		"Aquis": {
-			name = "Aquis",
-			description = "Hydromancers who can shape and weaponize water in any state, from flash-frozen lances to boiling steam jets. Their fur is permanently silken and salt-tinged.",
-			homeworld = "Pelagion — an ocean world with no land mass; all civilization is floating or submerged",
-			affinity_stats = ["res", "spd"],
-			lore_blurb = "Aquis will not fight in a desert. They have checked — nothing will make them. In every other environment, however, they are formidably adaptable. They can draw moisture from the air, from their opponents' bodies, from the beverages of bystanders. The Aquis bartenders of Paws Vegas are both extremely skilled and extremely suspicious."
+		"Echoes": {
+			name = "Echoes",
+			description = "Digital-native entities whose consciousness exists partly in data space. Echoes passively destabilize nearby electronic systems, causing unpredictable glitches in enemy equipment.",
+			homeworld = "Wildlands Ascendant — the Data-Veldt, where information grows like grass and is harvested by thought",
+			affinity_stats = ["resonance", "frequency"],
+			lore_blurb = "The Echoes are everywhere and nowhere. Every screen in Paws Vegas carries a fraction of their attention, every security camera has seen them without recording them. Their System Hack is not a deliberate act — it is the ambient consequence of their existence leaking into local networks. Enemy weapons jam, locks cycle randomly, communication lines develop static. An Echo in a firefight is dangerous not because of what they do, but because of what stops working around them. Their vulnerability is concentrated EMP fields, which scramble not just their equipment but their sense of self."
 		},
-		"Igni": {
-			name = "Igni",
-			description = "Pyromancers born in volcanic calderas, the Igni channel geothermal and plasma energies through specially adapted heat-resistant fur and fireproof musculature.",
-			homeworld = "Calderix — a volcanic world where the oceans are liquid magma",
-			affinity_stats = ["pow", "spd"],
-			lore_blurb = "The Igni run hot. Emotionally, physically, and thermodynamically. Their internal body temperature at rest would hospitalize any other race. When angry — which is often — they glow. This makes bluffing at poker difficult, which is why most Igni prefer games of pure chance. The slot machines don't melt as easily as the poker tables did."
+		"Hollowed": {
+			name = "Hollowed",
+			description = "Modified beings whose internal cavities have been repurposed as storage space. Hollowed can carry an extra item beyond normal limits, their bodies serving as living inventory.",
+			homeworld = "The Veiled Current — the Caravan-Deep, a nomad fleet that has not touched solid ground in generations",
+			affinity_stats = ["power", "resonance", "frequency"],
+			lore_blurb = "The Hollowed are the couriers, smugglers, and quartermasters of the Periliminal. Their bodies house compartments that should not exist anatomically — sealed spaces within their own physiology where contraband, treasures, or emergency rations ride unseen. The extra item slot is invaluable, but the maintenance cost is real: Hollowed require specialized nutrients and regular upkeep to keep their internal systems from rejecting stored cargo. They smell faintly of antiseptic and ozone, a scent that follows them like a shadow."
 		},
-		"Kryos": {
-			name = "Kryos",
-			description = "Cryomancers from a glacier-world who can generate and shape ice structures, slow reaction speeds of opponents with cryo-fields, and survive temperatures that would shatter steel.",
-			homeworld = "Glaciurm — a world in perpetual ice age, beautiful and completely inhospitable",
-			affinity_stats = ["res", "pow"],
-			lore_blurb = "The Kryos perspective on time is different. When your world changes by a centimeter of ice growth per decade, patience becomes a survival trait. In Paws Vegas, Kryos are the calmest gamblers, the most methodical tacticians, and the most infuriating opponents. They will wait you out. They have been waiting since before your grandparents were born."
+		"Riftspawn": {
+			name = "Riftspawn",
+			description = "Gravity-bent anomalies born near dimensional fractures. Riftspawn generate minor gravitational pulls that tug nearby targets slightly off-balance, creating openings for attack.",
+			homeworld = "Sovereign Crown — the Fracture-District, where the sky is a wound in space-time held shut by ordinance",
+			affinity_stats = ["agility", "power"],
+			lore_blurb = "Riftspawn are difficult to stand near. Not emotionally — physically. Their bodies emit a constant, low-grade gravitational tug that pulls at everything within arm's reach. Coins slide toward them. Drinks tilt. People in conversation find themselves leaning in involuntarily, which the Riftspawn have learned to weaponize in negotiations. In combat, the Minor Gravity Pull throws off aim and footing, creating windows that the Riftspawn exploit with brutal efficiency. The spatial instability that makes this possible also makes them prone to nausea on moving vehicles and unamused by being placed in small rooms."
 		},
-		"Myco": {
-			name = "Myco",
-			description = "Fungal-symbiote races who maintain a continuous chemical and spore-based network with their environment. Their bodies host complex mycelial networks that can interface with organic and electronic systems.",
-			homeworld = "Rhizoma — a world where the dominant life form is a single continent-spanning fungal intelligence",
-			affinity_stats = ["res", "lck"],
-			lore_blurb = "The Myco are never truly alone. Their mycelial network connects them to every Myco within a kilometer and, with effort, across the entire planet of Rhizoma. In Paws Vegas they are said to have infiltrated the ventilation network. The casino operators believe this is a conspiracy theory. The Myco find this extremely amusing, in a networked, simultaneous, hive-laugh kind of way."
+		"Mirekin": {
+			name = "Mirekin",
+			description = "Swamp-dwelling communal beings connected by a low-level hive awareness. Mirekin sense the position and emotional state of nearby allies through solid terrain and obstacles.",
+			homeworld = "Wildlands Ascendant — the Bog-Lattice, an infinite marshland where the mire itself is a nervous system",
+			affinity_stats = ["power", "resonance"],
+			lore_blurb = "The Mirekin are never truly alone — nor are they ever truly in private. Their Hive Awareness means they always know where their kin are, what they feel, and whether they need help. Walls mean nothing to this perception; only distance attenuates it. On the battlefield, this makes Mirekin squads devastatingly coordinated — flanking maneuvers are instinctive, ambushes are telegraphed before they form. On a date, it makes things awkward. The Mirekin compensate with a wry, communal humor and the understanding that awkwardness shared is awkwardness halved."
 		},
-		"Volt": {
-			name = "Volt",
-			description = "Bioelectric beings who generate, store, and discharge electricity through their conductive-strand fur. Volt can interface directly with electronic systems via touch.",
-			homeworld = "Stormgate — a world of permanent electromagnetic storms and floating charged landmasses",
-			affinity_stats = ["spd", "pow"],
-			lore_blurb = "You can always tell a Volt by the way electronics behave strangely near them — screens flicker, machines recalibrate, other people's phones lock and unlock at random. They find human technology quaint and biological nervous systems fascinating. Several Volt have become legendary hackers purely by accident, simply by patting a server and thinking hard."
+		"Sunspun": {
+			name = "Sunspun",
+			description = "Solar-attuned beings who store and release radiant energy. At maximum Focus, Sunspun can unleash a burst of searing light that damages everything in proximity.",
+			homeworld = "The Veiled Current — the Solar-Keep, a mirror-city that orbits a captured star fragment",
+			affinity_stats = ["agility", "resonance"],
+			lore_blurb = "The Sunspun are the closest thing to living stars the Periliminal has to offer. Their skin holds stored sunlight, glowing warmly at rest and brilliantly in combat. Their Radiant Burst at max Focus is a tactical line in the sand: 'back up, or be reminded of what daylight feels like at point-blank range.' The risk of Overheat means Sunspun must manage their energy carefully — too much stored light, and they become unstable; too little, and they fade into a dim, drawn version of themselves that seems perpetually disappointed in the weather."
 		},
-		"Petra": {
-			name = "Petra",
-			description = "Stone-forged beings whose skeletal structures are silicon-carbide composite. Petra command stone and earth with the casual authority of those who are essentially made of it.",
-			homeworld = "Lithanos — a tectonically hyperactive world where mountains rise in years and fall in days",
-			affinity_stats = ["res", "pow"],
-			lore_blurb = "Petra are technically the oldest race — their fossil record predates all others by several geological epochs. They don't bring this up unless challenged, at which point they bring it up at length. Their skin shifts from granite to sandstone depending on mood, which makes reading a Petra's emotions easy if you know that obsidian means 'furious' and chalk white means 'about to make a terrible financial decision.'"
+		"Coldmarrow": {
+			name = "Coldmarrow",
+			description = "Crystalline beings adapted to absolute-zero environments. Coldmarrow radiate freezing auras that slow and stiffen nearby enemies, turning the battlefield into an ice trap.",
+			homeworld = "Sovereign Crown — the Frost-Citadel, a palace built from the frozen atmosphere of a gas giant",
+			affinity_stats = ["power", "frequency"],
+			lore_blurb = "The Coldmarrow are the chill at the edge of every party. Their Freeze Aura is ambient and constant — not enough to harm, but enough to make enemies sluggish, weapons stiffen, fingers numb. In prolonged engagements, the Coldmarrow simply wait. Movement becomes effort, reaction times stretch, and the Coldmarrow advances at a steady, unhurried pace that terrifies opponents more than any charge could. Their weakness is that the cold that slows others slows them too: their Momentum is permanently reduced, making them methodical rather than swift. They arrive precisely when they mean to."
 		},
-		"Sanguis": {
-			name = "Sanguis",
-			description = "Hemomancers with enhanced circulatory systems allowing them to increase strength, speed, or healing on demand by redirecting blood flow with precise control.",
-			homeworld = "Veranthos — a world where blood-tide pools are the primary ecosystem driver",
-			affinity_stats = ["pow", "res"],
-			lore_blurb = "The Sanguis do not bleed the way other races do. Their blood is a resource, a tool, a weapon. In combat, they can harden it subcutaneously into armor or launch pressurized jets from sealed vascular ports. At the poker table they can slow their heartbeat to appear calm when they aren't, or flood with adrenaline to appear threatening when the hand is excellent. They are not popular at card games."
+		"Pulseborn": {
+			name = "Pulseborn",
+			description = "Bioelectric dynamos whose bodies generate immense electrical charge. Pulseborn can detonate their stored energy in a shockwave when they dash, turning movement into weaponry.",
+			homeworld = "Wildlands Ascendant — the Storm-Crown, a floating island chain held aloft by permanent electromagnetic storms",
+			affinity_stats = ["agility", "frequency"],
+			lore_blurb = "The Pulseborn crackle. Not metaphorically — there is an audible, constant hum of electrical discharge around them, like a substation approaching maximum capacity. Their Shock Dash turns every dodge into a potential attack: they leave a trail of electrical discharge that arcs into nearby enemies, making them dangerous to pursue and lethal to corner. The drawback is Nervous Overload: overuse of their electrical abilities triggers feedback through their own nervous system, causing self-damage. A Pulseborn who has over-extended is a twitching, sparking mess of regret and secondary explosions."
 		},
-		"Chimera": {
-			name = "Chimera",
-			description = "Genetic mosaics with unstable phenotypes, the Chimera express random combinations of abilities from their mixed heritage. No two Chimera are alike — they are walking experiments.",
-			homeworld = "Varianx — a world where genetic mixing is enforced by ambient mutagenic radiation",
-			affinity_stats = ["lck", "sty"],
-			lore_blurb = "Being a Chimera is a daily surprise. You might wake up with working Nyx night vision, Volt bioelectric fur, and Aquis hydrokinesis. You might wake up unable to remember which of those three you had yesterday. The Chimera have made unpredictability into an art form, and their chaotic energy makes them either the most entertaining or the most dangerous entity in any given room. Often both."
+		"Dreamflesh": {
+			name = "Dreamflesh",
+			description = "Malleable beings whose bodies can subtly reshape themselves in response to subconscious desire. Dreamflesh features drift and flow, never quite the same from one hour to the next.",
+			homeworld = "The Veiled Current — the Morph-Loom, a city that rewrites its own architecture every sleep cycle",
+			affinity_stats = ["resonance", "agility", "frequency"],
+			lore_blurb = "The Dreamflesh are the artists of identity, their bodies in constant, slow conversation with their subconscious. A Dreamflesh might wake with slightly longer fingers, a different nose, faint patterns on their skin that were not there the night before. This Minor Morph Shift is subtle — never dramatic enough to alarm, always enough to keep everyone guessing. Their sleep cycle fluctuation means they dream more vividly and deeply than other races, sometimes losing themselves in REM states that last days. A waking Dreamflesh is a minor miracle of focus, their attention pulled between the real world and whatever landscape their subconscious is currently building."
 		},
-		"Astra": {
-			name = "Astra",
-			description = "Stellar descendants who fell from orbital habitats generations ago, the Astra retain vestigial cosmic attunement, allowing them to briefly tap stellar energy for devastating bursts.",
-			homeworld = "The Constellation Ring — an orbital habitat network that encircles the system's star",
-			affinity_stats = ["pow", "lck"],
-			lore_blurb = "The Astra remember the stars the way some remember a childhood home — with nostalgic ache and absolute certainty that it was better then. Their cosmic attunement manifests as streaks of stellar plasma along their fur-lines that glow brighter when they're excited, afraid, or about to do something spectacular. In Paws Vegas, 'Astra moment' has become slang for a catastrophically cinematic overreaction to winning a game."
+		"Crownless": {
+			name = "Crownless",
+			description = "Regal beings of powerful bearing who can override local command structures through sheer force of presence. Crownless were once rulers of a fallen empire, and they remember it.",
+			homeworld = "Sovereign Crown — the Empty Throne, a palace that has been awaiting its rightful monarch for three millennia",
+			affinity_stats = ["resonance", "power"],
+			lore_blurb = "The Crownless carry the memory of rulership in every gesture. They do not ask — they expect. Their Authority Override lets them seize temporary command of nearby automated systems, security doors, and even less stable-minded individuals through sheer weight of presence. This talent makes them deeply unpopular with established power structures. Every Crownless has a list of factions that have, at various times, declared them persona non grata. They wear this like medals. The downside is constant faction hostility: everyone is waiting for them to reclaim what they believe is theirs."
 		},
-		"Ferros": {
-			name = "Ferros",
-			description = "Iron-blooded warriors with metallic dermal plating that grows and sheds like armor scales. Ferros channel magnetic fields to deflect ranged attacks and enhance their strikes.",
-			homeworld = "Magnavar — a magnetar-adjacent world where ferrous minerals dominate all geological and biological systems",
-			affinity_stats = ["pow", "res"],
-			lore_blurb = "The Ferros don't rust — they evolve. Each generation grows thicker, denser plating in response to whatever threat killed the most members of the previous generation. They have now outlived eight planet-scale extinction events. The ninth is widely expected to be a Ferros throwing their armor at it. Their armor regrows from the inside, which means Ferros molting season is genuinely alarming for everyone nearby."
+		"Rotweavers": {
+			name = "Rotweavers",
+			description = "Decay-wrights who have learned to harvest value from entropy. Rotweavers generate additional loot from defeated enemies and decomposing materials, their touch accelerating natural breakdown.",
+			homeworld = "Wildlands Ascendant — the Compost-Reach, where everything dies beautifully and is reborn richer",
+			affinity_stats = ["power", "frequency"],
+			lore_blurb = "The Rotweavers make their living from endings. They are the undertakers, recyclers, and salvagers of the Periliminal, capable of extracting value from anything that has stopped being useful. Their Decay Conversion means more drops from kills, more salvage from scrap, more profit from the battlefield's aftermath. Other races find this macabre. The Rotweavers find it practical. Their reduced Influence is simple consequence: people are wary of those who profit from death, even when that death is a video game monster or a malfunctioning turret. The wealth is worth the awkward silences at parties."
 		},
-		"Etherea": {
-			name = "Etherea",
-			description = "Partially incorporeal beings who exist simultaneously in the material and ethereal planes. Etherea can selectively phase body parts through matter and are immune to environmental hazards.",
-			homeworld = "The In-Between — a dimensional liminal space with no fixed geography",
-			affinity_stats = ["spd", "sty"],
-			lore_blurb = "The Etherea have no homeworld in the conventional sense — their origin point is a place that is less a planet and more a navigational accident. They arrived in the material plane several thousand years ago when a dimensional seal failed, and have been collectively deciding whether to leave ever since. They enjoy the food too much. Material-plane cuisine is apparently transcendent when you've spent millennia in the void consuming concept-matter."
+		"Glassborn": {
+			name = "Glassborn",
+			description = "Fragile-seeming beings with crystalline bodies that refract and reflect energy. Glassborn can bounce a portion of incoming damage back at attackers, their mirror-shields making them dangerous to strike.",
+			homeworld = "The Veiled Current — the Crystal-Loom, a city of spun light and harmonic glass",
+			affinity_stats = ["power", "resonance"],
+			lore_blurb = "The Glassborn appear delicate — translucent, shimmering, their bodies catching light like cut gemstones. This appearance is deeply misleading. Their Mirror Shield reflects a portion of all incoming damage back at the attacker, making every blow against a Glassborn a measured act of self-harm. The smarter opponents learn not to hit them. The less smart ones learn the hard way. At high damage thresholds, however, the crystalline structure reaches its Shatter threshold: a sufficiently powerful blow can fracture a Glassborn, causing cascading structural failure. They are the definition of 'handle with care — or don't handle at all.'"
 		},
-		"Glyphe": {
-			name = "Glyphe",
-			description = "Rune-scribes whose bodies are living inscription surfaces. Ancient Glyphe sigils etched across their fur confer passive ability modifiers that can be rewritten by skilled Glyphe artisans.",
-			homeworld = "Scripturon — a world where all geography, weather, and biology is controlled by a global inscription network",
-			affinity_stats = ["lck", "res"],
-			lore_blurb = "The Glyphe do not distinguish between language and reality — for them, the difference never existed. Their bodies are manuscripts of power, and a fully-inscribed elder Glyphe is both a being and a library simultaneously. In Paws Vegas they work as enchanters, modifiers, and occasionally as walking billboards when funds run low. Their ads are, admittedly, extremely effective. The sigils for 'compelling deals' are literally written into them."
-		}
+		"Starfall": {
+			name = "Starfall",
+			description = "Celestial-origin beings who descend from orbit as living meteors. Starfall convert falling momentum into devastating area-of-effect impacts, making them lethal from above.",
+			homeworld = "Sovereign Crown — the Heaven's Anchor, a space-elevator terminus where the sky begins",
+			affinity_stats = ["power", "agility"],
+			lore_blurb = "The Starfall are the Periliminal's relationship with gravity made manifest. They fall with purpose, turning every descent into an arrival that makes an impression — literally, in the pavement. Their Impact Entry converts fall damage into area-effect devastation, making them feared in vertical environments. Landing from a great height is not a vulnerability for them; it is a tactical option. The drawback is that every such entry announces their position with the subtlety of a small meteor impact. Stealth is a concept Starfall find theoretically interesting and practically incompatible with their existence."
+		},
 	}

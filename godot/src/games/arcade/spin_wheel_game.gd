@@ -30,6 +30,7 @@ func _process(delta: float) -> void:
 			_spinning = false
 
 func _spin() -> void:
+	var NetworkManager = AutoloadGate.get_node("NetworkManager")
 	if _spinning: return
 	_spinning = true
 	spin_btn.disabled = true
@@ -40,6 +41,10 @@ func _spin() -> void:
 
 	NetworkManager.call_rpc("draw_fortune", {bet=int(bet_spin.value)},
 		func(result: Dictionary):
+			var NotificationUI = AutoloadGate.get_node("NotificationUI")
+			var AchievementManager = AutoloadGate.get_node("AchievementManager")
+			var QuestManager = AutoloadGate.get_node("QuestManager")
+			var XPManager = AutoloadGate.get_node("XPManager")
 			if result.get("error"):
 				NotificationUI.notify_error(result.error)
 				spin_btn.disabled = false

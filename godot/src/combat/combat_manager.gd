@@ -15,6 +15,7 @@ var _opponent_frame := "tremor"
 var _game_state: Dictionary = {}
 
 func start_combat(bet: int, player_frame: String) -> void:
+	var NetworkManager = AutoloadGate.get_node("NetworkManager")
 	if _in_combat:
 		return
 	_bet = bet
@@ -26,6 +27,7 @@ func start_combat(bet: int, player_frame: String) -> void:
 		frame_id = _player_frame,
 		opponent_id = "npc_arena_guard",
 	}, func(result: Dictionary):
+		var NotificationUI = AutoloadGate.get_node("NotificationUI")
 		if result.get("error") and not result.get("success", false):
 			_in_combat = false
 			NotificationUI.notify_error(str(result.get("error", "Combat start failed")))
@@ -38,6 +40,7 @@ func start_combat(bet: int, player_frame: String) -> void:
 	)
 
 func make_move(move: String) -> void:
+	var NetworkManager = AutoloadGate.get_node("NetworkManager")
 	if not _in_combat:
 		return
 	NetworkManager.call_rpc("combat_action", {
@@ -47,6 +50,7 @@ func make_move(move: String) -> void:
 		frame_id = _player_frame,
 		game_state = _game_state,
 	}, func(result: Dictionary):
+		var NotificationUI = AutoloadGate.get_node("NotificationUI")
 		if result.get("error") and not result.get("success", false):
 			NotificationUI.notify_error(str(result.get("error", "Move failed")))
 			return
@@ -71,6 +75,13 @@ func make_move(move: String) -> void:
 	)
 
 func _finish(outcome: String, payout: int, server_wallet: bool = false) -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var AchievementManager = AutoloadGate.get_node("AchievementManager")
+	var CrownManager = AutoloadGate.get_node("CrownManager")
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var QuestManager = AutoloadGate.get_node("QuestManager")
+	var XPManager = AutoloadGate.get_node("XPManager")
 	_in_combat = false
 	_game_state.clear()
 	var won := outcome == "player_wins"

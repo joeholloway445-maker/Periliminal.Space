@@ -60,6 +60,9 @@ func _ready() -> void:
 
 ## One practice hit: stagger, spark, XP into the right discipline.
 func take_hit() -> void:
+	var SkillManager = AutoloadGate.get_node("SkillManager")
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	_hits += 1
 	_label.text = "%s  ×%d" % [discipline_tag, _hits]
 	SkillVFX.hit_spark(self, global_position)

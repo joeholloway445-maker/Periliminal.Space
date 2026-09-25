@@ -9,6 +9,8 @@ var _stake: SpinBox
 var _status: Label
 
 func _ready() -> void:
+	var PvxcManager = AutoloadGate.get_node("PvxcManager")
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
 	var root := VBoxContainer.new()
 	root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(root)
@@ -44,7 +46,7 @@ func _ready() -> void:
 	chips.text = "Your chips: %d 🎰   (chips only — buy at the cage with coins)" % EconomyManager.get_balance("chips")
 	root.add_child(chips)
 
-	var target := PvxcManager.my_target()
+	var target = PvxcManager.my_target()
 	if target != "":
 		var revenge := Label.new()
 		revenge.text = "⚔️ %s took everything from you last run. They're probably still in there." % target
@@ -83,6 +85,7 @@ func _ready() -> void:
 	root.add_child(back)
 
 func _on_enter() -> void:
+	var PvxcManager = AutoloadGate.get_node("PvxcManager")
 	if await PvxcManager.enter(int(_stake.value)):
 		get_tree().change_scene_to_file("res://scenes/pvxc/pvxc_zone.tscn")
 	else:

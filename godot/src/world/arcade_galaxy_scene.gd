@@ -127,6 +127,7 @@ func _ui_blackjack() -> void:
 	get_tree().change_scene_to_file("res://scenes/games/arcade/blackjack.tscn")
 
 func play_coin_flip(bet: int) -> bool:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
 	if EconomyManager == null or not EconomyManager.spend_currency_local("chips", bet, "arcade_coin_flip"):
 		_set_status("Not enough chips")
 		return false
@@ -139,6 +140,7 @@ func play_coin_flip(bet: int) -> bool:
 	return win
 
 func play_higher_lower(bet: int, guess: String) -> Dictionary:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
 	if EconomyManager == null or not EconomyManager.spend_currency_local("chips", bet, "arcade_hl"):
 		return {"error": "insufficient_funds"}
 	var previous: int = _current_number
@@ -163,6 +165,7 @@ func play_higher_lower(bet: int, guess: String) -> Dictionary:
 	}
 
 func play_scratch_card(bet: int) -> Dictionary:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
 	if EconomyManager == null or not EconomyManager.spend_currency_local("chips", bet, "arcade_scratch"):
 		return {"error": "insufficient_funds"}
 	var revealed: Array[String] = []

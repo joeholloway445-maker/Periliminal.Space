@@ -66,6 +66,7 @@ func _on_spin_button_pressed() -> void:
 	spin()
 
 func spin() -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
 	_current_bet = int(bet_input.value)
 
 	if EconomyManager == null or EconomyManager.get_balance("chips") < _current_bet:
@@ -93,6 +94,7 @@ func spin() -> void:
 	_request_spin_result()
 
 func _request_spin_result() -> void:
+	var CasinoHTTPClient = AutoloadGate.get_node("CasinoHTTPClient")
 	# Use CasinoHTTPClient to call Next.js API
 	var response: Dictionary = await CasinoHTTPClient.spin_slots(_current_bet)
 	if not response.get("ok", false):
@@ -137,6 +139,7 @@ func _on_reel_stopped(index: int, symbol: String) -> void:
 	_evaluate_result()
 
 func _evaluate_result() -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
 	var s0 := _stopped_symbols[0]
 	var s1 := _stopped_symbols[1]
 	var s2 := _stopped_symbols[2]
@@ -162,5 +165,6 @@ func _evaluate_result() -> void:
 	spin_complete.emit(win_amount)
 
 func _refresh_balance_label() -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
 	if is_instance_valid(balance_label):
 		balance_label.text = "Balance: %d chips" % EconomyManager.get_balance("chips")

@@ -32,6 +32,7 @@ var _note_t := 0.0
 var _mix_rate := 22050.0
 
 func _ready() -> void:
+	var IdentityLens = AutoloadGate.get_node("IdentityLens")
 	var profile: Dictionary = IdentityLens.sound_profile()
 	_rng.seed = int(profile.voicing_seed)
 	_scale = MODES.get(profile.mode, MODES["ionian"])

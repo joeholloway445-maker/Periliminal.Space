@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://herodallaspng"
-path="res://.godot/imported/dallas.png-hero.ctex"
+uid="uid://djdsq7ocpltvo"
+path="res://.godot/imported/dallas.png-0372ccc969352579b2aa017029943988.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/terrain/hero/dallas.png"
-dest_files=["res://.godot/imported/dallas.png-hero.ctex"]
+dest_files=["res://.godot/imported/dallas.png-0372ccc969352579b2aa017029943988.ctex"]
 
 [params]
 
@@ -25,7 +25,9 @@ mipmaps/generate=false
 mipmaps/limit=-1
 roughness/mode=0
 roughness/src_normal=""
-process/fix_transparent=true
+process/fix_alpha_border=true
+process/premult_alpha=false
+process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0

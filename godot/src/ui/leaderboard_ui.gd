@@ -10,6 +10,7 @@ var _refresh_timer: Timer
 var _current_player_username: String = ""
 
 func _ready() -> void:
+	var AccountManager = AutoloadGate.get_node("AccountManager")
 	_current_player_username = AccountManager.get_username() if AccountManager and AccountManager.has_method("get_username") else ""
 	_build_ui()
 	_start_auto_refresh()
@@ -44,6 +45,7 @@ func _start_auto_refresh() -> void:
 	add_child(_refresh_timer)
 
 func refresh_leaderboard(tab: String) -> void:
+	var CasinoHTTPClient = AutoloadGate.get_node("CasinoHTTPClient")
 	_current_tab = tab
 	var response = await CasinoHTTPClient.get_leaderboard(tab)
 	if response == null:

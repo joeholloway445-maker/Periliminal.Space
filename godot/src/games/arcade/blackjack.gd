@@ -29,6 +29,8 @@ func _ready() -> void:
 	add_child(back)
 
 func _deal() -> void:
+	var NetworkManager = AutoloadGate.get_node("NetworkManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	result_label.text = ""
 	NetworkManager.call_rpc("play_blackjack", {action="deal", bet=int(bet_spin.value)},
 		func(result: Dictionary):
@@ -43,6 +45,8 @@ func _deal() -> void:
 	)
 
 func _action(act: String) -> void:
+	var NetworkManager = AutoloadGate.get_node("NetworkManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	NetworkManager.call_rpc("play_blackjack", {action=act, bet=int(bet_spin.value)},
 		func(result: Dictionary):
 			if result.get("error"):
@@ -70,6 +74,9 @@ func _render_hand(container: HBoxContainer, cards: Array) -> void:
 		container.add_child(lbl)
 
 func _finish(result: Dictionary) -> void:
+	var AchievementManager = AutoloadGate.get_node("AchievementManager")
+	var XPManager = AutoloadGate.get_node("XPManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	_set_game_buttons(false)
 	deal_btn.disabled = false
 	var outcome: String = str(result.get("outcome", ""))

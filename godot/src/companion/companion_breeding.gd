@@ -58,6 +58,8 @@ func hurry_cost() -> int:
 	return 5 # charges to skip the wait; matches its scarcity
 
 func start_clutch(a_id: String, b_id: String) -> bool:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
 	if not can_pair(a_id, b_id):
 		NotificationUI.notify_error("They can't pair right now — check they're both bonded and idle.")
 		return false
@@ -78,6 +80,7 @@ func start_clutch(a_id: String, b_id: String) -> bool:
 ## Charges (the pattern for anything time-gated in this game) buy through
 ## the wait; the entity itself is otherwise identical.
 func hurry(clutch_id: String) -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
 	if not _clutches.has(clutch_id):
 		return
 	if not await EconomyManager.spend_currency("charges", hurry_cost(), "hurry_clutch"):
@@ -93,6 +96,9 @@ func _check_hatches() -> void:
 			_hatch(cid)
 
 func _hatch(clutch_id: String) -> void:
+	var CompanionSystem = AutoloadGate.get_node("CompanionSystem")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var Hope = AutoloadGate.get_node("Hope")
 	var c: Dictionary = _clutches[clutch_id]
 	var a := CompanionRegistry.get_by_id(str(c.a))
 	var b := CompanionRegistry.get_by_id(str(c.b))
@@ -124,6 +130,7 @@ func _pick_child(a: Dictionary, b: Dictionary) -> String:
 	# Exclude an already-unlocked line if we can — makes the hatch feel
 	# like a discovery rather than a duplicate.
 	var fresh: Array = pool.filter(func(e):
+		var CompanionSystem = AutoloadGate.get_node("CompanionSystem")
 		var cd = CompanionSystem.get_companion(str(e.get("id", "")))
 		return cd == null or not cd.is_unlocked)
 	if fresh.size() > 0:

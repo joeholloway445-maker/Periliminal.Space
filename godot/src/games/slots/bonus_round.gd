@@ -28,6 +28,7 @@ func start_bonus(base_bet: int) -> void:
 	_run_bonus_spins()
 
 func _run_bonus_spins() -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
 	while _spins_remaining > 0:
 		_update_countdown()
 		await get_tree().create_timer(0.8).timeout

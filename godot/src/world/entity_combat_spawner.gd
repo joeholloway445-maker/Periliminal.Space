@@ -6,6 +6,7 @@ extends RefCounted
 const ENCOUNTER_CHANCE := 0.15
 
 static func spawn(root: Node3D, chunk: WorldChunk, coord: Vector2i, size: float, terrain: TerrainBridge) -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if chunk.is_hub:
 		return
 	var rng := RandomNumberGenerator.new()

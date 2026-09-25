@@ -5,8 +5,10 @@ signal evolution_complete(companion_id: String)
 signal level_up(companion_id: String, new_level: int)
 
 func feed(companion_id: String, xp_amount: int) -> void:
+	var NetworkManager = AutoloadGate.get_node("NetworkManager")
 	NetworkManager.call_rpc("feed_companion", {companion_id=companion_id, xp_amount=xp_amount},
 		func(result: Dictionary):
+			var NotificationUI = AutoloadGate.get_node("NotificationUI")
 			if result.get("success"):
 				if result.get("leveled_up"):
 					level_up.emit(companion_id, result.companion.level)
@@ -16,8 +18,10 @@ func feed(companion_id: String, xp_amount: int) -> void:
 	)
 
 func evolve(companion_id: String) -> void:
+	var NetworkManager = AutoloadGate.get_node("NetworkManager")
 	NetworkManager.call_rpc("evolve_companion", {companion_id=companion_id},
 		func(result: Dictionary):
+			var NotificationUI = AutoloadGate.get_node("NotificationUI")
 			if result.get("success"):
 				evolution_complete.emit(companion_id)
 				NotificationUI.notify_achievement("✨ %s EVOLVED!" % companion_id)

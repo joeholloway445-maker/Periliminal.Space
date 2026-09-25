@@ -53,6 +53,9 @@ func has_voted(ballot_id: String) -> bool:
 	return _my_votes.has(ballot_id)
 
 func vote(ballot_id: String, option_index: int) -> bool:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var NetworkManager = AutoloadGate.get_node("NetworkManager")
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
 	if not can_vote(ballot_id):
 		var mins := vote_cooldown_left(ballot_id) / 60
 		NotificationUI.notify_error("The floor heard you. Next vote in %d min (one per server day)." % mins)

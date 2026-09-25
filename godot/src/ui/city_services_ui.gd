@@ -8,6 +8,9 @@ extends Control
 var _status: Label
 
 func _ready() -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var GuildManager = AutoloadGate.get_node("GuildManager")
+	var BankManager = AutoloadGate.get_node("BankManager")
 	var root := VBoxContainer.new()
 	root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(root)
@@ -99,6 +102,8 @@ func _ready() -> void:
 	_refresh_status()
 
 func _currency_row(list: VBoxContainer, cid: String, guild: bool) -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var BankManager = AutoloadGate.get_node("BankManager")
 	var c: Dictionary = EconomyManager.CURRENCIES.get(cid, {})
 	var row := HBoxContainer.new()
 	var lbl := Label.new()

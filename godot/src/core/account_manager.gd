@@ -226,6 +226,7 @@ func cloud_load(collection: String, key: String) -> Dictionary:
 
 # ── Private ────────────────────────────────────────────────────────────────────
 func _handle_auth_result(result) -> bool:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
 	if result.is_exception():
 		var msg: String = result.get_exception().message
 		push_error("AccountManager auth failed: %s" % msg)

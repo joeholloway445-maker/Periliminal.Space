@@ -14,9 +14,11 @@ var _preview_vp: SubViewport
 var _preview_root: Node3D
 var _preview_pivot: Node3D
 var _name_edit: LineEdit
+var _preset_picker: OptionButton # starter-design dropdown for + New
 var _current: Dictionary = {} # working copy of the selected blueprint
 
 func _ready() -> void:
+	var BlueprintManager = AutoloadGate.get_node("BlueprintManager")
 	layer = 20
 	var root := PanelContainer.new()
 	root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -38,12 +40,21 @@ func _ready() -> void:
 	_kind_tabs = TabBar.new()
 	for k in BlueprintData.KINDS:
 		_kind_tabs.add_tab(k.capitalize())
-	_kind_tabs.tab_changed.connect(func(_i): _refresh_library())
+	_kind_tabs.tab_changed.connect(_on_kind_changed)
 	left.add_child(_kind_tabs)
 	_library_list = ItemList.new()
 	_library_list.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_library_list.item_selected.connect(_on_select)
 	left.add_child(_library_list)
+	var preset_row := HBoxContainer.new()
+	left.add_child(preset_row)
+	var preset_lbl := Label.new()
+	preset_lbl.text = "Preset:"
+	preset_row.add_child(preset_lbl)
+	_preset_picker = OptionButton.new()
+	_preset_picker.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	preset_row.add_child(_preset_picker)
+	_populate_presets()
 	var new_btn := Button.new()
 	new_btn.text = "+ New Blueprint"
 	new_btn.pressed.connect(_on_new)
@@ -57,7 +68,7 @@ func _ready() -> void:
 	var import_btn := Button.new()
 	import_btn.text = "Import"
 	import_btn.pressed.connect(func():
-		var bp := BlueprintManager.import_code(code_edit.text)
+		var bp = BlueprintManager.import_code(code_edit.text)
 		code_edit.clear()
 		if not bp.is_empty():
 			_refresh_library())
@@ -142,15 +153,28 @@ func _unhandled_input(event: InputEvent) -> void:
 func _kind() -> String:
 	return BlueprintData.KINDS[_kind_tabs.current_tab]
 
+func _on_kind_changed(_i: int) -> void:
+	_refresh_library()
+	_populate_presets()
+
+func _populate_presets() -> void:
+	_preset_picker.clear()
+	_preset_picker.add_item("< Default >")
+	for n in BlueprintData.preset_names(_kind()):
+		_preset_picker.add_item(n)
+	_preset_picker.select(0)
+
 # ---------------------------------------------------------------- library
 
 func _refresh_library() -> void:
+	var BlueprintManager = AutoloadGate.get_node("BlueprintManager")
 	_library_list.clear()
 	for bp in BlueprintManager.by_kind(_kind()):
 		_library_list.add_item("%s  (by %s)" % [bp.name, bp.author])
 		_library_list.set_item_metadata(_library_list.item_count - 1, bp.id)
 
 func _on_select(idx: int) -> void:
+	var BlueprintManager = AutoloadGate.get_node("BlueprintManager")
 	var bp_id: String = _library_list.get_item_metadata(idx)
 	_current = BlueprintManager.get_blueprint(bp_id).duplicate(true)
 	_name_edit.text = str(_current.get("name", ""))
@@ -158,7 +182,12 @@ func _on_select(idx: int) -> void:
 	_rebuild_preview()
 
 func _on_new() -> void:
-	var bp := BlueprintManager.create(_kind(), "custom", "New %s" % _kind().capitalize())
+	var BlueprintManager = AutoloadGate.get_node("BlueprintManager")
+	var preset := ""
+	if _preset_picker != null and _preset_picker.selected > 0:
+		preset = _preset_picker.get_item_text(_preset_picker.selected)
+	var bp = BlueprintManager.create(_kind(), "custom",
+			preset if preset != "" else "New %s" % _kind().capitalize(), preset)
 	if bp.is_empty():
 		return
 	_refresh_library()
@@ -170,6 +199,8 @@ func _on_new() -> void:
 # ---------------------------------------------------------------- controls
 
 func _rebuild_controls() -> void:
+	var BlueprintManager = AutoloadGate.get_node("BlueprintManager")
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	for c in _controls_box.get_children():
 		c.queue_free()
 	if _current.is_empty():
@@ -288,6 +319,8 @@ func _pulse_skill_preview() -> void:
 # ---------------------------------------------------------------- actions
 
 func _on_save() -> void:
+	var BlueprintManager = AutoloadGate.get_node("BlueprintManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if _current.is_empty():
 		return
 	BlueprintManager.update(_current)
@@ -295,16 +328,19 @@ func _on_save() -> void:
 	NotificationUI.notify_win("Blueprint saved.")
 
 func _on_fork() -> void:
+	var BlueprintManager = AutoloadGate.get_node("BlueprintManager")
 	if _current.is_empty():
 		return
 	BlueprintManager.update(_current)
-	var copy := BlueprintManager.fork(_current.id)
+	var copy = BlueprintManager.fork(_current.id)
 	if not copy.is_empty():
 		_current = copy.duplicate(true)
 		_name_edit.text = copy.name
 		_refresh_library()
 
 func _on_equip() -> void:
+	var BlueprintManager = AutoloadGate.get_node("BlueprintManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if _current.is_empty():
 		return
 	BlueprintManager.update(_current)
@@ -313,14 +349,17 @@ func _on_equip() -> void:
 	NotificationUI.notify_win("'%s' equipped — the world now renders your design." % _current.name)
 
 func _on_share() -> void:
+	var BlueprintManager = AutoloadGate.get_node("BlueprintManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if _current.is_empty():
 		return
 	BlueprintManager.update(_current)
-	var code := BlueprintManager.export_code(_current.id)
+	var code = BlueprintManager.export_code(_current.id)
 	DisplayServer.clipboard_set(code)
 	NotificationUI.notify_info("Share code copied to clipboard (%d chars)." % code.length())
 
 func _on_delete() -> void:
+	var BlueprintManager = AutoloadGate.get_node("BlueprintManager")
 	if _current.is_empty():
 		return
 	BlueprintManager.remove(_current.id)

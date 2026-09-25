@@ -17,6 +17,7 @@ var _selected_quest_id := ""
 var _quest_rows: Array[Dictionary] = []
 
 func _ready() -> void:
+	var QuestManager = AutoloadGate.get_node("QuestManager")
 	_register_faction_quests()
 	_build_ui()
 	_refresh()
@@ -153,15 +154,16 @@ func _filtered_quests() -> Array[Dictionary]:
 	return rows
 
 func _all_quest_rows() -> Array[Dictionary]:
+	var QuestManager = AutoloadGate.get_node("QuestManager")
 	var rows: Array[Dictionary] = []
 	for quest in QuestManager.get_available_quests():
 		_add_quest_row(rows, quest, STATUS_AVAILABLE)
 	for quest_id in QuestManager.get_active_quest_ids():
-		var quest := QuestManager.get_quest(quest_id)
+		var quest = QuestManager.get_quest(quest_id)
 		if not quest.is_empty():
 			_add_quest_row(rows, quest, STATUS_ACTIVE)
 	for quest_id in QuestManager.get_completed_quest_ids():
-		var quest := QuestManager.get_quest(quest_id)
+		var quest = QuestManager.get_quest(quest_id)
 		if not quest.is_empty():
 			_add_quest_row(rows, quest, STATUS_COMPLETED)
 	return rows
@@ -181,11 +183,12 @@ func _select_row_for_quest(quest_id: String) -> void:
 			return
 
 func _show_detail(quest_id: String) -> void:
+	var QuestManager = AutoloadGate.get_node("QuestManager")
 	_clear(_detail_panel)
 	if quest_id == "":
 		_detail_panel.add_child(_empty_label("No quests match these filters."))
 		return
-	var quest := QuestManager.get_quest(quest_id)
+	var quest = QuestManager.get_quest(quest_id)
 	if quest.is_empty():
 		_detail_panel.add_child(_empty_label("Quest data is unavailable."))
 		return
@@ -290,6 +293,7 @@ func _add_branches(quest: Dictionary) -> void:
 				body.add_child(rewards_label)
 
 func _add_actions(quest_id: String, status: String) -> void:
+	var QuestManager = AutoloadGate.get_node("QuestManager")
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 8)
 	_detail_panel.add_child(row)
@@ -313,6 +317,7 @@ func _add_actions(quest_id: String, status: String) -> void:
 		row.add_child(abandon_btn)
 
 func _quest_progress(quest: Dictionary, status: String) -> Dictionary:
+	var QuestManager = AutoloadGate.get_node("QuestManager")
 	if status == STATUS_ACTIVE:
 		return QuestManager.get_progress(str(quest.get("id", "")))
 	if status == STATUS_COMPLETED:
@@ -323,6 +328,7 @@ func _quest_progress(quest: Dictionary, status: String) -> Dictionary:
 	return {}
 
 func _quest_status(quest_id: String) -> String:
+	var QuestManager = AutoloadGate.get_node("QuestManager")
 	if QuestManager.is_complete(quest_id):
 		return STATUS_COMPLETED
 	if QuestManager.is_active(quest_id):
@@ -330,6 +336,7 @@ func _quest_status(quest_id: String) -> String:
 	return STATUS_AVAILABLE
 
 func _quest_faction(quest: Dictionary) -> String:
+	var QuestManager = AutoloadGate.get_node("QuestManager")
 	if quest.has("faction"):
 		return str(quest.get("faction", "Factionless"))
 	var rewards: Dictionary = quest.get("rewards", {})
@@ -395,6 +402,7 @@ func _format_rewards(rewards: Dictionary) -> String:
 	return " | ".join(parts)
 
 func _register_faction_quests() -> void:
+	var QuestManager = AutoloadGate.get_node("QuestManager")
 	if not FileAccess.file_exists(FACTION_QUESTS_PATH):
 		push_warning("[QuestUI] Missing faction quest data: " + FACTION_QUESTS_PATH)
 		return
@@ -411,6 +419,7 @@ func _register_faction_quests() -> void:
 			QuestManager.register_quest(_convert_faction_quest(raw))
 
 func _convert_faction_quest(raw: Dictionary) -> Dictionary:
+	var QuestManager = AutoloadGate.get_node("QuestManager")
 	var objectives: Array[Dictionary] = []
 	var branches: Dictionary = {}
 	var stages: Array = raw.get("stages", [])

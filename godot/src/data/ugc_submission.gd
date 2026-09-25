@@ -25,6 +25,7 @@ func advance_to_mod_review(ticket_url: String) -> void:
 ## configured, still advances to MOD_REVIEW with an empty ticket_url so the
 ## submission isn't stuck — mods can be notified manually until a webhook is set.
 func submit_ticket() -> void:
+	var DiscordTicketClient = AutoloadGate.get_node("DiscordTicketClient")
 	var ticket_url: String = await DiscordTicketClient.post_ticket(self)
 	advance_to_mod_review(ticket_url)
 

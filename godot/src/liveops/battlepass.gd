@@ -80,6 +80,9 @@ func _check_unlocks() -> void:
 				tier_unlocked.emit(t.tier, t.reward, true)
 
 func _apply_reward(reward: Dictionary) -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var InventoryManager = AutoloadGate.get_node("InventoryManager")
+	var CompanionManager = AutoloadGate.get_node("CompanionManager")
 	match reward.get("type", ""):
 		"coins":
 			if EconomyManager: EconomyManager.add_coins(reward.get("amount", 0))

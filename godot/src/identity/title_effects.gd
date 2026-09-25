@@ -152,6 +152,7 @@ static func apply_title_effects(player_profile: Dictionary) -> void:
 	_unlock_abilities(combined_effects["abilities_unlocked"])
 
 static func _apply_stat_modifications(effects: Dictionary) -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	var bonuses = effects.get("stat_bonuses", {})
 	var penalties = effects.get("stat_penalties", {})
 
@@ -162,6 +163,7 @@ static func _apply_stat_modifications(effects: Dictionary) -> void:
 		PlayerProfile.add_stat_modifier(stat, penalties[stat])
 
 static func _apply_faction_effects(effects: Dictionary) -> void:
+	var FactionManager = AutoloadGate.get_node("FactionManager")
 	var faction_effects = effects.get("faction_effects", {})
 
 	for faction in faction_effects.keys():
@@ -169,6 +171,7 @@ static func _apply_faction_effects(effects: Dictionary) -> void:
 		FactionManager.add_reputation(faction, rep_change)
 
 static func _unlock_abilities(abilities: Array) -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	for ability in abilities:
 		PlayerProfile.unlock_ability(ability)
 
@@ -284,6 +287,7 @@ static func get_title_cosmetics(titles: Array) -> Dictionary:
 
 # ── Identity Rarity Display ────────────────────────────────────────────────
 static func get_rarity_text(identity_seed: int) -> String:
+	var IdentityLens = AutoloadGate.get_node("IdentityLens")
 	# Already calculated in IdentityLens.rarity_denominator()
 	# This just formats it
 	var denominator = IdentityLens.rarity_denominator()

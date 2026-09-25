@@ -23,13 +23,6 @@ const SAVE_PATH := "user://pvp_missions.json"
 ## life in hours; `board` the crown leaderboard it scores into; `stake` what
 ## you forfeit on failure. Ranks mirror DungeonData's bands so one vocabulary
 ## covers both group content types.
-##
-## These 5 aren't random — reward:stake sits at roughly 2.25-3x across all
-## of them, and prestige tracks rank at roughly rank*1.3. That's a
-## consistent curve, not a balance pass: it hasn't been validated against
-## real playtime-to-reward data, so treat the ratio as the thing to
-## preserve if you retune amounts, and treat the absolute numbers as still
-## provisional. See docs/HANDOFF.md.
 const MISSIONS := [
 	{
 		"id": "bounty_run", "name": "Bounty Run", "rank": 1,
@@ -82,6 +75,10 @@ func _ready() -> void:
 ## four working systems to call us. Keeping the wiring here means a mission
 ## can change what it tracks without touching combat, territory or PVXC.
 func _subscribe() -> void:
+	var CombatRealtime = AutoloadGate.get_node("CombatRealtime")
+	var TerritoryControl = AutoloadGate.get_node("TerritoryControl")
+	var HideoutRegistry = AutoloadGate.get_node("HideoutRegistry")
+	var PvxcManager = AutoloadGate.get_node("PvxcManager")
 	if CombatRealtime:
 		CombatRealtime.entity_defeated.connect(_on_entity_defeated)
 	if TerritoryControl:
@@ -95,6 +92,7 @@ func _subscribe() -> void:
 ## wildlife is not a bounty. A crown holder counts double, per Crown
 ## Challenge's blurb.
 func _on_entity_defeated(entity_id: String, conqueror_id: String, _loot: Array) -> void:
+	var CrownManager = AutoloadGate.get_node("CrownManager")
 	if conqueror_id != _self_id():
 		return
 	if not _is_player(entity_id):
@@ -109,6 +107,7 @@ func _on_chunk_claimed(_coord: Vector2i, alliance: String) -> void:
 		report_event("territory_held")
 
 func _on_site_changed(site_id: String) -> void:
+	var HideoutRegistry = AutoloadGate.get_node("HideoutRegistry")
 	if HideoutRegistry == null:
 		return
 	# site_changed fires for defender changes too; only a site our guild now
@@ -140,8 +139,9 @@ static func get_mission(id: String) -> Dictionary:
 ## Missions the player can take right now — not already running, and within
 ## reach of the party they actually have.
 func available() -> Array:
+	var PartyManager = AutoloadGate.get_node("PartyManager")
 	var out: Array = []
-	var party_size := PartyManager.size() if PartyManager else 1
+	var party_size = PartyManager.size() if PartyManager else 1
 	for m in MISSIONS:
 		if _active.has(str(m.id)):
 			continue
@@ -170,19 +170,20 @@ func time_left(mission_id: String) -> int:
 ## Take a contract. Returns {"ok": bool, "reason": String}. The stake is
 ## charged up front — a contract you can walk away from for free is a quest.
 func accept(mission_id: String) -> Dictionary:
+	var PartyManager = AutoloadGate.get_node("PartyManager")
 	var m := get_mission(mission_id)
 	if m.is_empty():
 		return {"ok": false, "reason": "No such mission."}
 	if _active.has(mission_id):
 		return {"ok": false, "reason": "Already running."}
 	var need := int(m.get("party", 1))
-	var have := PartyManager.size() if PartyManager else 1
+	var have = PartyManager.size() if PartyManager else 1
 	if have < need:
 		return {"ok": false, "reason": "Needs a party of %d — you are %d." % [need, have]}
 
 	var stake: Dictionary = m.get("stake", {})
 	for cur in stake:
-		if not _charge(str(cur), int(stake[cur])):
+		if not await _charge(str(cur), int(stake[cur])):
 			return {"ok": false, "reason": "Stake requires %d %s." % [int(stake[cur]), cur]}
 
 	_active[mission_id] = {
@@ -223,6 +224,8 @@ func report_event(event: String, amount: int = 1) -> void:
 	_save()
 
 func _complete(mission_id: String, m: Dictionary) -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var CrownManager = AutoloadGate.get_node("CrownManager")
 	_active.erase(mission_id)
 	_completed[mission_id] = completed_count(mission_id) + 1
 
@@ -251,20 +254,23 @@ func _expire_stale() -> void:
 # ------------------------------------------------------------------ helpers
 
 func _charge(currency: String, amount: int) -> bool:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
 	if amount <= 0:
 		return true
 	if not EconomyManager:
 		return true
-	if EconomyManager.has_method("spend_currency_local"):
-		return bool(EconomyManager.spend_currency_local(currency, amount, "pvp_mission_stake"))
+	if EconomyManager.has_method("spend_currency"):
+		return bool(await EconomyManager.spend_currency(currency, amount, "pvp_mission_stake"))
 	return true
 
 func _self_id() -> String:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	if PlayerProfile and not str(PlayerProfile.username).is_empty():
 		return str(PlayerProfile.username)
 	return "local_player"
 
 func _guild_id() -> String:
+	var SocialManager = AutoloadGate.get_node("SocialManager")
 	if SocialManager:
 		return str(SocialManager.current_guild.get("id", ""))
 	return ""

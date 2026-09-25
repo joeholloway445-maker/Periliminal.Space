@@ -31,6 +31,7 @@ var _active_wars: Dictionary = {} # landmark_id -> {attacker, defender}
 ## Roll a roaming entity at a landmark from the full ~600-entity roster,
 ## rarity-weighted (rarity 5 is genuinely rare in the wild).
 func spawn_wild_entity(landmark_id: String) -> Dictionary:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	# Faction-exclusive rosters: you only ever encounter entities your
 	# faction can bond with (Factionless players get the Lone Wolf roster).
 	# equivalent_exchange (prestige) is the intended bypass for off-faction
@@ -53,6 +54,7 @@ func spawn_wild_entity(landmark_id: String) -> Dictionary:
 ## invokes an Extraliminal "attempt_catch" gets routed through the new
 ## rule instead of silently unlocking an entity that was never fought.
 func attempt_catch(_entity: Dictionary, _use_lure: bool = false) -> bool:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	NotificationUI.notify_info("The bond only forms after a real fight. Defeat it first — Hope can help.")
 	return false
 
@@ -60,6 +62,7 @@ func landmark_owner(landmark_id: String) -> String:
 	return _claims.get(landmark_id, "")
 
 func claim_landmark(landmark_id: String, guild: String) -> bool:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
 	if landmark_owner(landmark_id) != "":
 		return false
 	_claims[landmark_id] = guild
@@ -70,6 +73,8 @@ func claim_landmark(landmark_id: String, guild: String) -> bool:
 ## One challenger opens the liminal door; the war is now live and their
 ## whole guild can come through until it resolves.
 func open_liminal_door(landmark_id: String, attacker_guild: String) -> bool:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	var defender := landmark_owner(landmark_id)
 	if defender == "" or defender == attacker_guild or _active_wars.has(landmark_id):
 		return false
@@ -83,6 +88,7 @@ func open_liminal_door(landmark_id: String, attacker_guild: String) -> bool:
 
 ## Called by the combat layer with the war's outcome.
 func resolve_guild_war(landmark_id: String, attacker_won: bool) -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
 	if not _active_wars.has(landmark_id):
 		return
 	var war: Dictionary = _active_wars[landmark_id]

@@ -41,6 +41,7 @@ func _ready() -> void:
 	add_child(back)
 
 func _on_spin_pressed() -> void:
+	var NetworkManager = AutoloadGate.get_node("NetworkManager")
 	if _spinning: return
 	_spinning = true
 	_spin_btn.disabled = true

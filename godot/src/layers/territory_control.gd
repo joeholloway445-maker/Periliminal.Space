@@ -27,7 +27,8 @@ var sovereign_alliance: String = ""
 
 ## PvE inside any hub's bounds, PvP everywhere else in the Supraliminal.
 func is_pvp_at(world_pos: Vector3) -> bool:
-	var coord := DiscoveryManager.world_pos_to_chunk(world_pos)
+	var DiscoveryManager = AutoloadGate.get_node("DiscoveryManager")
+	var coord = DiscoveryManager.world_pos_to_chunk(world_pos)
 	return HubRegionData.hub_at_chunk(coord).is_empty()
 
 func claim_owner(coord: Vector2i) -> String:
@@ -37,6 +38,9 @@ func claim_owner(coord: Vector2i) -> String:
 ## claimed. Capturing contested land emits chunk_contested first so combat
 ## systems can gate the flip behind an actual fight.
 func claim_chunk(coord: Vector2i, alliance: String, player_id: String) -> bool:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var CrownManager = AutoloadGate.get_node("CrownManager")
+	var QuestManager = AutoloadGate.get_node("QuestManager")
 	if not HubRegionData.hub_at_chunk(coord).is_empty():
 		return false
 	var existing: String = claim_owner(coord)
@@ -71,6 +75,7 @@ func alliance_score(alliance: String) -> int:
 	return total
 
 func _recompute_sovereign() -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	var best_alliance := ""
 	var best_score := 0
 	for a in _contribution.keys():

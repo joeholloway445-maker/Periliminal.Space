@@ -13,10 +13,12 @@ extends RefCounted
 const BASE_SHORT := 1080.0
 const TARGET_SHORT_PX := 64.0 # desired on-device height for a primary button
 
-## True when this is a touch device or a narrow window (phone browser).
+## True when this is a narrow window (phone browser or small desktop).
+## NOTE: deliberately does NOT check touchscreen — many Windows laptops
+## report touchscreen=yes but still have 1920×1080+ displays where the
+## desktop layout (boost=1.0) is correct. Phone browsers land here via
+## the window-size check (≤ 700 CSS px on the short side).
 static func is_phone() -> bool:
-	if DisplayServer.is_touchscreen_available():
-		return true
 	var win := DisplayServer.window_get_size()
 	var short := mini(win.x, win.y)
 	return short > 0 and short < 700

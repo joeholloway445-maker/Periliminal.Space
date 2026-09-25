@@ -15,6 +15,8 @@ func price_gems(mode_id: String) -> int:
 	return 2200
 
 func purchase(mode_id: String) -> bool:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var GameModeManager = AutoloadGate.get_node("GameModeManager")
 	if GameModeData.by_id(mode_id).is_empty():
 		purchase_completed.emit(mode_id, false)
 		return false

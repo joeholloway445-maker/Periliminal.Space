@@ -70,6 +70,8 @@ func is_district_full(district: District) -> bool:
 	return _player_counts.get(district, 0) >= MAX_PLAYERS_PER_DISTRICT
 
 func transition_to_district(district: District) -> void:
+	var AchievementManager = AutoloadGate.get_node("AchievementManager")
+	var MusicManager = AutoloadGate.get_node("MusicManager")
 	if _is_transitioning:
 		push_warning("DistrictManager: transition already in progress")
 		return
@@ -112,6 +114,7 @@ func transition_to_district(district: District) -> void:
 var _visited_districts: Dictionary = {}
 
 func _fire_visit_quest_triggers(district: District) -> void:
+	var QuestManager = AutoloadGate.get_node("QuestManager")
 	QuestManager.update_progress("visit_district")
 	match district:
 		District.CAT_COLISEUM:  QuestManager.update_progress("visit_coliseum")
@@ -125,6 +128,7 @@ func _fire_visit_quest_triggers(district: District) -> void:
 
 # ── Private ────────────────────────────────────────────────────────────────────
 func _poll_player_counts() -> void:
+	var PresenceManager = AutoloadGate.get_node("PresenceManager")
 	# Prefer live PresenceManager headcount when in a layer match / ghosts.
 	var live := 0
 	if PresenceManager != null and PresenceManager.has_method("presence_count"):

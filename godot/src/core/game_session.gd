@@ -18,6 +18,10 @@ func start(game_id: String) -> void:
 	session_started.emit(game_id)
 
 func record_result(won: bool, bet: int, payout: int) -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var AchievementManager = AutoloadGate.get_node("AchievementManager")
+	var QuestManager = AutoloadGate.get_node("QuestManager")
+	var Hope = AutoloadGate.get_node("Hope")
 	total_bet_this_session += bet
 	total_won_this_session += payout
 	games_played += 1
@@ -28,7 +32,7 @@ func record_result(won: bool, bet: int, payout: int) -> void:
 	QuestManager.update_progress("play_game")
 	# Psychology: gambling under pressure. Pressure = bet vs bankroll;
 	# streak = consecutive losses walking in. Hope files it; Supabase keeps it.
-	var balance := EconomyManager.get_balance("chips") + EconomyManager.get_coins()
+	var balance = EconomyManager.get_balance("chips") + EconomyManager.get_coins()
 	_loss_streak = 0 if won else _loss_streak + 1
 	Hope.record("gambling", {
 		"game": current_game, "bet": bet, "payout": payout,

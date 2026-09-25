@@ -16,6 +16,9 @@ const DEFAULT_VIEW_RADIUS := 2 # chunks in every direction, on foot
 ## same on-foot cadence — see set_view_radius(), called from
 ## layer_world.gd/overworld.gd on vehicle enter/exit.
 var _view_radius := DEFAULT_VIEW_RADIUS
+## Set by TerrainBridge.ensure_built() so chunk content spawners know
+## which layer they're building for. Empty string = no gating.
+var layer_id: String = ""
 const QUADS_PER_CHUNK := 16
 const HEIGHT_SCALE := 8.0
 
@@ -41,6 +44,7 @@ var _ridge := FastNoiseLite.new()
 var _detail := FastNoiseLite.new()
 
 func _ready() -> void:
+	var DiscoveryManager = AutoloadGate.get_node("DiscoveryManager")
 	_noise.seed = 0x43415453 # "CATS"
 	_noise.frequency = 0.008
 	_noise.fractal_octaves = 5
@@ -58,8 +62,9 @@ func _ready() -> void:
 ## Deterministic terrain height at any world position — used by both mesh
 ## generation and spawn placement so nothing ever spawns underground.
 func height_at(world_x: float, world_z: float) -> float:
-	var coord := DiscoveryManager.world_pos_to_chunk(Vector3(world_x, 0, world_z))
-	var chunk := DiscoveryManager.get_or_generate_chunk(coord)
+	var DiscoveryManager = AutoloadGate.get_node("DiscoveryManager")
+	var coord = DiscoveryManager.world_pos_to_chunk(Vector3(world_x, 0, world_z))
+	var chunk = DiscoveryManager.get_or_generate_chunk(coord)
 	# Hub chunks are flat: the mega-city sits on a graded plaza foundation,
 	# not rolling noise. Everywhere else keeps its biome elevation + noise.
 	if chunk.is_hub:
@@ -102,9 +107,10 @@ func stream_around(coord: Vector2i) -> void:
 			_loaded.erase(c)
 
 func _build_chunk(coord: Vector2i) -> Node3D:
+	var DiscoveryManager = AutoloadGate.get_node("DiscoveryManager")
 	var size := float(HubRegionData.CHUNK_SIZE)
 	var origin := Vector3(coord.x * size, 0.0, coord.y * size)
-	var chunk := DiscoveryManager.get_or_generate_chunk(coord)
+	var chunk = DiscoveryManager.get_or_generate_chunk(coord)
 
 	var root := Node3D.new()
 	root.name = "Chunk_%d_%d" % [coord.x, coord.y]
@@ -150,9 +156,10 @@ func _build_chunk(coord: Vector2i) -> Node3D:
 	if str(chunk.biome.get("biome", "")) == "coastal":
 		root.add_child(_build_water_surface(size))
 
-	_scatter_props(root, chunk, size)
-	ChunkContentSpawner.spawn(root, chunk, coord, size, _terrain_bridge())
-	EntityCombatSpawner.spawn(root, chunk, coord, size, _terrain_bridge())
+	if layer_id != "liminal":
+		_scatter_props(root, chunk, size)
+		ChunkContentSpawner.spawn(root, chunk, coord, size, _terrain_bridge())
+		EntityCombatSpawner.spawn(root, chunk, coord, size, _terrain_bridge())
 	return root
 
 ## ChunkContentSpawner needs TerrainBridge's public height_at() for
@@ -186,6 +193,7 @@ func _build_water_surface(size: float) -> MeshInstance3D:
 	return mi
 
 func _chunk_material(chunk: WorldChunk) -> StandardMaterial3D:
+	var IdentityLens = AutoloadGate.get_node("IdentityLens")
 	var biome := str(chunk.biome.get("biome", "plains"))
 	var color: Color = HUB_COLOR if chunk.is_hub else BIOME_COLORS.get(
 		biome, BIOME_COLORS["plains"])
@@ -244,6 +252,7 @@ func _scatter_props(root: Node3D, chunk: WorldChunk, size: float) -> void:
 		root.add_child(prop)
 
 func _make_prop(biome: String, rng: RandomNumberGenerator) -> MeshInstance3D:
+	var IdentityLens = AutoloadGate.get_node("IdentityLens")
 	var mi := MeshInstance3D.new()
 	var mat := StandardMaterial3D.new()
 	match biome:
@@ -276,7 +285,7 @@ func _make_prop(biome: String, rng: RandomNumberGenerator) -> MeshInstance3D:
 			mat.albedo_color = Color(0.15, 0.4, 0.2) if biome == "overgrowth" else Color(0.25, 0.5, 0.25)
 	mat.roughness = 0.9
 	# Props are hard mesh too — same race lens, lighter pull.
-	var lensed := IdentityLens.world_material(mat.albedo_color, 0.25)
+	var lensed = IdentityLens.world_material(mat.albedo_color, 0.25)
 	if mat.emission_enabled:
 		lensed.emission_enabled = true
 		lensed.emission = mat.emission

@@ -84,16 +84,29 @@ func _refresh_list() -> void:
 				var r: Dictionary = RaceDataCharacter.RACES[i]
 				var canon := OmniDexRegistry.race_display_name(str(r.id))
 				_list.add_item("%s  [%s]" % [canon, r.name])
+				# Identity sprites live in assets/entities/ by race/sex/frame/mod.
+				var race_icon: Texture2D = IdentityArt.portrait(str(r.id), "m", "", "")
+				if race_icon != null:
+					_list.set_item_icon(_list.item_count - 1, race_icon)
+					_list.icon_scale = 1.5
 				_list.set_item_metadata(_list.item_count - 1, {"kind": "race", "data": r, "canon": canon})
 		"Frames":
 			_count_label.text = "  %d frames (identity)" % OmniDexRegistry.FRAME_COUNT
 			for f in OmniDexRegistry.FRAMES:
 				_list.add_item("%s  [%s · %s]" % [f.name, f.type, f.role])
+				var frame_icon: ImageTexture = CharacterArt.frame_icon(str(f.id), 48)
+				if frame_icon != null:
+					_list.set_item_icon(_list.item_count - 1, frame_icon)
+					_list.icon_scale = 1.5
 				_list.set_item_metadata(_list.item_count - 1, {"kind": "frame", "data": f})
 		"Mods":
 			_count_label.text = "  %d mods" % OmniDexRegistry.MOD_COUNT
 			for m in MorphRigData.RIGS:
 				_list.add_item("%s  [%s / %s]" % [m.name, m.bonus, m.drawback])
+				var mod_icon: ImageTexture = CharacterArt.mod_icon(str(m.id), 48)
+				if mod_icon != null:
+					_list.set_item_icon(_list.item_count - 1, mod_icon)
+					_list.icon_scale = 1.5
 				_list.set_item_metadata(_list.item_count - 1, {"kind": "mod", "data": m})
 		"Entities":
 			var faction: String = str(FACTIONS[_faction_tabs.current_tab])
@@ -105,6 +118,10 @@ func _refresh_list() -> void:
 					apex = EntityDexData.stage_for(line, 1)
 				var shown := str(apex.get("name", line.get("id", "?")))
 				_list.add_item("%s  [%s]" % [shown, line.get("category", "?")])
+				# Generate procedurally painted icon so entities aren't text-only.
+				var icon_tex: ImageTexture = EntityVisual.icon(line.get("id", "?"), line, 0, 48)
+				_list.set_item_icon(_list.item_count - 1, icon_tex)
+				_list.icon_scale = 1.8
 				_list.set_item_metadata(_list.item_count - 1, {"kind": "entity", "data": line})
 		"Companions":
 			var faction2: String = str(FACTIONS[_faction_tabs.current_tab])
@@ -120,20 +137,17 @@ func _on_select(idx: int) -> void:
 	var data: Dictionary = meta.get("data", {})
 	match kind:
 		"race":
-			var persona := RacePersona.describe(str(data.get("id", "")))
-			var voice := RacePersona.voice(RacePersona.canon_for_id(str(data.get("id", ""))))
-			var persona_block := ""
-			if persona != "":
-				persona_block = "\n\n[color=#9fd0ff][b]Persona[/b]\n%s\nVoice: %s, %s[/color]" % [
-					persona, str(voice.get("cadence", "even")),
-					("low" if float(voice.get("pitch", 1.0)) < 0.95 else ("high" if float(voice.get("pitch", 1.0)) > 1.05 else "mid")),
-				]
-			_detail.text = "[b]%s[/b]\nCasino skin: %s\n\n%s%s" % [
-				meta.get("canon", data.get("name", "?")),
+			_detail.text = ""
+			var race_canon: String = str(meta.get("canon", data.get("name", "?")))
+			var race_portrait: Texture2D = IdentityArt.portrait(str(data.get("id", "")), "m", "", "")
+			if race_portrait != null:
+				_detail.add_image(race_portrait, 96, 96)
+				_detail.newline()
+			_detail.append_text("[b]%s[/b]\nCasino skin: %s\n\n%s" % [
+				race_canon,
 				data.get("name", "?"),
 				data.get("lore", ""),
-				persona_block,
-			]
+			])
 		"frame":
 			_detail.text = "[b]%s[/b]  —  %s %s\nRole: %s\n\nCanonical OmniDex identity frame (%d total)." % [
 				data.get("name", "?"), data.get("type", "?"), "frame",
@@ -145,17 +159,22 @@ func _on_select(idx: int) -> void:
 				data.get("desc", ""),
 			]
 		"entity":
-			var lines: Array = []
-			lines.append("[b]%s[/b]  —  %s / %s" % [data.get("id", "?"), data.get("faction", "?"), data.get("category", "?")])
-			lines.append("")
+			_detail.text = ""
+			# Detail side gets a procedural icon above the text.
+			var big_icon: ImageTexture = EntityVisual.icon(data.get("id", "?"), data, 0, 96)
+			_detail.add_image(big_icon, 48, 48)
+			_detail.newline()
+			_detail.append_text("[b]%s[/b]  —  %s / %s" % [data.get("id", "?"), data.get("faction", "?"), data.get("category", "?")])
+			_detail.newline()
 			for i in 3:
 				var stage: Dictionary = EntityDexData.stage_for(data, i + 1)
 				if stage.is_empty():
 					continue
-				lines.append("[color=#ffd88a]Stage %d — %s[/color]" % [i + 1, stage.get("name", "?")])
-				lines.append(str(stage.get("desc", "")))
-				lines.append("")
-			_detail.text = "\n".join(lines)
+				_detail.append_text("[color=#ffd88a]Stage %d — %s[/color]" % [i + 1, stage.get("name", "?")])
+				_detail.newline()
+				_detail.append_text(str(stage.get("desc", "")))
+				_detail.newline()
+				_detail.newline()
 		"companion":
 			_detail.text = "[b]%s[/b]\nId: %s\nFaction: %s\nRarity: %s\n\n%s" % [
 				data.get("name", "?"),

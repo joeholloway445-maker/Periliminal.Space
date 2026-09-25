@@ -34,6 +34,7 @@ func ensure_built(seed_key: String = "periliminal") -> void:
 		backend = "procedural"
 		_proc = ProceduralTerrain.new()
 		add_child(_proc)
+	_proc.layer_id = seed_key
 	print("[TerrainBridge] backend=", backend)
 
 func height_at(x: float, z: float) -> float:

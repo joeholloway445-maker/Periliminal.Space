@@ -28,6 +28,7 @@ var active_dungeon := ""
 var _deaths := 0
 
 func _ready() -> void:
+	var PeriliminalRuns = AutoloadGate.get_node("PeriliminalRuns")
 	_load()
 	if PeriliminalRuns:
 		# Walking out alive of a run started at a sealed door is the clear
@@ -42,6 +43,7 @@ func begin_dungeon(dungeon_id: String) -> void:
 	_deaths = 0
 
 func _on_run_survived(depth_reached: int, _fragments: int) -> void:
+	var PeriliminalRuns = AutoloadGate.get_node("PeriliminalRuns")
 	if active_dungeon.is_empty():
 		return
 	var party: Array = PeriliminalRuns.party.duplicate() if PeriliminalRuns else []

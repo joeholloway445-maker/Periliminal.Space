@@ -106,6 +106,7 @@ func _check_checkpoints() -> void:
 				_finish_race()
 
 func _finish_race() -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
 	_race_active = false
 	_place = _calculate_place()
 	var prize_map: Dictionary = {1: 500, 2: 200, 3: 100, 4: 50}

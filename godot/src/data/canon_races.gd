@@ -5,9 +5,10 @@ class_name CanonRaces
 ## keeps both true at once: gameplay ids stay the cat ids; lore, canon
 ## names, and cross-layer rendering read from here.
 const RACES := [
-	"Keth", "Lumari", "Vex", "Ferox", "Azhul", "Sylva", "Geara", "Nyx",
-	"Aquis", "Igni", "Kryos", "Myco", "Volt", "Petra", "Sanguis",
-	"Chimera", "Astra", "Ferros", "Etherea", "Glyphe",
+	"Lumenari", "Gutterkin", "Deepborne", "Ashen Choir", "Veilstriders",
+	"Chronarchs", "Nullborn", "Thorned", "Echoes", "Hollowed",
+	"Riftspawn", "Mirekin", "Sunspun", "Coldmarrow", "Pulseborn",
+	"Dreamflesh", "Crownless", "Rotweavers", "Glassborn", "Starfall",
 ]
 
 ## cat-breed id -> canon race. Order-matched to RaceDataCharacter.RACES.

@@ -68,6 +68,8 @@ func in_red_core(pos: Vector3) -> bool:
 ## Entry: stake chips. The house takes them immediately — you're buying a
 ## chance at 6x-12x, not making a deposit.
 func enter(stake_chips: int) -> bool:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if in_run:
 		return false
 	stake_chips = maxi(stake_chips, MIN_STAKE)
@@ -92,6 +94,9 @@ func collect(base_value: int, pos: Vector3) -> void:
 ## were YOUR registered killer, the revenge bonus doubles your share and
 ## clears the grudge.
 func record_kill(victim_id: String, victim_loot: int, pos: Vector3) -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var CrownManager = AutoloadGate.get_node("CrownManager")
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	if not in_run:
 		return
 	var house_cut := int(victim_loot * HOUSE_DEATH_CUT)
@@ -110,6 +115,7 @@ func record_kill(victim_id: String, victim_loot: int, pos: Vector3) -> void:
 ## You died: everything carried is seized — house cut first, killer gets
 ## the rest — and the killer goes into your revenge ledger.
 func record_death(killer_id: String) -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if not in_run:
 		return
 	house_take += int(carried_loot * HOUSE_DEATH_CUT)
@@ -124,6 +130,8 @@ func record_death(killer_id: String) -> void:
 ## Walked out through an extraction gate: house skims the fee, the rest
 ## banks as chips (it's the casino's pit — it pays in the casino's money).
 func extract() -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if not in_run:
 		return
 	var fee := int(carried_loot * EXTRACT_FEE)
@@ -154,11 +162,13 @@ func phase_label() -> String:
 ## Champion trial clock (CrownManager wants hours). The 15-minute layer
 ## flip runs whenever anyone is inside so the floor stays synchronized.
 func _process(delta: float) -> void:
+	var CrownManager = AutoloadGate.get_node("CrownManager")
 	_advance_phase(delta)
 	if in_run:
 		CrownManager.log_provisional_pvp("local_player", delta / 3600.0)
 
 func _advance_phase(delta: float) -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	_phase_elapsed += delta
 	if _phase_elapsed < PHASE_DURATION:
 		return

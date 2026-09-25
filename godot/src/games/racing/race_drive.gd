@@ -24,6 +24,7 @@ var _ai: Array[Dictionary] = []
 var _hud: Label
 
 func _ready() -> void:
+	var MusicManager = AutoloadGate.get_node("MusicManager")
 	if RaceSession.track.is_empty():
 		get_tree().change_scene_to_file.call_deferred("res://scenes/games/racing/race_track.tscn")
 		return
@@ -36,6 +37,7 @@ func _ready() -> void:
 	_build_hud()
 
 func _build_world() -> void:
+	var IdentityLens = AutoloadGate.get_node("IdentityLens")
 	var sky := DayNightSky.new()
 	sky.start_hour = 22.0 # street racing happens at night
 	sky.day_length_seconds = 999999.0
@@ -96,6 +98,8 @@ func _build_world() -> void:
 	add_child(start)
 
 func _build_player() -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var IdentityLens = AutoloadGate.get_node("IdentityLens")
 	_player = CharacterBody3D.new()
 	var body: Node3D = AssetLibrary.instance("player_cat")
 	if body == null:
@@ -150,6 +154,7 @@ func _build_ai() -> void:
 		})
 
 func _physics_process(delta: float) -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if _finished or _player == null:
 		return
 	# Arcade handling.
@@ -219,6 +224,10 @@ func _update_hud() -> void:
 			int(_speed * 3.6), int(_nitro)]
 
 func _finish() -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var QuestManager = AutoloadGate.get_node("QuestManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var MusicManager = AutoloadGate.get_node("MusicManager")
 	_finished = true
 	var place := _position_now()
 	var prize := RaceSession.payout(place, RaceSession.bet, RaceSession.track)

@@ -99,6 +99,12 @@ CasinoHTTPClient="*res://src/networking/http_client.gd"
 NPCManager="*res://src/world/npc_manager.gd"
 IAPManager="*res://src/core/iap_manager.gd"
 Proprioception="*res://src/core/proprioception.gd"
+RoomNetwork="*res://src/world/room_network.gd"
+APEX="*res://src/core/apex_orchestrator.gd"
+DREAM="*res://src/core/dream_engine.gd"
+KNOLL="*res://src/core/knoll_boundary.gd"
+VISION="*res://src/core/vision_observer.gd"
+PauseManager="*res://src/ui/pause_manager.gd"
 
 [display]
 

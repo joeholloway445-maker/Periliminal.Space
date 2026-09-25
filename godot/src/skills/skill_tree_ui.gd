@@ -6,6 +6,7 @@ extends Control
 var _points_lbl: Label
 
 func _ready() -> void:
+	var SkillManager = AutoloadGate.get_node("SkillManager")
 	var root := VBoxContainer.new()
 	root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(root)
@@ -36,6 +37,8 @@ func _ready() -> void:
 	_refresh_points()
 
 func _refresh_points() -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var SkillManager = AutoloadGate.get_node("SkillManager")
 	var prestige := 0
 	if EconomyManager:
 		prestige = EconomyManager.get_balance("prestige")
@@ -44,6 +47,7 @@ func _refresh_points() -> void:
 		"unlocked (ascended)" if SkillManager.can_swap() else "locked — ascend at level 50"]
 
 func _build_line(list: VBoxContainer, line: Dictionary) -> void:
+	var SkillManager = AutoloadGate.get_node("SkillManager")
 	var header := Label.new()
 	var is_prestige: bool = str(line.get("source", "")) == "prestige"
 	header.text = "━ %s ━%s" % [line.name, "  (🌟 Prestige)" if is_prestige else ""]
@@ -65,7 +69,7 @@ func _build_line(list: VBoxContainer, line: Dictionary) -> void:
 	att_row.add_theme_constant_override("separation", 6)
 	list.add_child(att_row)
 	var att_lbl := Label.new()
-	var current := SkillManager.attunement_of(str(line.id))
+	var current = SkillManager.attunement_of(str(line.id))
 	att_lbl.text = "Attunement: %s" % (str(SkillData.element(current).get("name", "")) if current != "" else "none")
 	att_lbl.custom_minimum_size.x = 170
 	att_row.add_child(att_lbl)
@@ -82,9 +86,11 @@ func _build_line(list: VBoxContainer, line: Dictionary) -> void:
 			get_tree().reload_current_scene())
 		att_row.add_child(eb)
 
-	for a in line.actives:
+	for a in line.get("actives", []):
 		_build_skill(list, a, false)
-	_build_skill(list, line.ultimate, true)
+	var ult: Dictionary = line.get("ultimate", {})
+	if not ult.is_empty():
+		_build_skill(list, ult, true)
 
 	for p in line.get("passives", []):
 		if str(line.get("source", "")) == "prestige":
@@ -98,10 +104,11 @@ func _build_line(list: VBoxContainer, line: Dictionary) -> void:
 	list.add_child(HSeparator.new())
 
 func _build_prestige_passive(list: VBoxContainer, p: Dictionary) -> void:
+	var SkillManager = AutoloadGate.get_node("SkillManager")
 	var row := HBoxContainer.new()
 	list.add_child(row)
 	var pl := Label.new()
-	var owned := SkillManager.is_unlocked(str(p.id))
+	var owned = SkillManager.is_unlocked(str(p.id))
 	pl.text = "%s ◈ %s — %s" % ["✓" if owned else "○", p.name, p.desc]
 	pl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	pl.modulate = Color(0.85, 0.8, 0.5) if owned else Color(0.6, 0.7, 0.6)
@@ -117,8 +124,9 @@ func _build_prestige_passive(list: VBoxContainer, p: Dictionary) -> void:
 		row.add_child(ub)
 
 func _build_skill(list: VBoxContainer, sk: Dictionary, is_ult: bool) -> void:
+	var SkillManager = AutoloadGate.get_node("SkillManager")
 	var row := VBoxContainer.new()
-	var rank := SkillManager.rank_of(sk.id)
+	var rank = SkillManager.rank_of(sk.id)
 	var name_lbl := Label.new()
 	var rank_txt := "" if rank == 0 else "  [rank %s]" % ["I","II","III","IV"][rank - 1]
 	name_lbl.text = "%s %s%s" % ["⚡" if is_ult else "◆", SkillManager.resolved(sk.id).get("name", sk.name) if rank > 0 else sk.name, rank_txt]
@@ -167,6 +175,7 @@ func _build_skill(list: VBoxContainer, sk: Dictionary, is_ult: bool) -> void:
 				mb.text = "🔀 " + morph.name
 				mb.tooltip_text = morph.lore
 				mb.pressed.connect(func():
+					var NotificationUI = AutoloadGate.get_node("NotificationUI")
 					if SkillManager.choose_morph(sk.id, morph.id):
 						NotificationUI.notify_win("The skill chose what it sees. %s" % morph.name)
 						get_tree().reload_current_scene())

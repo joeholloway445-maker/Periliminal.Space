@@ -60,6 +60,7 @@ func _build_ui() -> void:
 	_log("[color=gray]The sand remembers every claw mark.[/color]")
 
 func _make_player() -> CharacterData:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	var player := CharacterData.new()
 	player.character_name = "You"
 	player.base_pow = 25 + PlayerProfile.level * 3
@@ -81,6 +82,9 @@ func _build_opponent_queue() -> void:
 		_opponent_queue.append(opp)
 
 func challenge_next(player: CharacterData) -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var CombatSystem = AutoloadGate.get_node("CombatSystem")
+	var XPManager = AutoloadGate.get_node("XPManager")
 	if _current_opponent_index >= _opponent_queue.size():
 		_log("[color=yellow]No more opponents![/color]")
 		return
@@ -102,6 +106,8 @@ func challenge_next(player: CharacterData) -> void:
 		battle_result.emit(false, 0, 0)
 
 func start_tournament(player: CharacterData) -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var CombatSystem = AutoloadGate.get_node("CombatSystem")
 	_current_opponent_index = 0
 	var win_streak: int = 0
 	var base_prize: int = 500

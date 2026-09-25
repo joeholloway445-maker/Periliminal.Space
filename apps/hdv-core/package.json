@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.100.1",
+    "@xyflow/react": "^12.6.0",
     "@heroiclabs/nakama-js": "^2.8.0",
     "@livekit/components-react": "^2.9.21",
     "@monaco-editor/react": "^4.7.0",

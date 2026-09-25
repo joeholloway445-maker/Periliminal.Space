@@ -9,9 +9,12 @@ static var _cached := ""
 static func is_compatibility() -> bool:
 	if _cached == "":
 		var method := str(ProjectSettings.get_setting("rendering/renderer/rendering_method", "forward_plus"))
-		# Runtime override: web/mobile, or software GL (llvmpipe on CI Xvfb),
-		# cannot run Terrain3D clipmap shaders / Forward+-only effects.
-		if OS.has_feature("web") or OS.has_feature("mobile"):
+		# Runtime override: web/mobile, headless automation (--headless runs
+		# with no GPU, so Terrain3D clipmap shaders / Forward+-only effects
+		# cannot ever work), or software GL (llvmpipe/swiftshader on CI Xvfb)
+		# all take the compatibility fallback path.
+		if OS.has_feature("web") or OS.has_feature("mobile") \
+				or DisplayServer.get_name() == "headless":
 			_cached = "compatibility"
 		else:
 			var adapter := str(RenderingServer.get_video_adapter_name()).to_lower()

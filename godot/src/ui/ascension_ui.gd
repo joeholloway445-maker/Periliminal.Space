@@ -10,6 +10,7 @@ var _header: Label
 var _preview: Label
 
 func _ready() -> void:
+	var IdentityLens = AutoloadGate.get_node("IdentityLens")
 	var root := VBoxContainer.new()
 	root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(root)
@@ -45,10 +46,13 @@ func _ready() -> void:
 	_refresh()
 
 func _refresh() -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var CrownManager = AutoloadGate.get_node("CrownManager")
+	var AscensionTrial = AutoloadGate.get_node("AscensionTrial")
 	for child in _list.get_children():
 		child.queue_free()
-	var base := PlayerProfile.selected_frame
-	var current := PlayerProfile.ascended_frame
+	var base = PlayerProfile.selected_frame
+	var current = PlayerProfile.ascended_frame
 	if current != "":
 		_header.text = "🌗 ASCENDED: %s + %s" % [base.capitalize(), current.capitalize()]
 		_preview.text = FrameSensorium.blend(base, current).desc
@@ -95,7 +99,8 @@ func _refresh() -> void:
 			btn.disabled = true
 		else:
 			btn.text = "⚔️ Trial for %s (3 rounds — lose and drop everything)" % frame.name
-			btn.pressed.connect(func(): AscensionTrial.begin(fid))
+			btn.pressed.connect(func():
+				AscensionTrial.begin(fid))
 		card.add_child(btn)
 		_list.add_child(card)
 		_list.add_child(HSeparator.new())

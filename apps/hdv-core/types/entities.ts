@@ -17,6 +17,7 @@ export interface Entity {
   defeats: EntityRole     // which role this defeats
   lore: string
   specialAbility: string
+  imagePath?: string
 }
 
 export interface PlayerEntity {

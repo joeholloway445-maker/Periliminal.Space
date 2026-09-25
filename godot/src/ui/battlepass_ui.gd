@@ -14,11 +14,13 @@ var _current_xp: int = 0
 var _xp_per_tier: int = 1000
 
 func _ready() -> void:
+	UINav.add_back_button(self)
 	_load_player_data()
 	_build_ui()
 	_populate_tiers()
 
 func _load_player_data() -> void:
+	var LiveOpsManager = AutoloadGate.get_node("LiveOpsManager")
 	if LiveOpsManager.has_method("get_battlepass_data"):
 		var data = LiveOpsManager.get_battlepass_data()
 		_current_tier = data.get("tier", 0)
@@ -142,21 +144,24 @@ func _get_premium_reward_icon(tier: int) -> String:
 	return icons[(tier - 1) % icons.size()]
 
 func _can_claim(tier: int, premium: bool) -> bool:
+	var LiveOpsManager = AutoloadGate.get_node("LiveOpsManager")
 	if LiveOpsManager.has_method("is_battlepass_tier_claimed"):
 		return not LiveOpsManager.is_battlepass_tier_claimed(tier, premium)
 	return false
 
 func _on_claim_pressed(tier: int, premium: bool) -> void:
+	var LiveOpsManager = AutoloadGate.get_node("LiveOpsManager")
 	if LiveOpsManager.has_method("claim_battlepass_reward"):
 		var result = await LiveOpsManager.claim_battlepass_reward(tier, premium)
 		if result:
 			_populate_tiers()
 
 func _on_premium_unlock_pressed() -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
 	if _has_premium:
 		return
 	if EconomyManager.has_method("spend_gems"):
-		if EconomyManager.spend_gems(PREMIUM_COST_GEMS):
+		if await EconomyManager.spend_gems(PREMIUM_COST_GEMS):
 			_has_premium = true
 			_update_premium_button()
 			_populate_tiers()

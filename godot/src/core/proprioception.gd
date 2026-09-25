@@ -43,6 +43,7 @@ var _layers_recalled: Array = []
 var _pending_report: Dictionary = {}
 
 func _ready() -> void:
+	var QuestManager = AutoloadGate.get_node("QuestManager")
 	_load()
 	QuestManager.quest_completed.connect(_on_quest_completed)
 	if _found:
@@ -53,6 +54,7 @@ func _ready() -> void:
 ## Fed by ThirdPersonController every physics frame, wherever one exists.
 func feed(delta: float, yaw: float, planar_speed: float, backing: bool,
 		forwarding: bool, crouching: bool, on_floor: bool) -> void:
+	var LayerManager = AutoloadGate.get_node("LayerManager")
 	if LayerManager.current_layer_id == "subliminal":
 		return # already home
 	var dyaw := 0.0
@@ -117,7 +119,13 @@ func _reset() -> void:
 
 ## ── The recall itself ────────────────────────────────────────────────────
 func _perform_recall() -> void:
-	var layer := LayerManager.current_layer_id
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var QuestManager = AutoloadGate.get_node("QuestManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var LayerManager = AutoloadGate.get_node("LayerManager")
+	var PeriliminalRuns = AutoloadGate.get_node("PeriliminalRuns")
+	var Hope = AutoloadGate.get_node("Hope")
+	var layer = LayerManager.current_layer_id
 	if layer == "periliminal":
 		PeriliminalRuns.recall_escape()
 	Hope.record("recall_walk", {"layer": layer, "first": not _found})
@@ -146,6 +154,7 @@ func _perform_recall() -> void:
 
 ## ── Owner notification (durable until delivered) ─────────────────────────
 func _flush_report() -> void:
+	var CasinoHTTPClient = AutoloadGate.get_node("CasinoHTTPClient")
 	if _pending_report.is_empty():
 		return
 	# CasinoHTTPClient is an autoload singleton (no class_name) — call it directly.
@@ -158,6 +167,7 @@ func _flush_report() -> void:
 ## Registered ONLY after discovery, so it can never leak through quest
 ## lists, and re-registered every boot for the discoverer.
 func _register_quests() -> void:
+	var QuestManager = AutoloadGate.get_node("QuestManager")
 	var quests: Array[Dictionary] = [
 		{
 			id="recall_001", type=QuestManager.QuestType.SIDE, name="The Way You Came",
@@ -185,6 +195,9 @@ func _register_quests() -> void:
 		QuestManager.register_quest(q)
 
 func _on_quest_completed(quest_id: String, _rewards: Dictionary) -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var QuestManager = AutoloadGate.get_node("QuestManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	match quest_id:
 		"recall_001":
 			EconomyManager.earn_prestige(25, "recall_chain")

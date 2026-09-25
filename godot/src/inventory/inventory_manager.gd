@@ -123,12 +123,14 @@ func craft_item(ingredient_ids: Array[String]) -> Dictionary:
 	return {"success": true, "item": crafted_data}
 
 func save_to_nakama() -> void:
+	var CasinoHTTPClient = AutoloadGate.get_node("CasinoHTTPClient")
 	var payload: Array = []
 	for item_id in _items:
 		payload.append(_items[item_id].to_dict())
 	await CasinoHTTPClient.post_json("/v1/storage/inventory", {"items": payload})
 
 func load_from_nakama() -> void:
+	var CasinoHTTPClient = AutoloadGate.get_node("CasinoHTTPClient")
 	var response = await CasinoHTTPClient.get_json("/v1/storage/inventory")
 	if response and "items" in response:
 		_items.clear()

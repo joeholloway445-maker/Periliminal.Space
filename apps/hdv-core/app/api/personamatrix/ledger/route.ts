@@ -1,14 +1,19 @@
 import { NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";
 
 export async function GET(req: Request) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   const url = new URL(req.url);
   const tenantId = url.searchParams.get("tenant_id");
 
-  const supabase = createAdminClient();
-  let query = supabase.from("persona_ledger").select("module, cost_usd");
+  const adminSupabase = createAdminClient();
+  let query = adminSupabase.from("persona_ledger").select("module, cost_usd");
   if (tenantId) query = query.eq("tenant_id", tenantId);
 
   const { data, error } = await query;

@@ -26,6 +26,7 @@ func _ready() -> void:
 	_register_faction_quests()
 
 func _register_faction_quests() -> void:
+	var QuestManager = AutoloadGate.get_node("QuestManager")
 	if not FileAccess.file_exists(FACTION_QUESTS_PATH):
 		return
 	var file := FileAccess.open(FACTION_QUESTS_PATH, FileAccess.READ)

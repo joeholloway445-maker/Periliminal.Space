@@ -25,6 +25,7 @@ func _ready() -> void:
 		_faction_reputations[faction] = 0
 
 func join_faction(faction: String) -> bool:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	if faction not in FACTIONS:
 		return false
 
@@ -101,6 +102,8 @@ func _check_title_milestones(faction: String, old_rep: int, new_rep: int) -> voi
 				_earn_title(title)
 
 func _earn_title(title: String) -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var IdentityLens = AutoloadGate.get_node("IdentityLens")
 	if title not in PlayerProfile.titles:
 		PlayerProfile.titles.append(title)
 		IdentityLens.lens_changed.emit()

@@ -71,18 +71,21 @@ func _on_cell_revealed_ui(index: int, symbol: String) -> void:
 		_cell_buttons[index].disabled = true
 
 func _on_card_complete_ui(winning: bool, payout: int) -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if _result_label:
 		_result_label.text = ("WIN +%d chips!" % payout) if winning else "No match — try again."
 	if winning and NotificationUI:
 		NotificationUI.notify_win("Scratch: +%d" % payout)
 
 func _on_error_ui(message: String) -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if _result_label:
 		_result_label.text = message
 	if NotificationUI:
 		NotificationUI.notify_error(message)
 
 func buy_card(bet: int) -> void:
+	var NetworkManager = AutoloadGate.get_node("NetworkManager")
 	if _active:
 		error_occurred.emit("Card already active")
 		return

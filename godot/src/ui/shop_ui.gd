@@ -31,6 +31,7 @@ var _previous_button: Button
 var _next_button: Button
 
 func _ready() -> void:
+	UINav.add_back_button(self)
 	_build_ui()
 	_load_favorites()
 	_load_cosmetics()
@@ -174,14 +175,14 @@ func _coerce_items(source: Array) -> Array[Dictionary]:
 	return result
 
 func _connect_economy() -> void:
-	var economy := _economy()
+	var economy: Node = _economy()
 	if economy == null:
 		return
 	var callback := Callable(self, "_on_balance_changed")
 	if economy.has_signal("balance_changed") and not economy.is_connected("balance_changed", callback):
 		economy.connect("balance_changed", callback)
 
-func _economy():
+func _economy() -> Node:
 	return get_node_or_null("/root/EconomyManager")
 
 func _on_balance_changed(currency: String, _old_balance: int, _new_balance: int) -> void:
@@ -191,7 +192,7 @@ func _on_balance_changed(currency: String, _old_balance: int, _new_balance: int)
 func _update_balance() -> void:
 	if _balance_label == null:
 		return
-	var economy := _economy()
+	var economy: Node = _economy()
 	if economy == null:
 		_balance_label.text = "Coins unavailable"
 		return
@@ -399,7 +400,7 @@ func _purchase_item(item: Dictionary) -> void:
 		_notify_error("That cosmetic cannot be purchased.")
 		return
 
-	var economy := _economy()
+	var economy: Node = _economy()
 	if economy == null:
 		_notify_error("Your wallet is unreachable.")
 		return

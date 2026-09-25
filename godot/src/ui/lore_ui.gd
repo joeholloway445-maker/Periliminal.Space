@@ -26,7 +26,7 @@ func _ready() -> void:
 
 func _refresh() -> void:
 	var cat_keys := CATEGORIES.keys()
-	var key := CATEGORIES[cat_keys[category_option.selected]]
+	var key: String = CATEGORIES[cat_keys[category_option.selected]]
 	var text := ""
 
 	if key == "world":

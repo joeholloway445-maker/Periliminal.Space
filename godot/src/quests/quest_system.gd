@@ -18,6 +18,7 @@ func _ready() -> void:
 
 # ── Quest Acceptance ───────────────────────────────────────────────────────
 func accept_quest(quest_id: String) -> bool:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	if quest_id not in _quests:
 		push_error("Quest not found: %s" % quest_id)
 		return false
@@ -113,6 +114,12 @@ func _complete_quest(quest_id: String, quest: Dictionary) -> void:
 
 # ── Rewards ────────────────────────────────────────────────────────────────
 func _execute_rewards(quest: Dictionary, progress: Dictionary) -> Dictionary:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var CompanionSystem = AutoloadGate.get_node("CompanionSystem")
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var IdentityLens = AutoloadGate.get_node("IdentityLens")
+	var NPCDialogueSystem = AutoloadGate.get_node("NPCDialogueSystem")
+	var FactionManager = AutoloadGate.get_node("FactionManager")
 	var rewards = quest.get("rewards", {})
 	var applied = {}
 
@@ -163,6 +170,9 @@ func _execute_rewards(quest: Dictionary, progress: Dictionary) -> Dictionary:
 
 # ── Prerequisites ──────────────────────────────────────────────────────────
 func _check_prerequisites(quest: Dictionary) -> bool:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var NPCDialogueSystem = AutoloadGate.get_node("NPCDialogueSystem")
+	var FactionManager = AutoloadGate.get_node("FactionManager")
 	var prereqs = quest.get("prerequisites", {})
 
 	# Level check

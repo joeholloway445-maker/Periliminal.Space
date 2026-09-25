@@ -51,6 +51,7 @@ static func validate(bp: Dictionary) -> String:
 
 ## Submit through the same Discord review pipeline creator-mode uses.
 static func submit(bp: Dictionary, creator_id: String = "local_player") -> bool:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	var reason := validate(bp)
 	if reason != "":
 		NotificationUI.notify_error(reason)

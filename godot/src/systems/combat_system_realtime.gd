@@ -321,10 +321,7 @@ func use_ability(actor_id: String, ability_id: String, target_id: String, target
 
 	# Calculate damage with variance
 	var damage = calculate_damage(actor_id, ability, target_id)
-	var crit_bonus := 0.0
-	if actor_id == "player" and PlayerProfile:
-		crit_bonus = float(ModMechanics.combat_for(PlayerProfile.selected_mod).crit_chance_bonus)
-	var is_crit = randf() < (float(ability.get("crit_chance", 0.05)) + crit_bonus)
+	var is_crit = randf() < ability.get("crit_chance", 0.05)
 	if is_crit:
 		damage = int(damage * 1.5)
 
@@ -482,6 +479,12 @@ func end_combat(combat_id: String) -> void:
 ## EconomyManager calls. Previously this whole path was a TODO with an
 ## empty loot array and nothing granted on any win.
 func _grant_victory_rewards(loot: Array, stats: Dictionary) -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var InventoryManager = AutoloadGate.get_node("InventoryManager")
+	var XPManager = AutoloadGate.get_node("XPManager")
+	var AchievementManager = AutoloadGate.get_node("AchievementManager")
+	var QuestManager = AutoloadGate.get_node("QuestManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	var coins := 20 + int(stats.get("player_damage", 0)) * 2
 	EconomyManager.add_coins(coins, "combat_victory")
 	for item in loot:

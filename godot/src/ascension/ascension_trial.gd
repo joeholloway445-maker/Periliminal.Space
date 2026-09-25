@@ -39,6 +39,10 @@ func lockout_remaining() -> int:
 
 ## Entry: level 50+, Champion title held, not locked out.
 func begin(frame_id: String) -> bool:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var CrownManager = AutoloadGate.get_node("CrownManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var MusicManager = AutoloadGate.get_node("MusicManager")
 	if PlayerProfile.level < 50 or CrownManager.title_of("local_player") == "":
 		NotificationUI.notify_error("The trial opens to Champions of level 50.")
 		return false
@@ -56,6 +60,7 @@ func begin(frame_id: String) -> bool:
 
 ## Round rules the arena scene reads.
 func round_rules() -> Dictionary:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
 	match current_round:
 		1: return {"mode": "waves", "player_frames": [PlayerProfile.selected_frame, candidate_frame],
 			"desc": "Round I — survive the waves. Both frames answer you tonight."}
@@ -68,6 +73,7 @@ func round_rules() -> Dictionary:
 		_: return {}
 
 func win_round() -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	round_won.emit(current_round)
 	if current_round >= 3:
 		_complete()
@@ -77,6 +83,9 @@ func win_round() -> void:
 		get_tree().reload_current_scene()
 
 func _complete() -> void:
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var MusicManager = AutoloadGate.get_node("MusicManager")
 	var frame := candidate_frame
 	candidate_frame = ""
 	current_round = 0
@@ -88,6 +97,9 @@ func _complete() -> void:
 
 ## Failure: drop ALL inventory, four-hour lockout, shown the door.
 func lose(round_number: int) -> void:
+	var InventoryManager = AutoloadGate.get_node("InventoryManager")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
+	var MusicManager = AutoloadGate.get_node("MusicManager")
 	InventoryManager.clear_all()
 	_lockout_until = int(Time.get_unix_time_from_system()) + LOCKOUT_SECONDS
 	_save()

@@ -99,6 +99,7 @@ func _on_multiplier(mult) -> void:
 		if mult >= 25: _try_unlock("jackpot")
 
 func _on_companion_count() -> void:
+	var CompanionSystem = AutoloadGate.get_node("CompanionSystem")
 	var count = CompanionSystem.get_unlocked_count() if CompanionSystem.has_method("get_unlocked_count") else 0
 	if count >= 1: _try_unlock("companion_1")
 	if count >= 10: _try_unlock("companion_10")
@@ -110,6 +111,7 @@ func _on_companion_evolved(stage) -> void:
 		if stage >= 3: _try_unlock("evolve_max")
 
 func _on_district_visited(_district: String) -> void:
+	var DistrictManager = AutoloadGate.get_node("DistrictManager")
 	var visited := 0
 	if DistrictManager and DistrictManager.get("_visited_districts") != null:
 		visited = DistrictManager._visited_districts.size()
@@ -144,6 +146,9 @@ func _on_race_won() -> void:
 	if race_wins >= 3: _try_unlock("race_3")
 
 func _try_unlock(id: String) -> void:
+	var XPManager = AutoloadGate.get_node("XPManager")
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if id in _unlocked:
 		return
 	var achievement = ACHIEVEMENTS.filter(func(a): return a.id == id)

@@ -8,6 +8,7 @@ extends Control
 var _manager: Node
 
 func _ready() -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
 	_manager = get_node_or_null("ShopManager")
 	if close_button:
 		close_button.pressed.connect(func() -> void:
@@ -19,6 +20,7 @@ func _ready() -> void:
 		EconomyManager.balance_changed.connect(func(_c, _o, _n): _refresh_wallet())
 
 func _refresh_wallet() -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
 	if wallet_info == null or EconomyManager == null:
 		return
 	wallet_info.text = "🪙 %d  💎 %d" % [EconomyManager.get_coins(), EconomyManager.get_gems()]
@@ -74,6 +76,7 @@ func _make_item_row(item: Dictionary) -> Control:
 	return row
 
 func _buy(item_id: String) -> void:
+	var NotificationUI = AutoloadGate.get_node("NotificationUI")
 	if _manager == null or not _manager.has_method("purchase"):
 		return
 	var result = await _manager.purchase(item_id)

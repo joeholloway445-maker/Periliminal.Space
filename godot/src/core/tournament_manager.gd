@@ -33,6 +33,8 @@ func create_tournament(type: TournamentType, entry_fee: int, name: String) -> Di
 	return current_tournament
 
 func register(player_data: Dictionary) -> bool:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
+	var AchievementManager = AutoloadGate.get_node("AchievementManager")
 	if state != TournamentState.REGISTRATION:
 		return false
 	if current_tournament["participants"].size() >= MAX_PARTICIPANTS:
@@ -94,6 +96,7 @@ func _run_next_round() -> void:
 		_run_next_round()
 
 func _resolve_match(match_data: Dictionary) -> Dictionary:
+	var CombatSystem = AutoloadGate.get_node("CombatSystem")
 	var a: Dictionary = match_data["player_a"]
 	var b = match_data["player_b"]
 	if b == null:
@@ -112,6 +115,9 @@ func _resolve_match(match_data: Dictionary) -> Dictionary:
 			return a if randf() > 0.5 else b
 
 func _finish(winner: Dictionary) -> void:
+	var AchievementManager = AutoloadGate.get_node("AchievementManager")
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var CrownManager = AutoloadGate.get_node("CrownManager")
 	state = TournamentState.FINISHED
 	var prize_pool: int = current_tournament.get("prize_pool", 0) * PRIZE_POOL_MULTIPLIER
 	_distribute_prizes(winner, prize_pool)
@@ -125,6 +131,7 @@ func _finish(winner: Dictionary) -> void:
 	current_tournament = {}
 
 func _distribute_prizes(winner: Dictionary, prize_pool: int) -> void:
+	var EconomyManager = AutoloadGate.get_node("EconomyManager")
 	if winner.get("is_player", false):
 		EconomyManager.add_coins(prize_pool)
 		push_warning("TournamentManager: player won %d coins" % prize_pool)

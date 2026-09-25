@@ -28,6 +28,9 @@ const XP_TABLE = {
 }
 
 func award(source: String, multiplier: float = 1.0) -> int:
+	var EventManager = AutoloadGate.get_node("EventManager")
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var BattlePass = AutoloadGate.get_node("BattlePass")
 	var base = XP_TABLE.get(source, 5)
 	var event_mult = EventManager.get_xp_multiplier() if EventManager else 1.0
 	var final_xp = int(base * multiplier * event_mult)
@@ -50,6 +53,9 @@ func award_game(game: String, won: bool) -> int:
 
 ## Grant an explicit XP amount (achievements, one-off rewards).
 func award_amount(amount: int, source: String = "misc") -> int:
+	var EventManager = AutoloadGate.get_node("EventManager")
+	var PlayerProfile = AutoloadGate.get_node("PlayerProfile")
+	var BattlePass = AutoloadGate.get_node("BattlePass")
 	if amount <= 0:
 		return 0
 	var event_mult = EventManager.get_xp_multiplier() if EventManager else 1.0
