@@ -1,6 +1,6 @@
 {
-  "_comment": "NPC Templates for Periliminal.Space — realistic human appearance generation",
-  "_guide": "5 archetypes × 6 layers = 30 base templates. Each template defines trait ranges: age, build, hair color/style, skin tone, outfit. Generator uses these to create 1000+ unique NPCs.",
+  "_comment": "NPC Templates for Periliminal.Space \u2014 realistic human appearance generation",
+  "_guide": "5 archetypes \u00d7 6 layers = 30 base templates. Each template defines trait ranges: age, build, hair color/style, skin tone, outfit. Generator uses these to create 1000+ unique NPCs.",
   "archetypes": [
     {
       "id": "barista",
@@ -8,11 +8,32 @@
       "description": "Service-oriented, warm, observant. They remember everyone's order.",
       "role": "shopkeeper",
       "traits": {
-        "age": {"min": 20, "max": 45},
-        "build": ["slim", "athletic"],
-        "hair_colors": ["brown", "blonde", "black", "auburn"],
-        "hair_styles": ["short", "ponytail", "waves"],
-        "skin_tones": ["fair", "olive", "tan", "medium"],
+        "age": {
+          "min": 20,
+          "max": 45
+        },
+        "build": [
+          "slim",
+          "athletic"
+        ],
+        "hair_colors": [
+          "brown",
+          "blonde",
+          "black",
+          "auburn"
+        ],
+        "hair_styles": [
+          "short",
+          "bob",
+          "ponytail",
+          "long"
+        ],
+        "skin_tones": [
+          "fair",
+          "olive",
+          "tan",
+          "medium"
+        ],
         "outfit_base": "apron",
         "friendly": 0.9,
         "patience": 0.85
@@ -24,14 +45,33 @@
       "description": "Keeper of knowledge. Quiet, methodical, deeply knowledgeable.",
       "role": "quest_giver",
       "traits": {
-        "age": {"min": 30, "max": 70},
-        "build": ["slim", "average"],
-        "hair_colors": ["grey", "brown", "black"],
-        "hair_styles": ["neat", "long", "pulled_back"],
-        "skin_tones": ["fair", "medium", "olive"],
+        "age": {
+          "min": 30,
+          "max": 70
+        },
+        "build": [
+          "slim",
+          "average"
+        ],
+        "hair_colors": [
+          "grey",
+          "brown",
+          "black"
+        ],
+        "hair_styles": [
+          "short",
+          "bob",
+          "topknot",
+          "none"
+        ],
+        "skin_tones": [
+          "fair",
+          "medium",
+          "olive"
+        ],
         "outfit_base": "robes",
         "wisdom": 0.95,
-        "patience": 0.90
+        "patience": 0.9
       }
     },
     {
@@ -40,14 +80,34 @@
       "description": "Leaders and enforcers. Confident, commanding presence.",
       "role": "faction_rep",
       "traits": {
-        "age": {"min": 35, "max": 65},
-        "build": ["athletic", "muscular"],
-        "hair_colors": ["black", "brown", "grey"],
-        "hair_styles": ["short", "neat", "slicked"],
-        "skin_tones": ["fair", "tan", "medium", "dark", "deep"],
+        "age": {
+          "min": 35,
+          "max": 65
+        },
+        "build": [
+          "athletic",
+          "muscular"
+        ],
+        "hair_colors": [
+          "black",
+          "brown",
+          "grey"
+        ],
+        "hair_styles": [
+          "short",
+          "buzz",
+          "topknot"
+        ],
+        "skin_tones": [
+          "fair",
+          "tan",
+          "medium",
+          "dark",
+          "deep"
+        ],
         "outfit_base": "uniform",
         "confidence": 0.95,
-        "authority": 0.90
+        "authority": 0.9
       }
     },
     {
@@ -56,11 +116,34 @@
       "description": "Charming, magnetic, persuasive. They make connections.",
       "role": "merchant",
       "traits": {
-        "age": {"min": 25, "max": 50},
-        "build": ["slim", "athletic", "average"],
-        "hair_colors": ["brown", "blonde", "red", "black"],
-        "hair_styles": ["long", "waves", "styled"],
-        "skin_tones": ["fair", "olive", "tan", "medium", "dark", "deep"],
+        "age": {
+          "min": 25,
+          "max": 50
+        },
+        "build": [
+          "slim",
+          "athletic",
+          "average"
+        ],
+        "hair_colors": [
+          "brown",
+          "blonde",
+          "red",
+          "black"
+        ],
+        "hair_styles": [
+          "long",
+          "bob",
+          "ponytail"
+        ],
+        "skin_tones": [
+          "fair",
+          "olive",
+          "tan",
+          "medium",
+          "dark",
+          "deep"
+        ],
         "outfit_base": "fashionable",
         "charisma": 0.95,
         "empathy": 0.85
@@ -72,141 +155,1566 @@
       "description": "Introspective, mysterious, artistic. They see what others miss.",
       "role": "lore_keeper",
       "traits": {
-        "age": {"min": 22, "max": 60},
-        "build": ["slim", "average"],
-        "hair_colors": ["black", "purple", "dark_red", "grey"],
-        "hair_styles": ["long", "artistic", "asymmetrical"],
-        "skin_tones": ["fair", "pale", "olive"],
+        "age": {
+          "min": 22,
+          "max": 60
+        },
+        "build": [
+          "slim",
+          "average"
+        ],
+        "hair_colors": [
+          "black",
+          "purple",
+          "dark_red",
+          "grey"
+        ],
+        "hair_styles": [
+          "long",
+          "bob",
+          "topknot"
+        ],
+        "skin_tones": [
+          "fair",
+          "pale",
+          "olive"
+        ],
         "outfit_base": "artistic",
-        "insight": 0.90,
+        "insight": 0.9,
         "creativity": 0.95
+      }
+    },
+    {
+      "id": "security_guard",
+      "name": "Security Guard",
+      "description": "Disciplined enforcer guarding checkpoints and corporate interests.",
+      "role": "security",
+      "traits": {
+        "age": {
+          "min": 28,
+          "max": 55
+        },
+        "build": [
+          "athletic",
+          "muscular"
+        ],
+        "hair_colors": [
+          "black",
+          "brown",
+          "grey"
+        ],
+        "hair_styles": [
+          "buzz",
+          "short"
+        ],
+        "skin_tones": [
+          "fair",
+          "tan",
+          "medium",
+          "dark",
+          "deep"
+        ],
+        "outfit_base": "tactical_uniform",
+        "vigilance": 0.9,
+        "discipline": 0.85
+      }
+    },
+    {
+      "id": "hacker",
+      "name": "Hacker",
+      "description": "Cyberspace infiltrator manipulating layer streams and security nodes.",
+      "role": "infiltrator",
+      "traits": {
+        "age": {
+          "min": 19,
+          "max": 38
+        },
+        "build": [
+          "slim",
+          "average"
+        ],
+        "hair_colors": [
+          "black",
+          "neon_blue",
+          "neon_green",
+          "blonde"
+        ],
+        "hair_styles": [
+          "short",
+          "bob",
+          "topknot"
+        ],
+        "skin_tones": [
+          "pale",
+          "fair",
+          "olive",
+          "medium"
+        ],
+        "outfit_base": "cyber_hoodie",
+        "intellect": 0.95,
+        "stealth": 0.88
+      }
+    },
+    {
+      "id": "gambler",
+      "name": "Gambler",
+      "description": "Risk addict riding probability waves in search of the next jackpot.",
+      "role": "patron",
+      "traits": {
+        "age": {
+          "min": 24,
+          "max": 65
+        },
+        "build": [
+          "average",
+          "slim",
+          "athletic"
+        ],
+        "hair_colors": [
+          "brown",
+          "black",
+          "grey",
+          "blonde"
+        ],
+        "hair_styles": [
+          "short",
+          "long",
+          "slicked",
+          "none"
+        ],
+        "skin_tones": [
+          "fair",
+          "olive",
+          "tan",
+          "medium",
+          "dark"
+        ],
+        "outfit_base": "flashy_suit",
+        "luck": 0.85,
+        "recklessness": 0.9
+      }
+    },
+    {
+      "id": "dealer",
+      "name": "Dealer",
+      "description": "Sleight-of-hand card master controlling the flow of catsino games.",
+      "role": "casino_staff",
+      "traits": {
+        "age": {
+          "min": 22,
+          "max": 48
+        },
+        "build": [
+          "slim",
+          "average"
+        ],
+        "hair_colors": [
+          "black",
+          "brown",
+          "red"
+        ],
+        "hair_styles": [
+          "short",
+          "bob",
+          "ponytail"
+        ],
+        "skin_tones": [
+          "fair",
+          "olive",
+          "tan",
+          "medium",
+          "dark",
+          "deep"
+        ],
+        "outfit_base": "formal_vest",
+        "dexterity": 0.95,
+        "calm": 0.9
+      }
+    },
+    {
+      "id": "medic",
+      "name": "Street Medic",
+      "description": "Underground cyber-surgeon patching wounds and bio-mod glitches.",
+      "role": "healer",
+      "traits": {
+        "age": {
+          "min": 30,
+          "max": 62
+        },
+        "build": [
+          "average",
+          "slim"
+        ],
+        "hair_colors": [
+          "grey",
+          "black",
+          "brown"
+        ],
+        "hair_styles": [
+          "short",
+          "bob",
+          "topknot"
+        ],
+        "skin_tones": [
+          "fair",
+          "pale",
+          "olive",
+          "medium",
+          "dark"
+        ],
+        "outfit_base": "medical_coat",
+        "precision": 0.92,
+        "resilience": 0.88
+      }
+    },
+    {
+      "id": "smuggler",
+      "name": "Liminal Smuggler",
+      "description": "Transports illicit artifacts across reality boundaries without detection.",
+      "role": "courier",
+      "traits": {
+        "age": {
+          "min": 25,
+          "max": 50
+        },
+        "build": [
+          "athletic",
+          "average",
+          "slim"
+        ],
+        "hair_colors": [
+          "brown",
+          "black",
+          "blonde"
+        ],
+        "hair_styles": [
+          "short",
+          "ponytail",
+          "buzz"
+        ],
+        "skin_tones": [
+          "olive",
+          "tan",
+          "medium",
+          "dark"
+        ],
+        "outfit_base": "trenchcoat_cargo",
+        "cunning": 0.92,
+        "evasion": 0.9
+      }
+    },
+    {
+      "id": "pit_boss",
+      "name": "Pit Boss",
+      "description": "Unflinching overseer of casino tables, spotting cheaters in a heartbeat.",
+      "role": "management",
+      "traits": {
+        "age": {
+          "min": 35,
+          "max": 60
+        },
+        "build": [
+          "muscular",
+          "athletic",
+          "average"
+        ],
+        "hair_colors": [
+          "black",
+          "grey",
+          "silver"
+        ],
+        "hair_styles": [
+          "short",
+          "buzz",
+          "none"
+        ],
+        "skin_tones": [
+          "fair",
+          "olive",
+          "tan",
+          "dark",
+          "deep"
+        ],
+        "outfit_base": "tailored_suit",
+        "authority": 0.95,
+        "perception": 0.92
+      }
+    },
+    {
+      "id": "street_artist",
+      "name": "Street Artist",
+      "description": "Paints reality-shifting murals that resonate with perceptual layers.",
+      "role": "creative",
+      "traits": {
+        "age": {
+          "min": 18,
+          "max": 35
+        },
+        "build": [
+          "slim",
+          "average"
+        ],
+        "hair_colors": [
+          "purple",
+          "blue",
+          "green",
+          "black"
+        ],
+        "hair_styles": [
+          "bob",
+          "topknot",
+          "ponytail",
+          "short"
+        ],
+        "skin_tones": [
+          "pale",
+          "fair",
+          "olive",
+          "medium",
+          "tan"
+        ],
+        "outfit_base": "splattered_streetwear",
+        "imagination": 0.96,
+        "expression": 0.9
+      }
+    },
+    {
+      "id": "scavenger",
+      "name": "Scavenger",
+      "description": "Prowls neglected liminal alleys to salvage abandoned cyberware and tech.",
+      "role": "survivor",
+      "traits": {
+        "age": {
+          "min": 20,
+          "max": 68
+        },
+        "build": [
+          "slim",
+          "average",
+          "athletic"
+        ],
+        "hair_colors": [
+          "grey",
+          "brown",
+          "black"
+        ],
+        "hair_styles": [
+          "none",
+          "buzz",
+          "short",
+          "long"
+        ],
+        "skin_tones": [
+          "tan",
+          "medium",
+          "dark",
+          "pale"
+        ],
+        "outfit_base": "salvage_scraps",
+        "resourcefulness": 0.94,
+        "grit": 0.9
+      }
+    },
+    {
+      "id": "mystic",
+      "name": "Void Mystic",
+      "description": "Channeller of the Periliminal singularity and echoes of the lost.",
+      "role": "spiritual",
+      "traits": {
+        "age": {
+          "min": 25,
+          "max": 75
+        },
+        "build": [
+          "slim",
+          "average"
+        ],
+        "hair_colors": [
+          "white",
+          "black",
+          "silver",
+          "purple"
+        ],
+        "hair_styles": [
+          "long",
+          "topknot",
+          "none"
+        ],
+        "skin_tones": [
+          "pale",
+          "fair",
+          "olive",
+          "deep"
+        ],
+        "outfit_base": "flowing_robes",
+        "intuition": 0.98,
+        "otherworldliness": 0.95
+      }
+    },
+    {
+      "id": "mechanic",
+      "name": "Frame Mechanic",
+      "description": "Grease monkey tuning sensorium frames and pneumatic rig boosters.",
+      "role": "engineer",
+      "traits": {
+        "age": {
+          "min": 26,
+          "max": 58
+        },
+        "build": [
+          "muscular",
+          "athletic",
+          "average"
+        ],
+        "hair_colors": [
+          "brown",
+          "black",
+          "red"
+        ],
+        "hair_styles": [
+          "short",
+          "ponytail",
+          "buzz",
+          "topknot"
+        ],
+        "skin_tones": [
+          "tan",
+          "fair",
+          "medium",
+          "dark"
+        ],
+        "outfit_base": "greasy_overalls",
+        "craftsmanship": 0.92,
+        "strength": 0.85
+      }
+    },
+    {
+      "id": "bounty_hunter",
+      "name": "Bounty Hunter",
+      "description": "Relentless contract hunter tracking down deserters and renegades.",
+      "role": "mercenary",
+      "traits": {
+        "age": {
+          "min": 27,
+          "max": 52
+        },
+        "build": [
+          "athletic",
+          "muscular"
+        ],
+        "hair_colors": [
+          "black",
+          "dark_brown",
+          "grey"
+        ],
+        "hair_styles": [
+          "buzz",
+          "short",
+          "ponytail"
+        ],
+        "skin_tones": [
+          "tan",
+          "medium",
+          "dark",
+          "fair"
+        ],
+        "outfit_base": "armored_duster",
+        "combat": 0.94,
+        "focus": 0.9
+      }
+    },
+    {
+      "id": "bureaucrat",
+      "name": "Civic Bureaucrat",
+      "description": "Stiff administrator processing permits, identity IDs, and zoning codes.",
+      "role": "civic",
+      "traits": {
+        "age": {
+          "min": 32,
+          "max": 64
+        },
+        "build": [
+          "average",
+          "slim"
+        ],
+        "hair_colors": [
+          "grey",
+          "brown",
+          "black",
+          "blonde"
+        ],
+        "hair_styles": [
+          "short",
+          "bob",
+          "none"
+        ],
+        "skin_tones": [
+          "fair",
+          "pale",
+          "olive",
+          "medium"
+        ],
+        "outfit_base": "formal_suit",
+        "order": 0.96,
+        "patience": 0.8
+      }
+    },
+    {
+      "id": "street_vendor",
+      "name": "Street Vendor",
+      "description": "Charismatic hawker selling street noodles, synthetic brews, and trinkets.",
+      "role": "merchant",
+      "traits": {
+        "age": {
+          "min": 22,
+          "max": 70
+        },
+        "build": [
+          "average",
+          "slim",
+          "muscular"
+        ],
+        "hair_colors": [
+          "black",
+          "brown",
+          "grey"
+        ],
+        "hair_styles": [
+          "short",
+          "ponytail",
+          "buzz",
+          "bob"
+        ],
+        "skin_tones": [
+          "olive",
+          "tan",
+          "medium",
+          "dark"
+        ],
+        "outfit_base": "apron_casual",
+        "hustle": 0.92,
+        "friendliness": 0.88
+      }
+    },
+    {
+      "id": "gladiator",
+      "name": "Coliseum Gladiator",
+      "description": "Veteran fighter battling for glory and credits in the Cat Coliseum.",
+      "role": "champion",
+      "traits": {
+        "age": {
+          "min": 21,
+          "max": 45
+        },
+        "build": [
+          "muscular",
+          "athletic"
+        ],
+        "hair_colors": [
+          "black",
+          "blonde",
+          "red",
+          "brown"
+        ],
+        "hair_styles": [
+          "buzz",
+          "topknot",
+          "none",
+          "short"
+        ],
+        "skin_tones": [
+          "tan",
+          "medium",
+          "dark",
+          "deep",
+          "fair"
+        ],
+        "outfit_base": "arena_armor",
+        "bravery": 0.96,
+        "ferocity": 0.94
+      }
+    },
+    {
+      "id": "cultist",
+      "name": "Ethereal Cultist",
+      "description": "Devotee seeking communion with the unmanifest consciousness of the layers.",
+      "role": "fanatic",
+      "traits": {
+        "age": {
+          "min": 20,
+          "max": 60
+        },
+        "build": [
+          "slim",
+          "average"
+        ],
+        "hair_colors": [
+          "black",
+          "white",
+          "purple"
+        ],
+        "hair_styles": [
+          "long",
+          "none",
+          "topknot",
+          "bob"
+        ],
+        "skin_tones": [
+          "pale",
+          "fair",
+          "medium"
+        ],
+        "outfit_base": "occult_vestments",
+        "zeal": 0.97,
+        "mysticism": 0.92
+      }
+    },
+    {
+      "id": "drifter",
+      "name": "Wayward Drifter",
+      "description": "Rootless wanderer drifting through reality gaps without an anchor.",
+      "role": "wanderer",
+      "traits": {
+        "age": {
+          "min": 23,
+          "max": 55
+        },
+        "build": [
+          "average",
+          "slim",
+          "athletic"
+        ],
+        "hair_colors": [
+          "brown",
+          "black",
+          "grey",
+          "blonde"
+        ],
+        "hair_styles": [
+          "short",
+          "long",
+          "ponytail"
+        ],
+        "skin_tones": [
+          "tan",
+          "fair",
+          "olive",
+          "medium",
+          "dark"
+        ],
+        "outfit_base": "weathered_poncho",
+        "adaptability": 0.95,
+        "independence": 0.92
       }
     }
   ],
   "layer_variants": [
     {
       "layer": "subliminal",
-      "name": "Subliminal — Private Haven",
+      "name": "Subliminal \u2014 Private Haven",
       "setting": "intimate domestic spaces",
       "outfit_modifiers": {
-        "barista": ["casual", "comfortable", "home_attire"],
-        "archivist": ["reading_clothes", "study_wear", "relaxed"],
-        "authority": ["off_duty", "casual_leadership", "home_clothes"],
-        "lover": ["intimate_wear", "relaxed", "sensual"],
-        "reflection": ["creative_casual", "artistic_home", "cozy"]
+        "barista": [
+          "casual",
+          "comfortable",
+          "home_attire"
+        ],
+        "archivist": [
+          "reading_clothes",
+          "study_wear",
+          "relaxed"
+        ],
+        "authority": [
+          "off_duty",
+          "casual_leadership",
+          "home_clothes"
+        ],
+        "lover": [
+          "intimate_wear",
+          "relaxed",
+          "sensual"
+        ],
+        "reflection": [
+          "creative_casual",
+          "artistic_home",
+          "cozy"
+        ],
+        "security_guard": [
+          "subliminal_security_guard",
+          "standard_security_guard",
+          "casual"
+        ],
+        "hacker": [
+          "subliminal_hacker",
+          "standard_hacker",
+          "casual"
+        ],
+        "gambler": [
+          "subliminal_gambler",
+          "standard_gambler",
+          "casual"
+        ],
+        "dealer": [
+          "subliminal_dealer",
+          "standard_dealer",
+          "casual"
+        ],
+        "medic": [
+          "subliminal_medic",
+          "standard_medic",
+          "casual"
+        ],
+        "smuggler": [
+          "subliminal_smuggler",
+          "standard_smuggler",
+          "casual"
+        ],
+        "pit_boss": [
+          "subliminal_pit_boss",
+          "standard_pit_boss",
+          "casual"
+        ],
+        "street_artist": [
+          "subliminal_street_artist",
+          "standard_street_artist",
+          "casual"
+        ],
+        "scavenger": [
+          "subliminal_scavenger",
+          "standard_scavenger",
+          "casual"
+        ],
+        "mystic": [
+          "subliminal_mystic",
+          "standard_mystic",
+          "casual"
+        ],
+        "mechanic": [
+          "subliminal_mechanic",
+          "standard_mechanic",
+          "casual"
+        ],
+        "bounty_hunter": [
+          "subliminal_bounty_hunter",
+          "standard_bounty_hunter",
+          "casual"
+        ],
+        "bureaucrat": [
+          "subliminal_bureaucrat",
+          "standard_bureaucrat",
+          "casual"
+        ],
+        "street_vendor": [
+          "subliminal_street_vendor",
+          "standard_street_vendor",
+          "casual"
+        ],
+        "gladiator": [
+          "subliminal_gladiator",
+          "standard_gladiator",
+          "casual"
+        ],
+        "cultist": [
+          "subliminal_cultist",
+          "standard_cultist",
+          "casual"
+        ],
+        "drifter": [
+          "subliminal_drifter",
+          "standard_drifter",
+          "casual"
+        ]
       },
-      "color_palette": ["warm", "soft", "intimate"],
+      "color_palette": [
+        "warm",
+        "soft",
+        "intimate"
+      ],
       "lighting": "soft_warm",
       "personality_shift": 0.3
     },
     {
       "layer": "liminal",
-      "name": "Liminal — Between-Spaces",
+      "name": "Liminal \u2014 Between-Spaces",
       "setting": "transitional zones, doorways, passages",
       "outfit_modifiers": {
-        "barista": ["traveling", "transit_attire", "mobile"],
-        "archivist": ["portable_collections", "transit_wear", "mobile_library"],
-        "authority": ["patrol", "security", "transit_formal"],
-        "lover": ["traveling", "transit_elegant", "in_motion"],
-        "reflection": ["nomadic", "traveling_artist", "ephemeral"]
+        "barista": [
+          "traveling",
+          "transit_attire",
+          "mobile"
+        ],
+        "archivist": [
+          "portable_collections",
+          "transit_wear",
+          "mobile_library"
+        ],
+        "authority": [
+          "patrol",
+          "security",
+          "transit_formal"
+        ],
+        "lover": [
+          "traveling",
+          "transit_elegant",
+          "in_motion"
+        ],
+        "reflection": [
+          "nomadic",
+          "traveling_artist",
+          "ephemeral"
+        ],
+        "security_guard": [
+          "liminal_security_guard",
+          "standard_security_guard",
+          "casual"
+        ],
+        "hacker": [
+          "liminal_hacker",
+          "standard_hacker",
+          "casual"
+        ],
+        "gambler": [
+          "liminal_gambler",
+          "standard_gambler",
+          "casual"
+        ],
+        "dealer": [
+          "liminal_dealer",
+          "standard_dealer",
+          "casual"
+        ],
+        "medic": [
+          "liminal_medic",
+          "standard_medic",
+          "casual"
+        ],
+        "smuggler": [
+          "liminal_smuggler",
+          "standard_smuggler",
+          "casual"
+        ],
+        "pit_boss": [
+          "liminal_pit_boss",
+          "standard_pit_boss",
+          "casual"
+        ],
+        "street_artist": [
+          "liminal_street_artist",
+          "standard_street_artist",
+          "casual"
+        ],
+        "scavenger": [
+          "liminal_scavenger",
+          "standard_scavenger",
+          "casual"
+        ],
+        "mystic": [
+          "liminal_mystic",
+          "standard_mystic",
+          "casual"
+        ],
+        "mechanic": [
+          "liminal_mechanic",
+          "standard_mechanic",
+          "casual"
+        ],
+        "bounty_hunter": [
+          "liminal_bounty_hunter",
+          "standard_bounty_hunter",
+          "casual"
+        ],
+        "bureaucrat": [
+          "liminal_bureaucrat",
+          "standard_bureaucrat",
+          "casual"
+        ],
+        "street_vendor": [
+          "liminal_street_vendor",
+          "standard_street_vendor",
+          "casual"
+        ],
+        "gladiator": [
+          "liminal_gladiator",
+          "standard_gladiator",
+          "casual"
+        ],
+        "cultist": [
+          "liminal_cultist",
+          "standard_cultist",
+          "casual"
+        ],
+        "drifter": [
+          "liminal_drifter",
+          "standard_drifter",
+          "casual"
+        ]
       },
-      "color_palette": ["neutral", "transitional", "ethereal"],
+      "color_palette": [
+        "neutral",
+        "transitional",
+        "ethereal"
+      ],
       "lighting": "twilight",
       "personality_shift": 0.5
     },
     {
       "layer": "supraliminal",
-      "name": "Supraliminal — Open World",
+      "name": "Supraliminal \u2014 Open World",
       "setting": "urban streets, parks, outdoor venues",
       "outfit_modifiers": {
-        "barista": ["street_cafe", "outdoor_vendor", "casual_professional"],
-        "archivist": ["museum", "library", "academic"],
-        "authority": ["public_official", "guard", "civic_leader"],
-        "lover": ["social_butterfly", "fashionable_public", "crowd_ready"],
-        "reflection": ["street_artist", "urban_nomad", "visible_outsider"]
+        "barista": [
+          "street_cafe",
+          "outdoor_vendor",
+          "casual_professional"
+        ],
+        "archivist": [
+          "museum",
+          "library",
+          "academic"
+        ],
+        "authority": [
+          "public_official",
+          "guard",
+          "civic_leader"
+        ],
+        "lover": [
+          "social_butterfly",
+          "fashionable_public",
+          "crowd_ready"
+        ],
+        "reflection": [
+          "street_artist",
+          "urban_nomad",
+          "visible_outsider"
+        ],
+        "security_guard": [
+          "supraliminal_security_guard",
+          "standard_security_guard",
+          "casual"
+        ],
+        "hacker": [
+          "supraliminal_hacker",
+          "standard_hacker",
+          "casual"
+        ],
+        "gambler": [
+          "supraliminal_gambler",
+          "standard_gambler",
+          "casual"
+        ],
+        "dealer": [
+          "supraliminal_dealer",
+          "standard_dealer",
+          "casual"
+        ],
+        "medic": [
+          "supraliminal_medic",
+          "standard_medic",
+          "casual"
+        ],
+        "smuggler": [
+          "supraliminal_smuggler",
+          "standard_smuggler",
+          "casual"
+        ],
+        "pit_boss": [
+          "supraliminal_pit_boss",
+          "standard_pit_boss",
+          "casual"
+        ],
+        "street_artist": [
+          "supraliminal_street_artist",
+          "standard_street_artist",
+          "casual"
+        ],
+        "scavenger": [
+          "supraliminal_scavenger",
+          "standard_scavenger",
+          "casual"
+        ],
+        "mystic": [
+          "supraliminal_mystic",
+          "standard_mystic",
+          "casual"
+        ],
+        "mechanic": [
+          "supraliminal_mechanic",
+          "standard_mechanic",
+          "casual"
+        ],
+        "bounty_hunter": [
+          "supraliminal_bounty_hunter",
+          "standard_bounty_hunter",
+          "casual"
+        ],
+        "bureaucrat": [
+          "supraliminal_bureaucrat",
+          "standard_bureaucrat",
+          "casual"
+        ],
+        "street_vendor": [
+          "supraliminal_street_vendor",
+          "standard_street_vendor",
+          "casual"
+        ],
+        "gladiator": [
+          "supraliminal_gladiator",
+          "standard_gladiator",
+          "casual"
+        ],
+        "cultist": [
+          "supraliminal_cultist",
+          "standard_cultist",
+          "casual"
+        ],
+        "drifter": [
+          "supraliminal_drifter",
+          "standard_drifter",
+          "casual"
+        ]
       },
-      "color_palette": ["natural", "civic", "vibrant"],
+      "color_palette": [
+        "natural",
+        "civic",
+        "vibrant"
+      ],
       "lighting": "daylight",
       "personality_shift": 0.0
     },
     {
       "layer": "hyperliminal",
-      "name": "Hyperliminal — Catsino",
+      "name": "Hyperliminal \u2014 Catsino",
       "setting": "casino, games, entertainment venues",
       "outfit_modifiers": {
-        "barista": ["bartender", "casino_staff", "service_formal"],
-        "archivist": ["pit_boss", "records_keeper", "management"],
-        "authority": ["security", "enforcer", "casino_authority"],
-        "lover": ["dealer", "host", "glamorous_staff"],
-        "reflection": ["fortune_teller", "mysterious_staff", "enigma"]
+        "barista": [
+          "bartender",
+          "casino_staff",
+          "service_formal"
+        ],
+        "archivist": [
+          "pit_boss",
+          "records_keeper",
+          "management"
+        ],
+        "authority": [
+          "security",
+          "enforcer",
+          "casino_authority"
+        ],
+        "lover": [
+          "dealer",
+          "host",
+          "glamorous_staff"
+        ],
+        "reflection": [
+          "fortune_teller",
+          "mysterious_staff",
+          "enigma"
+        ],
+        "security_guard": [
+          "hyperliminal_security_guard",
+          "standard_security_guard",
+          "casual"
+        ],
+        "hacker": [
+          "hyperliminal_hacker",
+          "standard_hacker",
+          "casual"
+        ],
+        "gambler": [
+          "hyperliminal_gambler",
+          "standard_gambler",
+          "casual"
+        ],
+        "dealer": [
+          "hyperliminal_dealer",
+          "standard_dealer",
+          "casual"
+        ],
+        "medic": [
+          "hyperliminal_medic",
+          "standard_medic",
+          "casual"
+        ],
+        "smuggler": [
+          "hyperliminal_smuggler",
+          "standard_smuggler",
+          "casual"
+        ],
+        "pit_boss": [
+          "hyperliminal_pit_boss",
+          "standard_pit_boss",
+          "casual"
+        ],
+        "street_artist": [
+          "hyperliminal_street_artist",
+          "standard_street_artist",
+          "casual"
+        ],
+        "scavenger": [
+          "hyperliminal_scavenger",
+          "standard_scavenger",
+          "casual"
+        ],
+        "mystic": [
+          "hyperliminal_mystic",
+          "standard_mystic",
+          "casual"
+        ],
+        "mechanic": [
+          "hyperliminal_mechanic",
+          "standard_mechanic",
+          "casual"
+        ],
+        "bounty_hunter": [
+          "hyperliminal_bounty_hunter",
+          "standard_bounty_hunter",
+          "casual"
+        ],
+        "bureaucrat": [
+          "hyperliminal_bureaucrat",
+          "standard_bureaucrat",
+          "casual"
+        ],
+        "street_vendor": [
+          "hyperliminal_street_vendor",
+          "standard_street_vendor",
+          "casual"
+        ],
+        "gladiator": [
+          "hyperliminal_gladiator",
+          "standard_gladiator",
+          "casual"
+        ],
+        "cultist": [
+          "hyperliminal_cultist",
+          "standard_cultist",
+          "casual"
+        ],
+        "drifter": [
+          "hyperliminal_drifter",
+          "standard_drifter",
+          "casual"
+        ]
       },
-      "color_palette": ["gold", "black", "neon", "glamorous"],
+      "color_palette": [
+        "gold",
+        "black",
+        "neon",
+        "glamorous"
+      ],
       "lighting": "artificial_bright",
       "personality_shift": 0.4
     },
     {
       "layer": "extraliminal",
-      "name": "Extraliminal — Guild Territory",
+      "name": "Extraliminal \u2014 Guild Territory",
       "setting": "guild hideouts, contested zones, outdoor strongholds",
       "outfit_modifiers": {
-        "barista": ["camp_cook", "mobile_vendor", "supply_handler"],
-        "archivist": ["scribe", "records_master", "lore_keeper"],
-        "authority": ["general", "commander", "warlord"],
-        "lover": ["strategist", "commander", "charismatic_leader"],
-        "reflection": ["scout", "mysterious_guide", "shadowy_figure"]
+        "barista": [
+          "camp_cook",
+          "mobile_vendor",
+          "supply_handler"
+        ],
+        "archivist": [
+          "scribe",
+          "records_master",
+          "lore_keeper"
+        ],
+        "authority": [
+          "general",
+          "commander",
+          "warlord"
+        ],
+        "lover": [
+          "strategist",
+          "commander",
+          "charismatic_leader"
+        ],
+        "reflection": [
+          "scout",
+          "mysterious_guide",
+          "shadowy_figure"
+        ],
+        "security_guard": [
+          "extraliminal_security_guard",
+          "standard_security_guard",
+          "casual"
+        ],
+        "hacker": [
+          "extraliminal_hacker",
+          "standard_hacker",
+          "casual"
+        ],
+        "gambler": [
+          "extraliminal_gambler",
+          "standard_gambler",
+          "casual"
+        ],
+        "dealer": [
+          "extraliminal_dealer",
+          "standard_dealer",
+          "casual"
+        ],
+        "medic": [
+          "extraliminal_medic",
+          "standard_medic",
+          "casual"
+        ],
+        "smuggler": [
+          "extraliminal_smuggler",
+          "standard_smuggler",
+          "casual"
+        ],
+        "pit_boss": [
+          "extraliminal_pit_boss",
+          "standard_pit_boss",
+          "casual"
+        ],
+        "street_artist": [
+          "extraliminal_street_artist",
+          "standard_street_artist",
+          "casual"
+        ],
+        "scavenger": [
+          "extraliminal_scavenger",
+          "standard_scavenger",
+          "casual"
+        ],
+        "mystic": [
+          "extraliminal_mystic",
+          "standard_mystic",
+          "casual"
+        ],
+        "mechanic": [
+          "extraliminal_mechanic",
+          "standard_mechanic",
+          "casual"
+        ],
+        "bounty_hunter": [
+          "extraliminal_bounty_hunter",
+          "standard_bounty_hunter",
+          "casual"
+        ],
+        "bureaucrat": [
+          "extraliminal_bureaucrat",
+          "standard_bureaucrat",
+          "casual"
+        ],
+        "street_vendor": [
+          "extraliminal_street_vendor",
+          "standard_street_vendor",
+          "casual"
+        ],
+        "gladiator": [
+          "extraliminal_gladiator",
+          "standard_gladiator",
+          "casual"
+        ],
+        "cultist": [
+          "extraliminal_cultist",
+          "standard_cultist",
+          "casual"
+        ],
+        "drifter": [
+          "extraliminal_drifter",
+          "standard_drifter",
+          "casual"
+        ]
       },
-      "color_palette": ["tactical", "worn", "earthy"],
+      "color_palette": [
+        "tactical",
+        "worn",
+        "earthy"
+      ],
       "lighting": "natural_variable",
       "personality_shift": 0.6
     },
     {
       "layer": "periliminal",
-      "name": "Periliminal — Psychology Gauntlet",
+      "name": "Periliminal \u2014 Psychology Gauntlet",
       "setting": "abstract, surreal, shifting environments",
       "outfit_modifiers": {
-        "barista": ["ephemeral_server", "dream_attire", "shifting"],
-        "archivist": ["memory_keeper", "void_scribe", "ethereal"],
-        "authority": ["inner_conflict", "shadow_self", "primal"],
-        "lover": ["idealized", "desired", "perfected"],
-        "reflection": ["true_self", "shadow_mirror", "authentic"]
+        "barista": [
+          "ephemeral_server",
+          "dream_attire",
+          "shifting"
+        ],
+        "archivist": [
+          "memory_keeper",
+          "void_scribe",
+          "ethereal"
+        ],
+        "authority": [
+          "inner_conflict",
+          "shadow_self",
+          "primal"
+        ],
+        "lover": [
+          "idealized",
+          "desired",
+          "perfected"
+        ],
+        "reflection": [
+          "true_self",
+          "shadow_mirror",
+          "authentic"
+        ],
+        "security_guard": [
+          "periliminal_security_guard",
+          "standard_security_guard",
+          "casual"
+        ],
+        "hacker": [
+          "periliminal_hacker",
+          "standard_hacker",
+          "casual"
+        ],
+        "gambler": [
+          "periliminal_gambler",
+          "standard_gambler",
+          "casual"
+        ],
+        "dealer": [
+          "periliminal_dealer",
+          "standard_dealer",
+          "casual"
+        ],
+        "medic": [
+          "periliminal_medic",
+          "standard_medic",
+          "casual"
+        ],
+        "smuggler": [
+          "periliminal_smuggler",
+          "standard_smuggler",
+          "casual"
+        ],
+        "pit_boss": [
+          "periliminal_pit_boss",
+          "standard_pit_boss",
+          "casual"
+        ],
+        "street_artist": [
+          "periliminal_street_artist",
+          "standard_street_artist",
+          "casual"
+        ],
+        "scavenger": [
+          "periliminal_scavenger",
+          "standard_scavenger",
+          "casual"
+        ],
+        "mystic": [
+          "periliminal_mystic",
+          "standard_mystic",
+          "casual"
+        ],
+        "mechanic": [
+          "periliminal_mechanic",
+          "standard_mechanic",
+          "casual"
+        ],
+        "bounty_hunter": [
+          "periliminal_bounty_hunter",
+          "standard_bounty_hunter",
+          "casual"
+        ],
+        "bureaucrat": [
+          "periliminal_bureaucrat",
+          "standard_bureaucrat",
+          "casual"
+        ],
+        "street_vendor": [
+          "periliminal_street_vendor",
+          "standard_street_vendor",
+          "casual"
+        ],
+        "gladiator": [
+          "periliminal_gladiator",
+          "standard_gladiator",
+          "casual"
+        ],
+        "cultist": [
+          "periliminal_cultist",
+          "standard_cultist",
+          "casual"
+        ],
+        "drifter": [
+          "periliminal_drifter",
+          "standard_drifter",
+          "casual"
+        ]
       },
-      "color_palette": ["surreal", "dreamlike", "archetypal"],
+      "color_palette": [
+        "surreal",
+        "dreamlike",
+        "archetypal"
+      ],
       "lighting": "impossible",
       "personality_shift": 1.0
     }
   ],
   "name_pools": {
     "first_names_neutral": [
-      "Alex", "Casey", "Jordan", "Morgan", "Riley", "Taylor", "Morgan", "Quinn",
-      "Sage", "River", "Sky", "Phoenix", "Storm", "Asher", "Rowan", "Finley",
-      "Harper", "Skylar", "Avery", "Charlie", "Madison", "Cameron", "Bailey", "Dakota"
+      "Alex",
+      "Casey",
+      "Jordan",
+      "Morgan",
+      "Riley",
+      "Taylor",
+      "Morgan",
+      "Quinn",
+      "Sage",
+      "River",
+      "Sky",
+      "Phoenix",
+      "Storm",
+      "Asher",
+      "Rowan",
+      "Finley",
+      "Harper",
+      "Skylar",
+      "Avery",
+      "Charlie",
+      "Madison",
+      "Cameron",
+      "Bailey",
+      "Dakota"
     ],
     "first_names_feminine": [
-      "Emma", "Olivia", "Sophia", "Isabella", "Ava", "Mia", "Charlotte", "Amelia",
-      "Elise", "Zara", "Maya", "Iris", "Aurora", "Luna", "Stella", "Nova",
-      "Elena", "Victoria", "Grace", "Sophia", "Aria", "Nadia", "Sofia", "Elena"
+      "Emma",
+      "Olivia",
+      "Sophia",
+      "Isabella",
+      "Ava",
+      "Mia",
+      "Charlotte",
+      "Amelia",
+      "Elise",
+      "Zara",
+      "Maya",
+      "Iris",
+      "Aurora",
+      "Luna",
+      "Stella",
+      "Nova",
+      "Elena",
+      "Victoria",
+      "Grace",
+      "Sophia",
+      "Aria",
+      "Nadia",
+      "Sofia",
+      "Elena"
     ],
     "first_names_masculine": [
-      "Liam", "Noah", "Oliver", "Elijah", "James", "Benjamin", "Lucas", "Henry",
-      "Alexander", "Marcus", "Leo", "Ethan", "Nathan", "Samuel", "Gabriel", "Michael",
-      "David", "Joseph", "Charles", "Daniel", "Viktor", "Adrian", "Silas"
+      "Liam",
+      "Noah",
+      "Oliver",
+      "Elijah",
+      "James",
+      "Benjamin",
+      "Lucas",
+      "Henry",
+      "Alexander",
+      "Marcus",
+      "Leo",
+      "Ethan",
+      "Nathan",
+      "Samuel",
+      "Gabriel",
+      "Michael",
+      "David",
+      "Joseph",
+      "Charles",
+      "Daniel",
+      "Viktor",
+      "Adrian",
+      "Silas"
     ],
     "last_names": [
-      "Sage", "Stone", "Rivers", "Walker", "Turner", "Anderson", "Bennett", "Carter",
-      "Cooper", "Davis", "Evans", "Foster", "Graham", "Harrison", "Hunter", "Jackson",
-      "Kennedy", "Lawrence", "Martin", "Murray", "Nelson", "Peterson", "Quinn", "Roberts",
-      "Sanders", "Taylor", "Thompson", "Tucker", "Underwood", "Valencia", "Warren",
-      "Wells", "Wheeler", "Wright", "Young", "Zimmerman", "Adams", "Blake", "Brooks",
-      "Burns", "Chapman", "Clarke", "Coleman", "Collins", "Crawford", "Daniels",
-      "Davidson", "Dawson", "Delgado", "Dennis", "Diaz", "Dickson", "Dixon"
+      "Sage",
+      "Stone",
+      "Rivers",
+      "Walker",
+      "Turner",
+      "Anderson",
+      "Bennett",
+      "Carter",
+      "Cooper",
+      "Davis",
+      "Evans",
+      "Foster",
+      "Graham",
+      "Harrison",
+      "Hunter",
+      "Jackson",
+      "Kennedy",
+      "Lawrence",
+      "Martin",
+      "Murray",
+      "Nelson",
+      "Peterson",
+      "Quinn",
+      "Roberts",
+      "Sanders",
+      "Taylor",
+      "Thompson",
+      "Tucker",
+      "Underwood",
+      "Valencia",
+      "Warren",
+      "Wells",
+      "Wheeler",
+      "Wright",
+      "Young",
+      "Zimmerman",
+      "Adams",
+      "Blake",
+      "Brooks",
+      "Burns",
+      "Chapman",
+      "Clarke",
+      "Coleman",
+      "Collins",
+      "Crawford",
+      "Daniels",
+      "Davidson",
+      "Dawson",
+      "Delgado",
+      "Dennis",
+      "Diaz",
+      "Dickson",
+      "Dixon"
     ]
   },
   "dispositions": [
-    {"mood": "cheerful", "greeting_shift": 0.3, "quest_availability": 1.0},
-    {"mood": "neutral", "greeting_shift": 0.0, "quest_availability": 0.8},
-    {"mood": "reserved", "greeting_shift": -0.2, "quest_availability": 0.6},
-    {"mood": "suspicious", "greeting_shift": -0.4, "quest_availability": 0.3},
-    {"mood": "melancholy", "greeting_shift": -0.3, "quest_availability": 0.5}
+    {
+      "mood": "cheerful",
+      "greeting_shift": 0.3,
+      "quest_availability": 1.0
+    },
+    {
+      "mood": "neutral",
+      "greeting_shift": 0.0,
+      "quest_availability": 0.8
+    },
+    {
+      "mood": "reserved",
+      "greeting_shift": -0.2,
+      "quest_availability": 0.6
+    },
+    {
+      "mood": "suspicious",
+      "greeting_shift": -0.4,
+      "quest_availability": 0.3
+    },
+    {
+      "mood": "melancholy",
+      "greeting_shift": -0.3,
+      "quest_availability": 0.5
+    }
   ],
   "daily_schedules": [
     {

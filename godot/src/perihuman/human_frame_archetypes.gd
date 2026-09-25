@@ -53,4 +53,4 @@ const FRAMES: Dictionary = {
 }
 
 static func get_archetype(frame_id: String) -> Dictionary:
-	return FRAMES.get(frame_id, {})
+	return FRAMES.get(frame_id.to_lower(), {})

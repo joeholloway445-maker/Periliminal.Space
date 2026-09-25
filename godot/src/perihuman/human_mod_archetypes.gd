@@ -50,4 +50,4 @@ const MODS: Dictionary = {
 }
 
 static func get_archetype(mod_id: String) -> Dictionary:
-	return MODS.get(mod_id, {})
+	return MODS.get(mod_id.to_lower(), {})

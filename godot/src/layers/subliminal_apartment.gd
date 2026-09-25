@@ -194,7 +194,6 @@ func _build_panel() -> void:
 	box.add_child(_panel_status)
 
 	var invite := Button.new()
-	invite.text = "Send invite ✉️"
 	invite.pressed.connect(func():
 		var code = SubliminalManager.send_invite()
 		if code != "":
@@ -213,6 +212,7 @@ func _build_panel() -> void:
 				get_tree().reload_current_scene()
 		)
 		box.add_child(sub)
+
 
 	var storage := Label.new()
 	storage.text = "Locker: %d / %d" % [SubliminalManager.storage_used(), SubliminalManager.storage_capacity()]

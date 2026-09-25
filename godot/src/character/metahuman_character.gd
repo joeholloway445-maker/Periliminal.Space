@@ -21,6 +21,16 @@ extends RefCounted
 ## community MetaHumanGodot look-dev tool live under
 ## assets/shaders/metahuman/.
 
+## GLB Model Drop Path:
+## Drop Unreal / MetaHuman / DCC GLB exports directly into:
+##   res://assets/models/ (filesystem: godot/assets/models/)
+## Supported slot filenames (highest to lowest priority):
+##   - metahuman_<race_id>.glb / metahuman_<canon_race>.glb (e.g. metahuman_ferox.glb)
+##   - metahuman_player.glb / peri_human_player.glb / player_human.glb
+##   - metahuman_npc.glb / peri_human_npc.glb / npc_human.glb
+## When any file is present at these paths, AssetLibrary instances it immediately,
+## allowing Unreal exports to win with zero code changes.
+
 const META_PLAYER := "metahuman_player"
 const META_NPC := "metahuman_npc"
 const HUMAN_PLAYER := "player_human"
@@ -38,9 +48,14 @@ static func build_player(visual_mode: String = "identity") -> Node3D:
 	var race_id := ""
 	if PlayerProfile:
 		race_id = str(PlayerProfile.selected_race_id)
+	var canon_race := CanonRaces.canon_for_id(race_id).to_lower() if not race_id.is_empty() else ""
 	var meta := _try_slots([
 		"metahuman_%s" % race_id if not race_id.is_empty() else "",
+		"metahuman_%s" % canon_race if not canon_race.is_empty() else "",
+		"peri_human_%s" % race_id if not race_id.is_empty() else "",
+		"peri_human_%s" % canon_race if not canon_race.is_empty() else "",
 		META_PLAYER,
+		"peri_human_player",
 		HUMAN_PLAYER,
 	])
 	if meta != null:
@@ -62,9 +77,15 @@ static func build_npc(visual_mode: String = "identity", race_id: String = "",
 			return _as_root(cat)
 	# Authored MetaHuman exports are deliberate high-fidelity art, so they
 	# still outrank everything below.
+	var canon_race := CanonRaces.canon_for_id(race_id).to_lower() if not race_id.is_empty() else ""
 	var meta := _try_slots([
 		"metahuman_%s" % race_id if not race_id.is_empty() else "",
+		"metahuman_%s" % canon_race if not canon_race.is_empty() else "",
+		"peri_human_%s" % race_id if not race_id.is_empty() else "",
+		"peri_human_%s" % canon_race if not canon_race.is_empty() else "",
 		META_NPC,
+		"peri_human_npc",
+		HUMAN_NPC,
 	])
 	if meta != null:
 		_try_apply_metahuman_materials(meta)
