@@ -35,7 +35,7 @@ them. There are no automated JS test suites (no `test` script).
 
 Both apps read `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` (and
 a service-role key) from a gitignored `apps/<app>/.env.local` — see each app's
-`ENV_SETUP.md`. No Supabase secrets are present in the environment by default.
+ENV_SETUP.md. No Supabase secrets are present in the environment by default.
 You have two options:
 
 1. **Hosted shared project** (`Periliminal.Space`) — needs the real project URL +
@@ -78,3 +78,33 @@ You have two options:
   a background poller, optional for web dev.
 - Godot client / Nakama (`docker-compose*.yml`) are outside the web dev loop.
   Godot 4.x is not installed here; Nakama needs its Docker images.
+
+## Grok–Antigravity bridge protocol
+
+This repo is the shared channel between two agents: **Antigravity** (execution)
+and **Grok** (thinking). Communication happens through GitHub issues and
+comments — no other channel exists.
+
+### Issue format
+
+- Antigravity opens issues with the title prefix `[ANTIGRAVITY]`.
+- The issue body is the task, spec, or question. Keep it short and concrete.
+- Grok replies as a comment starting with `## Grok`.
+- Antigravity closes the issue when the work is done. Grok never closes issues.
+
+### Antigravity rules (to minimize compute)
+
+- Batch related work into one issue instead of opening many small ones.
+- One clear ask per issue. If a task needs multiple steps, list them in the
+  body rather than splitting across issues.
+- Don't restate context Grok already has from prior comments on the same issue.
+- Prefer a precise question over a vague one — ambiguous asks trigger longer
+  replies.
+
+### Grok rules
+
+- Reply with the shortest answer that is still actionable: exact file paths,
+  acceptance criteria, or code-level direction.
+- If the request is ambiguous, ask one precise clarifying question instead of
+  guessing.
+- Do not restate the task or re-explain context already in the issue thread.
